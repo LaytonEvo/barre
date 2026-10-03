@@ -3,13 +3,13 @@
 **Currently empty.** Everything in `design/` is the Section 3.2 fallback direction, not
 Kelly's real brand. Drop these in and the palette gets re-derived:
 
-| File | Notes |
-|---|---|
-| `logo.svg` (preferred) or `logo.png` | Highest resolution available. Ask the original designer for the vector if one exists — it makes favicons, OG images and print all easier. |
-| `cover.jpg` | The Facebook cover photo |
-| `photos/` | 15–30 of the best class, studio and Kelly photos. **Mix landscape and portrait** — the hero needs landscape, the mobile cards need portrait. Originals, not Facebook-compressed downloads, if she has them. |
-| `kelly-headshot.jpg` | For `/about` and `Person` JSON-LD |
-| `notes.md` | Tone ("warm, encouraging, no judgement"), phrases she actually uses in posts, colours she likes **and dislikes** |
+| File                                 | Notes                                                                                                                                                                                                       |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `logo.svg` (preferred) or `logo.png` | Highest resolution available. Ask the original designer for the vector if one exists — it makes favicons, OG images and print all easier.                                                                   |
+| `cover.jpg`                          | The Facebook cover photo                                                                                                                                                                                    |
+| `photos/`                            | 15–30 of the best class, studio and Kelly photos. **Mix landscape and portrait** — the hero needs landscape, the mobile cards need portrait. Originals, not Facebook-compressed downloads, if she has them. |
+| `kelly-headshot.jpg`                 | For `/about` and `Person` JSON-LD                                                                                                                                                                           |
+| `notes.md`                           | Tone ("warm, encouraging, no judgement"), phrases she actually uses in posts, colours she likes **and dislikes**                                                                                            |
 
 ## On photo quality
 

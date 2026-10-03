@@ -25,15 +25,15 @@ on white — it can't carry text at AA without darkening into brick. Plum reads 
 and slightly luxe, and it's unusual in local fitness (which defaults to black, hot pink or
 teal). Blush stays where it's strongest: large surfaces and the one CTA you want thumbs to find.
 
-| Role | Token | Hex |
-|---|---|---|
-| Page | `--bg-page` | `#FAF4EC` cream |
-| Surface | `--bg-surface` | `#FFFFFF` |
-| Body text | `--text-primary` | `#1F1A1F` ink |
-| Headings | `--text-heading` | `#3F2440` plum 700 |
-| Primary action | `--action-primary-bg` | `#573351` plum 600 |
-| Booking CTA | `--action-accent-bg` | `#B4584A` blush 600 |
-| Calm/info | `--bg-calm-soft` | `#DCE3DA` sage 200 |
+| Role           | Token                 | Hex                 |
+| -------------- | --------------------- | ------------------- |
+| Page           | `--bg-page`           | `#FAF4EC` cream     |
+| Surface        | `--bg-surface`        | `#FFFFFF`           |
+| Body text      | `--text-primary`      | `#1F1A1F` ink       |
+| Headings       | `--text-heading`      | `#3F2440` plum 700  |
+| Primary action | `--action-primary-bg` | `#573351` plum 600  |
+| Booking CTA    | `--action-accent-bg`  | `#B4584A` blush 600 |
+| Calm/info      | `--bg-calm-soft`      | `#DCE3DA` sage 200  |
 
 **Type:** **Fraunces** (display) + **Inter** (body). Fraunces is a variable old-style serif
 with a softness dial — warm and characterful without tipping into wedding-invitation
@@ -64,19 +64,19 @@ Every foreground/background pair in the system was checked against WCAG 2.2 with
 (`design/contrast-check.mjs`, run with `npm run check:contrast` once M1 adds package.json).
 Results:
 
-| Pair | Ratio | AA text | Use |
-|---|---|---|---|
-| ink 900 on cream | **15.68** | pass | body |
-| ink 700 on cream | **10.83** | pass | secondary |
-| ink 500 on cream | **5.88** | pass | muted |
-| ink 400 on cream | 3.40 | *fail* | **disabled controls only — never meaningful copy** |
-| plum 700 on cream | **12.50** | pass | display headings |
-| plum 600 on cream | **9.62** | pass | links, focus ring |
-| white on plum 600 | **10.51** | pass | primary button |
-| white on blush 600 | **4.73** | pass | booking CTA |
-| white on sage 600 | **5.13** | pass | sage button |
-| white on error 600 | **7.14** | pass | destructive |
-| status badges (4 soft pairs) | 5.04–5.94 | pass | open / nearly full / full / waitlist |
+| Pair                         | Ratio     | AA text | Use                                                |
+| ---------------------------- | --------- | ------- | -------------------------------------------------- |
+| ink 900 on cream             | **15.68** | pass    | body                                               |
+| ink 700 on cream             | **10.83** | pass    | secondary                                          |
+| ink 500 on cream             | **5.88**  | pass    | muted                                              |
+| ink 400 on cream             | 3.40      | _fail_  | **disabled controls only — never meaningful copy** |
+| plum 700 on cream            | **12.50** | pass    | display headings                                   |
+| plum 600 on cream            | **9.62**  | pass    | links, focus ring                                  |
+| white on plum 600            | **10.51** | pass    | primary button                                     |
+| white on blush 600           | **4.73**  | pass    | booking CTA                                        |
+| white on sage 600            | **5.13**  | pass    | sage button                                        |
+| white on error 600           | **7.14**  | pass    | destructive                                        |
+| status badges (4 soft pairs) | 5.04–5.94 | pass    | open / nearly full / full / waitlist               |
 
 One pair deliberately fails: `--text-disabled`. It's scoped to disabled controls, where WCAG
 exempts contrast, and it's the only token not permitted in prose. Everything a member
@@ -126,5 +126,5 @@ Warm, encouraging, inclusive, confident, never preachy. British English (`-ise`,
 "£"). "All levels, all bodies." Written for someone who is slightly nervous about walking
 into their first class.
 
-Copy I will *not* write without you: anything claiming a qualification, a result, a review,
+Copy I will _not_ write without you: anything claiming a qualification, a result, a review,
 or a number of members. See the open questions.

@@ -1,0 +1,121 @@
+@import 'tailwindcss';
+@import '../design/tokens.css';
+
+/*
+  Bridge the design tokens into Tailwind v4.
+
+  `@theme inline` emits utilities that reference the CSS variables rather than
+  copying their values, so changing a primitive in design/tokens.css re-skins
+  every utility without a rebuild of intent. Components use these names
+  (bg-page, text-heading, bg-action-primary) and never a hex value.
+*/
+@theme inline {
+  --color-page: var(--bg-page);
+  --color-surface: var(--bg-surface);
+  --color-surface-sunk: var(--bg-surface-sunk);
+  --color-inverse: var(--bg-inverse);
+  --color-accent-soft: var(--bg-accent-soft);
+  --color-calm-soft: var(--bg-calm-soft);
+
+  --color-primary: var(--text-primary);
+  --color-secondary: var(--text-secondary);
+  --color-muted: var(--text-muted);
+  --color-disabled: var(--text-disabled);
+  --color-on-inverse: var(--text-on-inverse);
+  --color-heading: var(--text-heading);
+  --color-link: var(--text-link);
+
+  --color-subtle: var(--border-subtle);
+  --color-strong: var(--border-strong);
+  --color-focus: var(--border-focus);
+
+  --color-action-primary: var(--action-primary-bg);
+  --color-action-primary-hover: var(--action-primary-bg-hover);
+  --color-action-accent: var(--action-accent-bg);
+  --color-action-accent-hover: var(--action-accent-bg-hover);
+  --color-action-destructive: var(--action-destructive-bg);
+
+  --color-status-open-fg: var(--status-open-fg);
+  --color-status-open-bg: var(--status-open-bg);
+  --color-status-nearly-fg: var(--status-nearly-fg);
+  --color-status-nearly-bg: var(--status-nearly-bg);
+  --color-status-full-fg: var(--status-full-fg);
+  --color-status-full-bg: var(--status-full-bg);
+  --color-status-waitlist-fg: var(--status-waitlist-fg);
+  --color-status-waitlist-bg: var(--status-waitlist-bg);
+  --color-status-cancelled-fg: var(--status-cancelled-fg);
+  --color-status-cancelled-bg: var(--status-cancelled-bg);
+
+  --font-display: var(--font-display);
+  --font-sans: var(--font-body);
+
+  --text-display-sm: var(--text-2xl);
+  --text-display-md: var(--text-3xl);
+  --text-display-lg: var(--text-4xl);
+  --text-display-xl: var(--text-5xl);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+
+  --ease-out: var(--ease-out);
+  --container-measure: 68ch;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    line-height: var(--leading-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    color: var(--text-heading);
+    font-weight: var(--weight-display);
+    letter-spacing: var(--tracking-display);
+    line-height: var(--leading-tight);
+    text-wrap: balance;
+  }
+
+  /* Times, prices and spaces-left counters line up in columns. */
+  .tabular,
+  time,
+  [data-numeric] {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Skip link: visible only when focused. */
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+  }
+  .skip-link:focus {
+    left: var(--space-4);
+    top: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    background: var(--bg-surface);
+    color: var(--text-link);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "name": "barre-by-kelly",
+  "version": "0.1.0",
+  "description": "Website and members platform for Barre By Kelly",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check:contrast": "node design/contrast-check.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:types": "supabase gen types typescript --local > lib/db/database.types.ts",
+    "db:reset": "supabase db reset",
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run check:contrast",
+    "lint:fix": "eslint . --fix",
+    "test:db": "tests/db/run.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LaytonEvo/barre.git"
+  },
+  "bugs": {
+    "url": "https://github.com/LaytonEvo/barre/issues"
+  },
+  "homepage": "https://github.com/LaytonEvo/barre#readme",
+  "dependencies": {
+    "@date-fns/tz": "^1.5.0",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.117.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.4.0",
+    "lucide-react": "^1.51.0",
+    "next": "^16.3.8",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "tailwind-merge": "^3.7.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^26.6.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.8",
+    "prettier": "^3.9.9",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=20.9"
+  }
+}
