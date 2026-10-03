@@ -1,0 +1,642 @@
+<title>Warm Studio Styleguide</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: single documentation column; brand specimens sit on their own cream
+   "stage" panels so the light brand world reads as an object in either theme. */
+:root {
+  /* --- page chrome (theme-aware) --- */
+  --page:   #FFFFFF;
+  --panel:  #FAFAFA;
+  --ink:    #17141A;
+  --muted:  #605A66;
+  --faint:  #8C858F;
+  --rule:   #E4E0E6;
+  --mark:   #573351;
+
+  /* --- brand primitives being documented (never theme-flipped) --- */
+  --cream-50:#FDFAF6; --cream-100:#FAF4EC; --cream-200:#F4E9DC; --cream-300:#EADBC8;
+  --sand-300:#DCC7AE; --sand-400:#C9AE90; --sand-500:#B0916F;
+  --plum-400:#8A5B76; --plum-500:#6E4360; --plum-600:#573351; --plum-700:#3F2440; --plum-900:#241626;
+  --blush-200:#F7DAD4; --blush-300:#EFBDB4; --blush-400:#E09A8E; --blush-600:#B4584A;
+  --sage-200:#DCE3DA; --sage-400:#9BAE9C; --sage-600:#5E7360; --sage-700:#46573F;
+  --bink-900:#1F1A1F; --bink-700:#3D353D; --bink-500:#655C64; --bink-400:#8B828A;
+  --ok-600:#2F6B4F; --ok-100:#DFF0E6;
+  --wa-600:#8A5A14; --wa-100:#FBEBD2;
+  --er-600:#A32C22; --er-100:#FADDDA;
+  --in-600:#2B5B7A; --in-100:#DCEAF3;
+
+  --display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #141217; --panel: #1C1920; --ink: #F2EFF3; --muted: #ADA5B2;
+    --faint: #847C8A; --rule: #312C38; --mark: #C9A4BE; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #141217; --panel: #1C1920; --ink: #F2EFF3; --muted: #ADA5B2;
+  --faint: #847C8A; --rule: #312C38; --mark: #C9A4BE; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--page); color: var(--ink);
+  font-family: var(--body); font-size: 16px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1060px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 72px; }
+@media (min-width: 768px) { .wrap { padding-inline: 40px; } }
+
+h1, h2, h3, h4 { font-family: var(--display); font-weight: 500; text-wrap: balance; margin: 0; letter-spacing: -0.02em; }
+h1 { font-size: clamp(2rem, 1.4rem + 3vw, 3.25rem); line-height: 1.05; }
+h2 { font-size: clamp(1.4rem, 1.2rem + 1vw, 1.9rem); line-height: 1.15; }
+h3 { font-size: 1.1rem; line-height: 1.3; font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+a { color: var(--mark); }
+code, .mono { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: 0.8125em; }
+
+.eyebrow {
+  font-size: 0.6875rem; letter-spacing: 0.12em; text-transform: uppercase;
+  font-weight: 600; color: var(--faint); margin: 0;
+}
+.lede { font-size: 1.0625rem; color: var(--muted); }
+
+/* --- section rhythm --- */
+section { margin-top: 64px; }
+.sec-head { border-top: 1px solid var(--rule); padding-top: 18px; margin-bottom: 24px;
+            display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: baseline; }
+.sec-head h2 { flex: 1 1 auto; min-width: 0; }
+.sec-head .note { font-size: 0.8125rem; color: var(--faint); }
+
+/* --- status flag --- */
+.flag {
+  display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px;
+  background: var(--wa-100); color: var(--wa-600); border: 1px solid #E8C98F;
+  border-radius: 999px; padding: 6px 14px 6px 11px;
+  font-size: 0.75rem; font-weight: 600; letter-spacing: 0.02em;
+}
+.flag::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--wa-600); flex: none; }
+
+/* --- the cream stage: brand's own light world --- */
+.stage {
+  background: var(--cream-100); color: var(--bink-900);
+  border: 1px solid var(--cream-300); border-radius: 14px;
+  padding: 24px 20px; margin-top: 4px;
+}
+@media (min-width: 768px) { .stage { padding: 32px; } }
+.stage h3 { color: var(--plum-700); }
+.stage .cap { color: var(--bink-500); font-size: 0.8125rem; }
+
+/* --- swatches --- */
+.ramp { display: grid; gap: 10px; margin-bottom: 20px; }
+.ramp:last-child { margin-bottom: 0; }
+.ramp-label { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em;
+              text-transform: uppercase; color: var(--bink-500); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  flex: 1 1 96px; min-width: 96px; border: 0; cursor: pointer; text-align: left;
+  border-radius: 10px; padding: 10px 11px; font-family: var(--body);
+  display: flex; flex-direction: column; gap: 2px; min-height: 76px;
+  justify-content: flex-end; box-shadow: inset 0 0 0 1px rgb(63 36 64 / 0.10);
+  transition: transform 140ms cubic-bezier(.22,1,.36,1);
+}
+.chip:hover { transform: translateY(-2px); }
+.chip:focus-visible { outline: 2px solid var(--plum-600); outline-offset: 2px; }
+.chip b { font-size: 0.75rem; font-weight: 600; }
+.chip span { font-size: 0.6875rem; opacity: 0.8; font-family: ui-monospace, Menlo, monospace; }
+
+/* --- semantic role list --- */
+.roles { display: grid; gap: 1px; background: var(--cream-300); border-radius: 10px; overflow: hidden; }
+.role { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: center;
+        background: var(--cream-50); padding: 11px 14px; }
+.role i { width: 34px; height: 34px; border-radius: 8px; box-shadow: inset 0 0 0 1px rgb(63 36 64 / 0.12); }
+.role div { min-width: 0; }
+.role b { display: block; font-size: 0.8125rem; font-weight: 600; }
+.role .mono { color: var(--bink-500); font-size: 0.75rem; }
+.role em { font-style: normal; font-size: 0.75rem; color: var(--bink-500); white-space: nowrap; }
+@media (max-width: 520px) { .role em { display: none; } }
+
+/* --- tables --- */
+.tbl-scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.875rem; min-width: 460px; }
+caption { text-align: left; font-size: 0.8125rem; color: var(--bink-500); padding-bottom: 10px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--cream-300); }
+th { font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bink-500); font-weight: 600; }
+td.num { font-variant-numeric: tabular-nums; font-weight: 500; }
+tr:last-child td { border-bottom: 0; }
+.pass, .fail { font-size: 0.6875rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.pass { background: var(--ok-100); color: var(--ok-600); }
+.fail { background: var(--er-100); color: var(--er-600); }
+
+/* --- type specimen --- */
+.spec { border-bottom: 1px solid var(--cream-300); padding-block: 14px; display: grid; gap: 6px; }
+.spec:last-child { border-bottom: 0; }
+.spec .meta { font-size: 0.6875rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--bink-500); }
+.spec p, .spec div { color: var(--bink-900); }
+.d1 { font-family: var(--display); font-size: clamp(2.25rem,1.7rem + 2.9vw,3.75rem); line-height: 1.05; color: var(--plum-700); letter-spacing: -0.025em; }
+.d2 { font-family: var(--display); font-size: clamp(1.5rem,1.3rem + 1.1vw,2rem); line-height: 1.15; color: var(--plum-700); }
+.d3 { font-family: var(--display); font-size: 1.25rem; line-height: 1.3; color: var(--plum-700); }
+.b1 { font-size: 1.0625rem; line-height: 1.6; }
+.b2 { font-size: 0.875rem; line-height: 1.6; color: var(--bink-700); }
+.caps { font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; color: var(--bink-500); }
+.figs { font-variant-numeric: tabular-nums; font-size: 1.0625rem; line-height: 1.5; }
+
+/* --- buttons --- */
+.btns { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.btn {
+  font-family: var(--body); font-size: 0.9375rem; font-weight: 500;
+  min-height: 44px; padding: 0 20px; border-radius: 10px; border: 1px solid transparent;
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+  transition: background-color 160ms, transform 120ms;
+}
+.btn:active { transform: translateY(1px); }
+.btn:focus-visible { outline: 2px solid var(--plum-600); outline-offset: 2px; }
+.btn-primary { background: var(--plum-600); color: #fff; }
+.btn-primary:hover { background: var(--plum-500); }
+.btn-accent { background: var(--blush-600); color: #fff; min-height: 48px; padding: 0 26px; font-weight: 600; }
+.btn-accent:hover { background: #9E4C3F; }
+.btn-secondary { background: transparent; color: var(--plum-600); border-color: var(--plum-600); }
+.btn-secondary:hover { background: var(--cream-200); }
+.btn-ghost { background: transparent; color: var(--plum-600); }
+.btn-ghost:hover { background: var(--cream-200); }
+.btn-danger { background: var(--er-600); color: #fff; }
+.btn[disabled] { background: var(--cream-300); color: var(--bink-400); border-color: transparent; cursor: not-allowed; }
+.btn[disabled]:active { transform: none; }
+
+/* --- status badges --- */
+.badge {
+  display: inline-flex; align-items: center; gap: 6px; border-radius: 999px;
+  padding: 4px 11px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;
+}
+.badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
+.b-open { background: var(--ok-100); color: var(--ok-600); }
+.b-near { background: var(--wa-100); color: var(--wa-600); }
+.b-full { background: var(--er-100); color: var(--er-600); }
+.b-wait { background: var(--in-100); color: var(--in-600); }
+.b-canc { background: var(--cream-300); color: var(--bink-700); }
+
+/* --- timetable session card (the component that matters most) --- */
+.phone { max-width: 390px; }
+.tt { display: grid; gap: 10px; }
+.tt-day { font-family: var(--display); font-size: 1.125rem; color: var(--plum-700); margin-top: 6px; }
+.card {
+  background: #fff; border: 1px solid var(--cream-300); border-radius: 12px;
+  padding: 14px; display: grid; gap: 12px;
+  box-shadow: 0 1px 3px rgb(63 36 64 / 0.06);
+}
+.card-top { display: flex; gap: 12px; align-items: flex-start; }
+.card-time { font-variant-numeric: tabular-nums; font-weight: 600; font-size: 1rem; width: 52px; flex: none; color: var(--bink-900); }
+.card-body { flex: 1 1 auto; min-width: 0; display: grid; gap: 3px; }
+.card-title { font-family: var(--display); font-size: 1.0625rem; font-weight: 600; color: var(--plum-700); }
+.card-meta { font-size: 0.8125rem; color: var(--bink-500); }
+.card-rail { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.card.is-cancelled { background: var(--cream-200); }
+.card.is-cancelled .card-title { color: var(--bink-700); text-decoration: line-through; text-decoration-thickness: 1px; }
+
+/* --- scale strips --- */
+.scale { display: grid; gap: 7px; }
+.srow { display: grid; grid-template-columns: 78px 1fr; gap: 12px; align-items: center; font-size: 0.75rem; }
+.srow .mono { color: var(--bink-500); }
+.sbar { height: 15px; border-radius: 3px; background: var(--plum-400); }
+.radii { display: flex; flex-wrap: wrap; gap: 12px; }
+.radii figure { margin: 0; display: grid; gap: 6px; justify-items: center; }
+.radii div { width: 72px; height: 56px; background: var(--sand-300); box-shadow: inset 0 0 0 1px rgb(63 36 64 / 0.12); }
+.radii figcaption { font-size: 0.6875rem; color: var(--bink-500); font-family: ui-monospace, Menlo, monospace; }
+.shadows { display: flex; flex-wrap: wrap; gap: 16px; }
+.shadows figure { margin: 0; display: grid; gap: 8px; justify-items: center; }
+.shadows div { width: 92px; height: 62px; background: #fff; border-radius: 10px; }
+.shadows figcaption { font-size: 0.6875rem; color: var(--bink-500); font-family: ui-monospace, Menlo, monospace; }
+
+/* --- plain content lists --- */
+ul.ticks { list-style: none; padding: 0; margin: 0; display: grid; gap: 9px; max-width: 68ch; }
+ul.ticks li { padding-left: 26px; position: relative; font-size: 0.9375rem; color: var(--muted); }
+ul.ticks li::before {
+  content: ""; position: absolute; left: 4px; top: 0.56em; width: 9px; height: 5px;
+  border-left: 2px solid var(--mark); border-bottom: 2px solid var(--mark);
+  transform: rotate(-45deg);
+}
+ul.ticks li b { color: var(--ink); font-weight: 600; }
+
+.cols { display: grid; gap: 28px; }
+@media (min-width: 760px) { .cols.two { grid-template-columns: 1fr 1fr; } }
+
+.toast {
+  position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%) translateY(140%);
+  background: var(--plum-700); color: var(--cream-100); padding: 10px 18px;
+  border-radius: 999px; font-size: 0.8125rem; font-weight: 500;
+  transition: transform 220ms cubic-bezier(.22,1,.36,1); z-index: 90;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+footer { margin-top: 64px; border-top: 1px solid var(--rule); padding-top: 20px;
+         font-size: 0.8125rem; color: var(--faint); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
+}
+</style>
+
+<div class="wrap">
+
+  <p class="eyebrow">Barre By Kelly &middot; Direction A</p>
+  <h1>Warm Studio</h1>
+  <p class="flag">M0 proposal &mdash; not yet approved</p>
+  <p class="lede">
+    The design system for the Barre By Kelly site and members' platform. Every colour pair below
+    was checked against WCAG 2.2 with a script, not estimated. Nothing here is extracted from
+    Kelly's real brand yet, because <code>/brand</code> was empty &mdash; this is the fallback
+    direction, built in two layers so swapping in her palette is a one-file change.
+  </p>
+
+  <!-- ============ PALETTE ============ -->
+  <section>
+    <div class="sec-head">
+      <h2>Palette</h2>
+      <p class="note">Tap any swatch to copy its hex</p>
+    </div>
+    <div class="stage">
+      <h3>Primitives</h3>
+      <p class="cap" style="margin-bottom:18px">
+        Raw scales. Components never reference these directly.
+      </p>
+
+      <div class="ramp">
+        <p class="ramp-label">Cream &mdash; page and sunk surfaces</p>
+        <div class="chips">
+          <button class="chip" style="background:#FDFAF6;color:#1F1A1F"><b>cream 50</b><span>#FDFAF6</span></button>
+          <button class="chip" style="background:#FAF4EC;color:#1F1A1F"><b>cream 100</b><span>#FAF4EC</span></button>
+          <button class="chip" style="background:#F4E9DC;color:#1F1A1F"><b>cream 200</b><span>#F4E9DC</span></button>
+          <button class="chip" style="background:#EADBC8;color:#1F1A1F"><b>cream 300</b><span>#EADBC8</span></button>
+        </div>
+      </div>
+
+      <div class="ramp">
+        <p class="ramp-label">Sand &mdash; borders and warm detail</p>
+        <div class="chips">
+          <button class="chip" style="background:#DCC7AE;color:#1F1A1F"><b>sand 300</b><span>#DCC7AE</span></button>
+          <button class="chip" style="background:#C9AE90;color:#1F1A1F"><b>sand 400</b><span>#C9AE90</span></button>
+          <button class="chip" style="background:#B0916F;color:#1F1A1F"><b>sand 500</b><span>#B0916F</span></button>
+        </div>
+      </div>
+
+      <div class="ramp">
+        <p class="ramp-label">Plum &mdash; brand and primary actions</p>
+        <div class="chips">
+          <button class="chip" style="background:#8A5B76;color:#fff"><b>plum 400</b><span>#8A5B76</span></button>
+          <button class="chip" style="background:#6E4360;color:#fff"><b>plum 500</b><span>#6E4360</span></button>
+          <button class="chip" style="background:#573351;color:#fff"><b>plum 600</b><span>#573351</span></button>
+          <button class="chip" style="background:#3F2440;color:#fff"><b>plum 700</b><span>#3F2440</span></button>
+          <button class="chip" style="background:#241626;color:#fff"><b>plum 900</b><span>#241626</span></button>
+        </div>
+      </div>
+
+      <div class="ramp">
+        <p class="ramp-label">Blush &mdash; accent, reserved for booking CTAs</p>
+        <div class="chips">
+          <button class="chip" style="background:#F7DAD4;color:#1F1A1F"><b>blush 200</b><span>#F7DAD4</span></button>
+          <button class="chip" style="background:#EFBDB4;color:#1F1A1F"><b>blush 300</b><span>#EFBDB4</span></button>
+          <button class="chip" style="background:#E09A8E;color:#1F1A1F"><b>blush 400</b><span>#E09A8E</span></button>
+          <button class="chip" style="background:#B4584A;color:#fff"><b>blush 600</b><span>#B4584A</span></button>
+        </div>
+      </div>
+
+      <div class="ramp">
+        <p class="ramp-label">Sage &mdash; calm and informational</p>
+        <div class="chips">
+          <button class="chip" style="background:#DCE3DA;color:#1F1A1F"><b>sage 200</b><span>#DCE3DA</span></button>
+          <button class="chip" style="background:#9BAE9C;color:#1F1A1F"><b>sage 400</b><span>#9BAE9C</span></button>
+          <button class="chip" style="background:#5E7360;color:#fff"><b>sage 600</b><span>#5E7360</span></button>
+          <button class="chip" style="background:#46573F;color:#fff"><b>sage 700</b><span>#46573F</span></button>
+        </div>
+      </div>
+
+      <div class="ramp">
+        <p class="ramp-label">Ink &mdash; text</p>
+        <div class="chips">
+          <button class="chip" style="background:#1F1A1F;color:#FAF4EC"><b>ink 900</b><span>#1F1A1F</span></button>
+          <button class="chip" style="background:#3D353D;color:#FAF4EC"><b>ink 700</b><span>#3D353D</span></button>
+          <button class="chip" style="background:#655C64;color:#FAF4EC"><b>ink 500</b><span>#655C64</span></button>
+          <button class="chip" style="background:#8B828A;color:#1F1A1F"><b>ink 400</b><span>#8B828A</span></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage" style="margin-top:16px">
+      <h3>Semantic roles</h3>
+      <p class="cap" style="margin-bottom:18px">
+        What components actually consume. Re-skinning changes primitives; these names stay put.
+      </p>
+      <div class="roles">
+        <div class="role"><i style="background:#FAF4EC"></i><div><b>--bg-page</b><span class="mono">cream 100</span></div><em>every page ground</em></div>
+        <div class="role"><i style="background:#FFFFFF"></i><div><b>--bg-surface</b><span class="mono">white</span></div><em>cards, sheets</em></div>
+        <div class="role"><i style="background:#1F1A1F"></i><div><b>--text-primary</b><span class="mono">ink 900</span></div><em>body copy</em></div>
+        <div class="role"><i style="background:#3F2440"></i><div><b>--text-heading</b><span class="mono">plum 700</span></div><em>display headings</em></div>
+        <div class="role"><i style="background:#573351"></i><div><b>--action-primary-bg</b><span class="mono">plum 600</span></div><em>primary buttons, links</em></div>
+        <div class="role"><i style="background:#B4584A"></i><div><b>--action-accent-bg</b><span class="mono">blush 600</span></div><em>Book &mdash; one per screen</em></div>
+        <div class="role"><i style="background:#DCE3DA"></i><div><b>--bg-calm-soft</b><span class="mono">sage 200</span></div><em>info surfaces</em></div>
+        <div class="role"><i style="background:#8B828A"></i><div><b>--text-disabled</b><span class="mono">ink 400</span></div><em>disabled controls only</em></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CONTRAST ============ -->
+  <section>
+    <div class="sec-head">
+      <h2>Contrast, verified</h2>
+      <p class="note">design/contrast-check.mjs</p>
+    </div>
+    <div class="stage">
+      <div class="tbl-scroll">
+        <table>
+          <caption>Measured with the WCAG 2.2 relative-luminance formula. AA body text needs 4.5:1; AAA needs 7:1.</caption>
+          <thead><tr><th>Pair</th><th>Ratio</th><th>AA text</th><th>Used for</th></tr></thead>
+          <tbody>
+            <tr><td>ink 900 on cream 100</td><td class="num">15.68</td><td><span class="pass">pass</span></td><td>body copy</td></tr>
+            <tr><td>plum 700 on cream 100</td><td class="num">12.50</td><td><span class="pass">pass</span></td><td>display headings</td></tr>
+            <tr><td>ink 700 on cream 100</td><td class="num">10.83</td><td><span class="pass">pass</span></td><td>secondary text</td></tr>
+            <tr><td>white on plum 600</td><td class="num">10.51</td><td><span class="pass">pass</span></td><td>primary button</td></tr>
+            <tr><td>plum 600 on cream 100</td><td class="num">9.62</td><td><span class="pass">pass</span></td><td>links, focus ring</td></tr>
+            <tr><td>white on plum 500</td><td class="num">7.97</td><td><span class="pass">pass</span></td><td>primary hover</td></tr>
+            <tr><td>white on error 600</td><td class="num">7.14</td><td><span class="pass">pass</span></td><td>destructive button</td></tr>
+            <tr><td>sage 700 on cream 100</td><td class="num">7.13</td><td><span class="pass">pass</span></td><td>sage text</td></tr>
+            <tr><td>white on success 600</td><td class="num">6.29</td><td><span class="pass">pass</span></td><td>success badge</td></tr>
+            <tr><td>info 600 on info 100</td><td class="num">5.94</td><td><span class="pass">pass</span></td><td>waitlist badge</td></tr>
+            <tr><td>ink 500 on cream 100</td><td class="num">5.88</td><td><span class="pass">pass</span></td><td>muted text</td></tr>
+            <tr><td>error 600 on error 100</td><td class="num">5.58</td><td><span class="pass">pass</span></td><td>full badge</td></tr>
+            <tr><td>success 600 on success 100</td><td class="num">5.32</td><td><span class="pass">pass</span></td><td>spaces-left badge</td></tr>
+            <tr><td>white on sage 600</td><td class="num">5.13</td><td><span class="pass">pass</span></td><td>sage button</td></tr>
+            <tr><td>warn 600 on warn 100</td><td class="num">5.04</td><td><span class="pass">pass</span></td><td>nearly-full badge</td></tr>
+            <tr><td>white on blush 600</td><td class="num">4.73</td><td><span class="pass">pass</span></td><td>booking CTA</td></tr>
+            <tr><td>ink 400 on cream 100</td><td class="num">3.40</td><td><span class="fail">fail</span></td><td>disabled controls only &mdash; never prose</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="cap" style="margin-top:14px">
+        One pair fails on purpose. <code>--text-disabled</code> is scoped to disabled controls,
+        which WCAG exempts, and it is the only token barred from prose. Everything a member
+        reads clears 4.5:1 and most clears 7:1.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ TYPE ============ -->
+  <section>
+    <div class="sec-head">
+      <h2>Typography</h2>
+      <p class="note">Fraunces + Inter</p>
+    </div>
+    <div class="stage">
+      <div class="spec">
+        <p class="meta">Display 4xl &middot; Fraunces 500 &middot; hero</p>
+        <div class="d1">All levels, all bodies</div>
+      </div>
+      <div class="spec">
+        <p class="meta">Display 2xl &middot; section heading</p>
+        <div class="d2">Your first class is on us</div>
+      </div>
+      <div class="spec">
+        <p class="meta">Display xl &middot; card title</p>
+        <div class="d3">Barre Fusion</div>
+      </div>
+      <div class="spec">
+        <p class="meta">Body lg &middot; Inter 400 &middot; intro copy</p>
+        <p class="b1">
+          Barre blends ballet-inspired movement with Pilates and strength work. Small
+          movements, high repetitions, and a lot of shaking &mdash; which is the point.
+          No dance experience needed, and nobody is watching you.
+        </p>
+      </div>
+      <div class="spec">
+        <p class="meta">Body sm &middot; supporting and policy copy</p>
+        <p class="b2">
+          Cancel more than TODO hours before class and your credit goes straight back to
+          your balance, keeping its original expiry date.
+        </p>
+      </div>
+      <div class="spec">
+        <p class="meta">Caps label &middot; 0.08em tracking</p>
+        <div class="caps">Next classes</div>
+      </div>
+      <div class="spec">
+        <p class="meta">Tabular figures &middot; why Inter, specifically</p>
+        <div class="figs">
+          09:30&nbsp;&nbsp;&middot;&nbsp;&nbsp;45 mins&nbsp;&nbsp;&middot;&nbsp;&nbsp;2 spaces left<br>
+          18:15&nbsp;&nbsp;&middot;&nbsp;&nbsp;45 mins&nbsp;&nbsp;&middot;&nbsp;&nbsp;11 spaces left<br>
+          19:00&nbsp;&nbsp;&middot;&nbsp;&nbsp;60 mins&nbsp;&nbsp;&middot;&nbsp;&nbsp;&nbsp;7 spaces left
+        </div>
+        <p class="cap">
+          Digits occupy equal width, so times and counters line up down a timetable column
+          instead of jittering. This is the main reason Inter carries the body text.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ COMPONENTS ============ -->
+  <section>
+    <div class="sec-head">
+      <h2>Components</h2>
+      <p class="note">Minimum 44px targets; booking CTA 48px</p>
+    </div>
+
+    <div class="stage">
+      <h3>Buttons</h3>
+      <p class="cap" style="margin-bottom:16px">
+        Plum carries primary actions sitewide. Blush is held back for the one action
+        that books a class, so it never competes with navigation.
+      </p>
+      <div class="btns">
+        <button class="btn btn-accent">Book &middot; 1 credit</button>
+        <button class="btn btn-primary">Buy a 5-class pack</button>
+        <button class="btn btn-secondary">Join waitlist</button>
+        <button class="btn btn-ghost">View timetable</button>
+        <button class="btn btn-danger">Cancel booking</button>
+        <button class="btn" disabled>Class full</button>
+      </div>
+    </div>
+
+    <div class="stage" style="margin-top:16px">
+      <h3>Session status</h3>
+      <p class="cap" style="margin-bottom:16px">
+        Status is never colour alone &mdash; each badge carries its own text, because the
+        timetable is the most colour-coded screen in the product.
+      </p>
+      <div class="btns">
+        <span class="badge b-open">11 spaces</span>
+        <span class="badge b-near">2 spaces left</span>
+        <span class="badge b-full">Full</span>
+        <span class="badge b-wait">Waitlist &middot; you're 3rd</span>
+        <span class="badge b-canc">Cancelled</span>
+      </div>
+    </div>
+
+    <div class="stage" style="margin-top:16px">
+      <h3>Timetable, at 390px</h3>
+      <p class="cap" style="margin-bottom:18px">
+        A list on mobile, becoming a week grid only at <code>md</code>. A squeezed
+        seven-column grid on a phone is unusable, and this is the most-visited page on the
+        site. All content below is placeholder &mdash; real class names, times and venues
+        are still TODO.
+      </p>
+      <div class="phone">
+        <div class="tt">
+          <p class="tt-day">Monday 6 October</p>
+
+          <article class="card">
+            <div class="card-top">
+              <div class="card-time">09:30</div>
+              <div class="card-body">
+                <div class="card-title">TODO class type</div>
+                <p class="card-meta">45 mins &middot; TODO venue &middot; Kelly</p>
+              </div>
+            </div>
+            <div class="card-rail">
+              <span class="badge b-near">2 spaces left</span>
+              <button class="btn btn-accent">Book</button>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="card-top">
+              <div class="card-time">18:15</div>
+              <div class="card-body">
+                <div class="card-title">TODO class type</div>
+                <p class="card-meta">45 mins &middot; TODO venue &middot; Kelly</p>
+              </div>
+            </div>
+            <div class="card-rail">
+              <span class="badge b-full">Full</span>
+              <button class="btn btn-secondary">Join waitlist</button>
+            </div>
+          </article>
+
+          <p class="tt-day">Thursday 9 October</p>
+
+          <article class="card is-cancelled">
+            <div class="card-top">
+              <div class="card-time">19:00</div>
+              <div class="card-body">
+                <div class="card-title">TODO class type</div>
+                <p class="card-meta">Venue unavailable &middot; credits returned automatically</p>
+              </div>
+            </div>
+            <div class="card-rail">
+              <span class="badge b-canc">Cancelled</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCALES ============ -->
+  <section>
+    <div class="sec-head">
+      <h2>Space, radii, elevation</h2>
+      <p class="note">4px base unit</p>
+    </div>
+    <div class="cols two">
+      <div class="stage">
+        <h3>Spacing</h3>
+        <p class="cap" style="margin-bottom:16px">Layout uses flex and grid <code>gap</code>, never per-element margins.</p>
+        <div class="scale">
+          <div class="srow"><span class="mono">1 &middot; 4px</span><div class="sbar" style="width:4px"></div></div>
+          <div class="srow"><span class="mono">2 &middot; 8px</span><div class="sbar" style="width:8px"></div></div>
+          <div class="srow"><span class="mono">3 &middot; 12px</span><div class="sbar" style="width:12px"></div></div>
+          <div class="srow"><span class="mono">4 &middot; 16px</span><div class="sbar" style="width:16px"></div></div>
+          <div class="srow"><span class="mono">6 &middot; 24px</span><div class="sbar" style="width:24px"></div></div>
+          <div class="srow"><span class="mono">8 &middot; 32px</span><div class="sbar" style="width:32px"></div></div>
+          <div class="srow"><span class="mono">12 &middot; 48px</span><div class="sbar" style="width:48px"></div></div>
+          <div class="srow"><span class="mono">16 &middot; 64px</span><div class="sbar" style="width:64px"></div></div>
+          <div class="srow"><span class="mono">24 &middot; 96px</span><div class="sbar" style="width:96px"></div></div>
+        </div>
+      </div>
+      <div class="stage">
+        <h3>Radii</h3>
+        <p class="cap" style="margin-bottom:16px">Rounded, not bubbly. Pill is for badges and filter chips only.</p>
+        <div class="radii">
+          <figure><div style="border-radius:4px"></div><figcaption>sm 4</figcaption></figure>
+          <figure><div style="border-radius:8px"></div><figcaption>md 8</figcaption></figure>
+          <figure><div style="border-radius:12px"></div><figcaption>lg 12</figcaption></figure>
+          <figure><div style="border-radius:20px"></div><figcaption>xl 20</figcaption></figure>
+          <figure><div style="border-radius:999px"></div><figcaption>pill</figcaption></figure>
+        </div>
+        <h3 style="margin-top:28px">Elevation</h3>
+        <p class="cap" style="margin-bottom:16px">Shadows are plum-tinted. Neutral grey shadows look dirty on cream.</p>
+        <div class="shadows">
+          <figure><div style="box-shadow:0 1px 3px rgb(63 36 64 / .08), 0 1px 2px rgb(63 36 64 / .04)"></div><figcaption>sm</figcaption></figure>
+          <figure><div style="box-shadow:0 4px 12px rgb(63 36 64 / .08), 0 2px 4px rgb(63 36 64 / .04)"></div><figcaption>md</figcaption></figure>
+          <figure><div style="box-shadow:0 12px 32px rgb(63 36 64 / .10), 0 4px 8px rgb(63 36 64 / .04)"></div><figcaption>lg</figcaption></figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ COMMITMENTS ============ -->
+  <section>
+    <div class="sec-head">
+      <h2>What the tokens guarantee</h2>
+    </div>
+    <div class="cols two">
+      <div>
+        <h3 style="margin-bottom:14px">Accessibility</h3>
+        <ul class="ticks">
+          <li>Focus is <b>restyled, never removed</b> &mdash; 2px plum outline, 2px offset, set globally in <code>tokens.css</code>.</li>
+          <li><b><code>prefers-reduced-motion</code></b> collapses every duration token to 1ms, so no component has to remember.</li>
+          <li>Tap targets <b>44px minimum</b>, booking CTAs 48px.</li>
+          <li>Body text never below <b>16px</b>, which also stops iOS zooming form fields on focus.</li>
+          <li>Status always carries <b>text as well as colour</b>.</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="margin-bottom:14px">Still missing</h3>
+        <ul class="ticks">
+          <li><b>Kelly's logo and photos.</b> Until they arrive, images are flat token-coloured blocks at the right aspect ratio. No stock photography will be added.</li>
+          <li><b>The town.</b> Every local-SEO decision depends on it.</li>
+          <li><b>Class names, times, venues, prices.</b> Shown as <code>TODO</code> above rather than guessed.</li>
+          <li><b>Tone notes</b> &mdash; phrases Kelly uses, colours she dislikes.</li>
+        </ul>
+        <p class="cap" style="margin-top:16px;color:var(--muted)">
+          Full list in <code>docs/03-OPEN-QUESTIONS.md</code>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Barre By Kelly &mdash; M0 design proposal. Becomes the <code>/styleguide</code> route at M1.
+    Tokens live in <code>design/tokens.css</code>; contrast figures are reproducible with
+    <code>node design/contrast-check.mjs</code>.
+  </footer>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite">Copied</div>
+
+<script>
+(function () {
+  var toast = document.getElementById('toast');
+  var timer;
+  function flash(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(timer);
+    timer = setTimeout(function () { toast.classList.remove('show'); }, 1600);
+  }
+  document.querySelectorAll('.chip').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      var hex = chip.querySelector('span').textContent.trim();
+      try {
+        navigator.clipboard.writeText(hex).then(
+          function () { flash(hex + ' copied'); },
+          function () { flash(hex); }
+        );
+      } catch (e) {
+        flash(hex);
+      }
+    });
+  });
+})();
+</script>
