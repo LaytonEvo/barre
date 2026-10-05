@@ -41,6 +41,26 @@ of its record, being what the register was measured against.
 Still worth Kelly confirming what each hall actually holds, since 25 in a village hall doing
 barre (which needs floor space per person) may be optimistic.
 
+### A2a (new): the bio and the timetable disagree
+
+Kelly's bio says the class is "based at St Leonards & St Ives Village Hall" and mentions "evening
+classes at 6:30pm and 7:30pm". Both are true of Mondays, but the timetable also has **Thursday
+19:15 at St Ives Primary School**, which the bio does not mention.
+
+Her copy is stored exactly as she wrote it rather than quietly edited — it is her voice, and she
+may well have written it before the Thursday class existed. The timetable, the locations pages and
+the footer all carry both venues, so nobody is actually misled. But a visitor who reads only
+`/about` would not know about Thursday, so it is worth her adding a line.
+
+### A8a (new): no venue photographs
+
+Every photo in the set is Kelly outdoors or in a studio with a proper ballet barre. **Nothing shows
+either village hall.** The venue pages keep their honest empty state rather than implying the
+studio is the hall — someone deciding whether a village hall is the sort of place they want to walk
+into is exactly who that photo would be for.
+
+Two phone photos of each hall, ideally with the barre set up, would do it.
+
 ### New: county
 
 Both venues share a BH24 postcode with Ringwood as the post town, but the civil parish of

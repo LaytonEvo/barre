@@ -1,4 +1,4 @@
-<title>Warm Studio Styleguide</title>
+<title>Barre By Kelly Styleguide</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap">
 <style>
@@ -12,16 +12,17 @@
   --muted:  #605A66;
   --faint:  #8C858F;
   --rule:   #E4E0E6;
-  --mark:   #573351;
+  --mark:   #21632F;
 
   /* --- brand primitives being documented (never theme-flipped) --- */
-  --cream-50:#FDFAF6; --cream-100:#FAF4EC; --cream-200:#F4E9DC; --cream-300:#EADBC8;
-  --sand-300:#DCC7AE; --sand-400:#C9AE90; --sand-500:#B0916F;
-  --plum-400:#8A5B76; --plum-500:#6E4360; --plum-600:#573351; --plum-700:#3F2440; --plum-900:#241626;
-  --blush-200:#F7DAD4; --blush-300:#EFBDB4; --blush-400:#E09A8E; --blush-600:#B4584A;
-  --sage-200:#DCE3DA; --sage-400:#9BAE9C; --sage-600:#5E7360; --sage-700:#46573F;
-  --bink-900:#1F1A1F; --bink-700:#3D353D; --bink-500:#655C64; --bink-400:#8B828A;
-  --ok-600:#2F6B4F; --ok-100:#DFF0E6;
+  --cream-50:#FEFCF9; --cream-100:#FAF6F0; --cream-200:#F3ECE1; --cream-300:#E6D9C8;
+  --sand-400:#C6AD8E; --sand-500:#A98D68;
+  --green-50:#EDF8EF; --green-100:#D9F2DE; --green-200:#BBE7C4; --green-300:#97D8A5;
+  --green-400:#69BF7B; --green-500:#419F54; --green-600:#2F7F3F; --green-700:#21632F;
+  --green-800:#174A22; --green-900:#113217;
+  --clay-200:#F7DED2; --clay-300:#E8B79E; --clay-600:#AE5430; --clay-700:#8F4427;
+  --bink-900:#1A1F1B; --bink-700:#3A423B; --bink-500:#626A63; --bink-400:#878E88;
+  --ok-600:#21632F; --ok-100:#D9F2DE;
   --wa-600:#8A5A14; --wa-100:#FBEBD2;
   --er-600:#A32C22; --er-100:#FADDDA;
   --in-600:#2B5B7A; --in-100:#DCEAF3;
@@ -31,12 +32,12 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --page: #141217; --panel: #1C1920; --ink: #F2EFF3; --muted: #ADA5B2;
-    --faint: #847C8A; --rule: #312C38; --mark: #C9A4BE; color-scheme: dark;
+    --page: #121613; --panel: #19201B; --ink: #EEF3EF; --muted: #A6B0A8;
+    --faint: #7E8A80; --rule: #2C352E; --mark: #97D8A5; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --page: #141217; --panel: #1C1920; --ink: #F2EFF3; --muted: #ADA5B2;
+  --page: #121613; --panel: #19201B; --ink: #EEF3EF; --muted: #A6B0A8;
   --faint: #847C8A; --rule: #312C38; --mark: #C9A4BE; color-scheme: dark;
 }
 
@@ -86,7 +87,7 @@ section { margin-top: 64px; }
   padding: 24px 20px; margin-top: 4px;
 }
 @media (min-width: 768px) { .stage { padding: 32px; } }
-.stage h3 { color: var(--plum-700); }
+.stage h3 { color: var(--green-800); }
 .stage .cap { color: var(--bink-500); font-size: 0.8125rem; }
 
 /* --- swatches --- */
@@ -99,11 +100,11 @@ section { margin-top: 64px; }
   flex: 1 1 96px; min-width: 96px; border: 0; cursor: pointer; text-align: left;
   border-radius: 10px; padding: 10px 11px; font-family: var(--body);
   display: flex; flex-direction: column; gap: 2px; min-height: 76px;
-  justify-content: flex-end; box-shadow: inset 0 0 0 1px rgb(63 36 64 / 0.10);
+  justify-content: flex-end; box-shadow: inset 0 0 0 1px rgb(23 74 34 / 0.10);
   transition: transform 140ms cubic-bezier(.22,1,.36,1);
 }
 .chip:hover { transform: translateY(-2px); }
-.chip:focus-visible { outline: 2px solid var(--plum-600); outline-offset: 2px; }
+.chip:focus-visible { outline: 2px solid var(--green-700); outline-offset: 2px; }
 .chip b { font-size: 0.75rem; font-weight: 600; }
 .chip span { font-size: 0.6875rem; opacity: 0.8; font-family: ui-monospace, Menlo, monospace; }
 
@@ -111,7 +112,7 @@ section { margin-top: 64px; }
 .roles { display: grid; gap: 1px; background: var(--cream-300); border-radius: 10px; overflow: hidden; }
 .role { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: center;
         background: var(--cream-50); padding: 11px 14px; }
-.role i { width: 34px; height: 34px; border-radius: 8px; box-shadow: inset 0 0 0 1px rgb(63 36 64 / 0.12); }
+.role i { width: 34px; height: 34px; border-radius: 8px; box-shadow: inset 0 0 0 1px rgb(23 74 34 / 0.12); }
 .role div { min-width: 0; }
 .role b { display: block; font-size: 0.8125rem; font-weight: 600; }
 .role .mono { color: var(--bink-500); font-size: 0.75rem; }
@@ -135,9 +136,9 @@ tr:last-child td { border-bottom: 0; }
 .spec:last-child { border-bottom: 0; }
 .spec .meta { font-size: 0.6875rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--bink-500); }
 .spec p, .spec div { color: var(--bink-900); }
-.d1 { font-family: var(--display); font-size: clamp(2.25rem,1.7rem + 2.9vw,3.75rem); line-height: 1.05; color: var(--plum-700); letter-spacing: -0.025em; }
-.d2 { font-family: var(--display); font-size: clamp(1.5rem,1.3rem + 1.1vw,2rem); line-height: 1.15; color: var(--plum-700); }
-.d3 { font-family: var(--display); font-size: 1.25rem; line-height: 1.3; color: var(--plum-700); }
+.d1 { font-family: var(--display); font-size: clamp(2.25rem,1.7rem + 2.9vw,3.75rem); line-height: 1.05; color: var(--green-800); letter-spacing: -0.025em; }
+.d2 { font-family: var(--display); font-size: clamp(1.5rem,1.3rem + 1.1vw,2rem); line-height: 1.15; color: var(--green-800); }
+.d3 { font-family: var(--display); font-size: 1.25rem; line-height: 1.3; color: var(--green-800); }
 .b1 { font-size: 1.0625rem; line-height: 1.6; }
 .b2 { font-size: 0.875rem; line-height: 1.6; color: var(--bink-700); }
 .caps { font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; color: var(--bink-500); }
@@ -152,14 +153,14 @@ tr:last-child td { border-bottom: 0; }
   transition: background-color 160ms, transform 120ms;
 }
 .btn:active { transform: translateY(1px); }
-.btn:focus-visible { outline: 2px solid var(--plum-600); outline-offset: 2px; }
-.btn-primary { background: var(--plum-600); color: #fff; }
-.btn-primary:hover { background: var(--plum-500); }
-.btn-accent { background: var(--blush-600); color: #fff; min-height: 48px; padding: 0 26px; font-weight: 600; }
-.btn-accent:hover { background: #9E4C3F; }
-.btn-secondary { background: transparent; color: var(--plum-600); border-color: var(--plum-600); }
+.btn:focus-visible { outline: 2px solid var(--green-700); outline-offset: 2px; }
+.btn-primary { background: var(--green-700); color: #fff; }
+.btn-primary:hover { background: var(--green-800); }
+.btn-accent { background: var(--clay-600); color: #fff; min-height: 48px; padding: 0 26px; font-weight: 600; }
+.btn-accent:hover { background: #8F4427; }
+.btn-secondary { background: transparent; color: var(--green-700); border-color: var(--green-700); }
 .btn-secondary:hover { background: var(--cream-200); }
-.btn-ghost { background: transparent; color: var(--plum-600); }
+.btn-ghost { background: transparent; color: var(--green-700); }
 .btn-ghost:hover { background: var(--cream-200); }
 .btn-danger { background: var(--er-600); color: #fff; }
 .btn[disabled] { background: var(--cream-300); color: var(--bink-400); border-color: transparent; cursor: not-allowed; }
@@ -180,16 +181,16 @@ tr:last-child td { border-bottom: 0; }
 /* --- timetable session card (the component that matters most) --- */
 .phone { max-width: 390px; }
 .tt { display: grid; gap: 10px; }
-.tt-day { font-family: var(--display); font-size: 1.125rem; color: var(--plum-700); margin-top: 6px; }
+.tt-day { font-family: var(--display); font-size: 1.125rem; color: var(--green-800); margin-top: 6px; }
 .card {
   background: #fff; border: 1px solid var(--cream-300); border-radius: 12px;
   padding: 14px; display: grid; gap: 12px;
-  box-shadow: 0 1px 3px rgb(63 36 64 / 0.06);
+  box-shadow: 0 1px 3px rgb(23 74 34 / 0.06);
 }
 .card-top { display: flex; gap: 12px; align-items: flex-start; }
 .card-time { font-variant-numeric: tabular-nums; font-weight: 600; font-size: 1rem; width: 52px; flex: none; color: var(--bink-900); }
 .card-body { flex: 1 1 auto; min-width: 0; display: grid; gap: 3px; }
-.card-title { font-family: var(--display); font-size: 1.0625rem; font-weight: 600; color: var(--plum-700); }
+.card-title { font-family: var(--display); font-size: 1.0625rem; font-weight: 600; color: var(--green-800); }
 .card-meta { font-size: 0.8125rem; color: var(--bink-500); }
 .card-rail { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
 .card.is-cancelled { background: var(--cream-200); }
@@ -199,10 +200,10 @@ tr:last-child td { border-bottom: 0; }
 .scale { display: grid; gap: 7px; }
 .srow { display: grid; grid-template-columns: 78px 1fr; gap: 12px; align-items: center; font-size: 0.75rem; }
 .srow .mono { color: var(--bink-500); }
-.sbar { height: 15px; border-radius: 3px; background: var(--plum-400); }
+.sbar { height: 15px; border-radius: 3px; background: var(--green-500); }
 .radii { display: flex; flex-wrap: wrap; gap: 12px; }
 .radii figure { margin: 0; display: grid; gap: 6px; justify-items: center; }
-.radii div { width: 72px; height: 56px; background: var(--sand-300); box-shadow: inset 0 0 0 1px rgb(63 36 64 / 0.12); }
+.radii div { width: 72px; height: 56px; background: var(--sand-400); box-shadow: inset 0 0 0 1px rgb(23 74 34 / 0.12); }
 .radii figcaption { font-size: 0.6875rem; color: var(--bink-500); font-family: ui-monospace, Menlo, monospace; }
 .shadows { display: flex; flex-wrap: wrap; gap: 16px; }
 .shadows figure { margin: 0; display: grid; gap: 8px; justify-items: center; }
@@ -224,7 +225,7 @@ ul.ticks li b { color: var(--ink); font-weight: 600; }
 
 .toast {
   position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%) translateY(140%);
-  background: var(--plum-700); color: var(--cream-100); padding: 10px 18px;
+  background: var(--green-800); color: var(--cream-100); padding: 10px 18px;
   border-radius: 999px; font-size: 0.8125rem; font-weight: 500;
   transition: transform 220ms cubic-bezier(.22,1,.36,1); z-index: 90;
   padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
@@ -241,14 +242,15 @@ footer { margin-top: 64px; border-top: 1px solid var(--rule); padding-top: 20px;
 
 <div class="wrap">
 
-  <p class="eyebrow">Barre By Kelly &middot; Direction A</p>
-  <h1>Warm Studio</h1>
-  <p class="flag">M0 proposal &mdash; not yet approved</p>
+  <p class="eyebrow">Barre By Kelly &middot; Derived from the logo</p>
+  <h1>Brand &amp; interface</h1>
+  <p class="flag">Live &mdash; derived from Kelly&rsquo;s logo</p>
   <p class="lede">
-    The design system for the Barre By Kelly site and members' platform. Every colour pair below
-    was checked against WCAG 2.2 with a script, not estimated. Nothing here is extracted from
-    Kelly's real brand yet, because <code>/brand</code> was empty &mdash; this is the fallback
-    direction, built in two layers so swapping in her palette is a one-file change.
+    The design system for the Barre By Kelly site and members&rsquo; platform. The palette is
+    derived from Kelly&rsquo;s logo: the mark is a soft mint at <code>#BBE7C4</code>, hue 132&deg;,
+    kept unmodified as green&nbsp;200. At 1.37:1 against white it can only ever be a surface, so
+    darker steps of the same hue carry headings, links and buttons. Every pair below was measured
+    against WCAG&nbsp;2.2 with a script rather than estimated.
   </p>
 
   <!-- ============ PALETTE ============ -->
@@ -264,62 +266,57 @@ footer { margin-top: 64px; border-top: 1px solid var(--rule); padding-top: 20px;
       </p>
 
       <div class="ramp">
+        <p class="ramp-label">Green &mdash; the brand hue, 132&deg;</p>
+        <div class="chips">
+          <button class="chip" style="background:#EDF8EF;color:#1A1F1B"><b>green 50</b><span>#EDF8EF</span></button>
+          <button class="chip" style="background:#D9F2DE;color:#1A1F1B"><b>green 100</b><span>#D9F2DE</span></button>
+          <button class="chip" style="background:#BBE7C4;color:#1A1F1B"><b>green 200 &starf;</b><span>#BBE7C4</span></button>
+          <button class="chip" style="background:#97D8A5;color:#1A1F1B"><b>green 300</b><span>#97D8A5</span></button>
+          <button class="chip" style="background:#69BF7B;color:#1A1F1B"><b>green 400</b><span>#69BF7B</span></button>
+          <button class="chip" style="background:#419F54;color:#fff"><b>green 500</b><span>#419F54</span></button>
+          <button class="chip" style="background:#2F7F3F;color:#fff"><b>green 600</b><span>#2F7F3F</span></button>
+          <button class="chip" style="background:#21632F;color:#fff"><b>green 700</b><span>#21632F</span></button>
+          <button class="chip" style="background:#174A22;color:#fff"><b>green 800</b><span>#174A22</span></button>
+          <button class="chip" style="background:#113217;color:#fff"><b>green 900</b><span>#113217</span></button>
+        </div>
+        <p class="cap">&starf; green 200 is the logo colour, unmodified.</p>
+      </div>
+
+      <div class="ramp">
         <p class="ramp-label">Cream &mdash; page and sunk surfaces</p>
         <div class="chips">
-          <button class="chip" style="background:#FDFAF6;color:#1F1A1F"><b>cream 50</b><span>#FDFAF6</span></button>
-          <button class="chip" style="background:#FAF4EC;color:#1F1A1F"><b>cream 100</b><span>#FAF4EC</span></button>
-          <button class="chip" style="background:#F4E9DC;color:#1F1A1F"><b>cream 200</b><span>#F4E9DC</span></button>
-          <button class="chip" style="background:#EADBC8;color:#1F1A1F"><b>cream 300</b><span>#EADBC8</span></button>
+          <button class="chip" style="background:#FEFCF9;color:#1A1F1B"><b>cream 50</b><span>#FEFCF9</span></button>
+          <button class="chip" style="background:#FAF6F0;color:#1A1F1B"><b>cream 100</b><span>#FAF6F0</span></button>
+          <button class="chip" style="background:#F3ECE1;color:#1A1F1B"><b>cream 200</b><span>#F3ECE1</span></button>
+          <button class="chip" style="background:#E6D9C8;color:#1A1F1B"><b>cream 300</b><span>#E6D9C8</span></button>
+        </div>
+      </div>
+
+      <div class="ramp">
+        <p class="ramp-label">Clay &mdash; accent, reserved for booking CTAs</p>
+        <div class="chips">
+          <button class="chip" style="background:#F7DED2;color:#1A1F1B"><b>clay 200</b><span>#F7DED2</span></button>
+          <button class="chip" style="background:#E8B79E;color:#1A1F1B"><b>clay 300</b><span>#E8B79E</span></button>
+          <button class="chip" style="background:#AE5430;color:#fff"><b>clay 600</b><span>#AE5430</span></button>
+          <button class="chip" style="background:#8F4427;color:#fff"><b>clay 700</b><span>#8F4427</span></button>
         </div>
       </div>
 
       <div class="ramp">
         <p class="ramp-label">Sand &mdash; borders and warm detail</p>
         <div class="chips">
-          <button class="chip" style="background:#DCC7AE;color:#1F1A1F"><b>sand 300</b><span>#DCC7AE</span></button>
-          <button class="chip" style="background:#C9AE90;color:#1F1A1F"><b>sand 400</b><span>#C9AE90</span></button>
-          <button class="chip" style="background:#B0916F;color:#1F1A1F"><b>sand 500</b><span>#B0916F</span></button>
-        </div>
-      </div>
-
-      <div class="ramp">
-        <p class="ramp-label">Plum &mdash; brand and primary actions</p>
-        <div class="chips">
-          <button class="chip" style="background:#8A5B76;color:#fff"><b>plum 400</b><span>#8A5B76</span></button>
-          <button class="chip" style="background:#6E4360;color:#fff"><b>plum 500</b><span>#6E4360</span></button>
-          <button class="chip" style="background:#573351;color:#fff"><b>plum 600</b><span>#573351</span></button>
-          <button class="chip" style="background:#3F2440;color:#fff"><b>plum 700</b><span>#3F2440</span></button>
-          <button class="chip" style="background:#241626;color:#fff"><b>plum 900</b><span>#241626</span></button>
-        </div>
-      </div>
-
-      <div class="ramp">
-        <p class="ramp-label">Blush &mdash; accent, reserved for booking CTAs</p>
-        <div class="chips">
-          <button class="chip" style="background:#F7DAD4;color:#1F1A1F"><b>blush 200</b><span>#F7DAD4</span></button>
-          <button class="chip" style="background:#EFBDB4;color:#1F1A1F"><b>blush 300</b><span>#EFBDB4</span></button>
-          <button class="chip" style="background:#E09A8E;color:#1F1A1F"><b>blush 400</b><span>#E09A8E</span></button>
-          <button class="chip" style="background:#B4584A;color:#fff"><b>blush 600</b><span>#B4584A</span></button>
-        </div>
-      </div>
-
-      <div class="ramp">
-        <p class="ramp-label">Sage &mdash; calm and informational</p>
-        <div class="chips">
-          <button class="chip" style="background:#DCE3DA;color:#1F1A1F"><b>sage 200</b><span>#DCE3DA</span></button>
-          <button class="chip" style="background:#9BAE9C;color:#1F1A1F"><b>sage 400</b><span>#9BAE9C</span></button>
-          <button class="chip" style="background:#5E7360;color:#fff"><b>sage 600</b><span>#5E7360</span></button>
-          <button class="chip" style="background:#46573F;color:#fff"><b>sage 700</b><span>#46573F</span></button>
+          <button class="chip" style="background:#C6AD8E;color:#1A1F1B"><b>sand 400</b><span>#C6AD8E</span></button>
+          <button class="chip" style="background:#A98D68;color:#1A1F1B"><b>sand 500</b><span>#A98D68</span></button>
         </div>
       </div>
 
       <div class="ramp">
         <p class="ramp-label">Ink &mdash; text</p>
         <div class="chips">
-          <button class="chip" style="background:#1F1A1F;color:#FAF4EC"><b>ink 900</b><span>#1F1A1F</span></button>
-          <button class="chip" style="background:#3D353D;color:#FAF4EC"><b>ink 700</b><span>#3D353D</span></button>
-          <button class="chip" style="background:#655C64;color:#FAF4EC"><b>ink 500</b><span>#655C64</span></button>
-          <button class="chip" style="background:#8B828A;color:#1F1A1F"><b>ink 400</b><span>#8B828A</span></button>
+          <button class="chip" style="background:#1A1F1B;color:#FAF6F0"><b>ink 900</b><span>#1A1F1B</span></button>
+          <button class="chip" style="background:#3A423B;color:#FAF6F0"><b>ink 700</b><span>#3A423B</span></button>
+          <button class="chip" style="background:#626A63;color:#FAF6F0"><b>ink 500</b><span>#626A63</span></button>
+          <button class="chip" style="background:#878E88;color:#1A1F1B"><b>ink 400</b><span>#878E88</span></button>
         </div>
       </div>
     </div>
@@ -330,15 +327,15 @@ footer { margin-top: 64px; border-top: 1px solid var(--rule); padding-top: 20px;
         What components actually consume. Re-skinning changes primitives; these names stay put.
       </p>
       <div class="roles">
-        <div class="role"><i style="background:#FAF4EC"></i><div><b>--bg-page</b><span class="mono">cream 100</span></div><em>every page ground</em></div>
+        <div class="role"><i style="background:#FAF6F0"></i><div><b>--bg-page</b><span class="mono">cream 100</span></div><em>every page ground</em></div>
         <div class="role"><i style="background:#FFFFFF"></i><div><b>--bg-surface</b><span class="mono">white</span></div><em>cards, sheets</em></div>
-        <div class="role"><i style="background:#1F1A1F"></i><div><b>--text-primary</b><span class="mono">ink 900</span></div><em>body copy</em></div>
-        <div class="role"><i style="background:#3F2440"></i><div><b>--text-heading</b><span class="mono">plum 700</span></div><em>display headings</em></div>
-        <div class="role"><i style="background:#573351"></i><div><b>--action-primary-bg</b><span class="mono">plum 600</span></div><em>primary buttons, links</em></div>
-        <div class="role"><i style="background:#B4584A"></i><div><b>--action-accent-bg</b><span class="mono">blush 600</span></div><em>Book &mdash; one per screen</em></div>
-        <div class="role"><i style="background:#DCE3DA"></i><div><b>--bg-calm-soft</b><span class="mono">sage 200</span></div><em>info surfaces</em></div>
-        <div class="role"><i style="background:#8B828A"></i><div><b>--text-disabled</b><span class="mono">ink 400</span></div><em>disabled controls only</em></div>
-      </div>
+        <div class="role"><i style="background:#BBE7C4"></i><div><b>--bg-accent-soft</b><span class="mono">green 200 &mdash; the logo</span></div><em>brand surfaces</em></div>
+        <div class="role"><i style="background:#1A1F1B"></i><div><b>--text-primary</b><span class="mono">ink 900</span></div><em>body copy</em></div>
+        <div class="role"><i style="background:#174A22"></i><div><b>--text-heading</b><span class="mono">green 800</span></div><em>display headings</em></div>
+        <div class="role"><i style="background:#21632F"></i><div><b>--action-primary-bg</b><span class="mono">green 700</span></div><em>primary buttons, links</em></div>
+        <div class="role"><i style="background:#AE5430"></i><div><b>--action-accent-bg</b><span class="mono">clay 600</span></div><em>Book &mdash; one per screen</em></div>
+        <div class="role"><i style="background:#878E88"></i><div><b>--text-disabled</b><span class="mono">ink 400</span></div><em>disabled controls only</em></div>
+            </div>
     </div>
   </section>
 
@@ -354,23 +351,26 @@ footer { margin-top: 64px; border-top: 1px solid var(--rule); padding-top: 20px;
           <caption>Measured with the WCAG 2.2 relative-luminance formula. AA body text needs 4.5:1; AAA needs 7:1.</caption>
           <thead><tr><th>Pair</th><th>Ratio</th><th>AA text</th><th>Used for</th></tr></thead>
           <tbody>
-            <tr><td>ink 900 on cream 100</td><td class="num">15.68</td><td><span class="pass">pass</span></td><td>body copy</td></tr>
-            <tr><td>plum 700 on cream 100</td><td class="num">12.50</td><td><span class="pass">pass</span></td><td>display headings</td></tr>
-            <tr><td>ink 700 on cream 100</td><td class="num">10.83</td><td><span class="pass">pass</span></td><td>secondary text</td></tr>
-            <tr><td>white on plum 600</td><td class="num">10.51</td><td><span class="pass">pass</span></td><td>primary button</td></tr>
-            <tr><td>plum 600 on cream 100</td><td class="num">9.62</td><td><span class="pass">pass</span></td><td>links, focus ring</td></tr>
-            <tr><td>white on plum 500</td><td class="num">7.97</td><td><span class="pass">pass</span></td><td>primary hover</td></tr>
-            <tr><td>white on error 600</td><td class="num">7.14</td><td><span class="pass">pass</span></td><td>destructive button</td></tr>
-            <tr><td>sage 700 on cream 100</td><td class="num">7.13</td><td><span class="pass">pass</span></td><td>sage text</td></tr>
-            <tr><td>white on success 600</td><td class="num">6.29</td><td><span class="pass">pass</span></td><td>success badge</td></tr>
-            <tr><td>info 600 on info 100</td><td class="num">5.94</td><td><span class="pass">pass</span></td><td>waitlist badge</td></tr>
-            <tr><td>ink 500 on cream 100</td><td class="num">5.88</td><td><span class="pass">pass</span></td><td>muted text</td></tr>
-            <tr><td>error 600 on error 100</td><td class="num">5.58</td><td><span class="pass">pass</span></td><td>full badge</td></tr>
-            <tr><td>success 600 on success 100</td><td class="num">5.32</td><td><span class="pass">pass</span></td><td>spaces-left badge</td></tr>
-            <tr><td>white on sage 600</td><td class="num">5.13</td><td><span class="pass">pass</span></td><td>sage button</td></tr>
-            <tr><td>warn 600 on warn 100</td><td class="num">5.04</td><td><span class="pass">pass</span></td><td>nearly-full badge</td></tr>
-            <tr><td>white on blush 600</td><td class="num">4.73</td><td><span class="pass">pass</span></td><td>booking CTA</td></tr>
-            <tr><td>ink 400 on cream 100</td><td class="num">3.40</td><td><span class="fail">fail</span></td><td>disabled controls only &mdash; never prose</td></tr>
+            <tr><td>ink.900 on cream.100</td><td class="num">15.53</td><td><span class="pass">pass</span></td><td>body text</td></tr>
+            <tr><td>ink.700 on cream.100</td><td class="num">9.64</td><td><span class="pass">pass</span></td><td>secondary text</td></tr>
+            <tr><td>ink.500 on cream.100</td><td class="num">5.19</td><td><span class="pass">pass</span></td><td>muted text</td></tr>
+            <tr><td>ink.400 on cream.100</td><td class="num">3.12</td><td><span class="fail">fail</span></td><td>disabled controls</td></tr>
+            <tr><td>green.800 on cream.100</td><td class="num">9.57</td><td><span class="pass">pass</span></td><td>display headings</td></tr>
+            <tr><td>green.700 on cream.100</td><td class="num">6.75</td><td><span class="pass">pass</span></td><td>links, focus ring</td></tr>
+            <tr><td>white on green.700</td><td class="num">7.27</td><td><span class="pass">pass</span></td><td>primary button</td></tr>
+            <tr><td>white on green.800</td><td class="num">10.30</td><td><span class="pass">pass</span></td><td>primary button hover</td></tr>
+            <tr><td>cream.100 on green.900</td><td class="num">13.07</td><td><span class="pass">pass</span></td><td>inverse surface</td></tr>
+            <tr><td>green.800 on green.200</td><td class="num">7.52</td><td><span class="pass">pass</span></td><td>heading on brand surface</td></tr>
+            <tr><td>ink.900 on green.100</td><td class="num">14.10</td><td><span class="pass">pass</span></td><td>calm surface text</td></tr>
+            <tr><td>white on clay.600</td><td class="num">5.11</td><td><span class="pass">pass</span></td><td>booking CTA</td></tr>
+            <tr><td>white on clay.700</td><td class="num">6.94</td><td><span class="pass">pass</span></td><td>booking CTA hover</td></tr>
+            <tr><td>ink.900 on clay.200</td><td class="num">13.01</td><td><span class="pass">pass</span></td><td>accent surface text</td></tr>
+            <tr><td>green.700 on green.100</td><td class="num">6.13</td><td><span class="pass">pass</span></td><td>spaces-left badge</td></tr>
+            <tr><td>warn.600 on warn.100</td><td class="num">5.04</td><td><span class="pass">pass</span></td><td>nearly-full badge</td></tr>
+            <tr><td>error.600 on error.100</td><td class="num">5.58</td><td><span class="pass">pass</span></td><td>full badge</td></tr>
+            <tr><td>white on error.600</td><td class="num">7.14</td><td><span class="pass">pass</span></td><td>destructive button</td></tr>
+            <tr><td>info.600 on info.100</td><td class="num">5.94</td><td><span class="pass">pass</span></td><td>waitlist badge</td></tr>
+            <tr><td>ink.700 on cream.300</td><td class="num">7.48</td><td><span class="pass">pass</span></td><td>cancelled badge</td></tr>
           </tbody>
         </table>
       </div>
@@ -565,11 +565,11 @@ footer { margin-top: 64px; border-top: 1px solid var(--rule); padding-top: 20px;
           <figure><div style="border-radius:999px"></div><figcaption>pill</figcaption></figure>
         </div>
         <h3 style="margin-top:28px">Elevation</h3>
-        <p class="cap" style="margin-bottom:16px">Shadows are plum-tinted. Neutral grey shadows look dirty on cream.</p>
+        <p class="cap" style="margin-bottom:16px">Shadows are tinted with the brand green. Neutral grey shadows look dirty on cream.</p>
         <div class="shadows">
-          <figure><div style="box-shadow:0 1px 3px rgb(63 36 64 / .08), 0 1px 2px rgb(63 36 64 / .04)"></div><figcaption>sm</figcaption></figure>
-          <figure><div style="box-shadow:0 4px 12px rgb(63 36 64 / .08), 0 2px 4px rgb(63 36 64 / .04)"></div><figcaption>md</figcaption></figure>
-          <figure><div style="box-shadow:0 12px 32px rgb(63 36 64 / .10), 0 4px 8px rgb(63 36 64 / .04)"></div><figcaption>lg</figcaption></figure>
+          <figure><div style="box-shadow:0 1px 3px rgb(23 74 34 / .08), 0 1px 2px rgb(23 74 34 / .04)"></div><figcaption>sm</figcaption></figure>
+          <figure><div style="box-shadow:0 4px 12px rgb(23 74 34 / .08), 0 2px 4px rgb(23 74 34 / .04)"></div><figcaption>md</figcaption></figure>
+          <figure><div style="box-shadow:0 12px 32px rgb(23 74 34 / .10), 0 4px 8px rgb(23 74 34 / .04)"></div><figcaption>lg</figcaption></figure>
         </div>
       </div>
     </div>
@@ -584,7 +584,7 @@ footer { margin-top: 64px; border-top: 1px solid var(--rule); padding-top: 20px;
       <div>
         <h3 style="margin-bottom:14px">Accessibility</h3>
         <ul class="ticks">
-          <li>Focus is <b>restyled, never removed</b> &mdash; 2px plum outline, 2px offset, set globally in <code>tokens.css</code>.</li>
+          <li>Focus is <b>restyled, never removed</b> &mdash; 2px green outline, 2px offset, set globally in <code>tokens.css</code>.</li>
           <li><b><code>prefers-reduced-motion</code></b> collapses every duration token to 1ms, so no component has to remember.</li>
           <li>Tap targets <b>44px minimum</b>, booking CTAs 48px.</li>
           <li>Body text never below <b>16px</b>, which also stops iOS zooming form fields on focus.</li>
@@ -594,10 +594,10 @@ footer { margin-top: 64px; border-top: 1px solid var(--rule); padding-top: 20px;
       <div>
         <h3 style="margin-bottom:14px">Still missing</h3>
         <ul class="ticks">
-          <li><b>Kelly's logo and photos.</b> Until they arrive, images are flat token-coloured blocks at the right aspect ratio. No stock photography will be added.</li>
-          <li><b>The town.</b> Every local-SEO decision depends on it.</li>
-          <li><b>Class names, times, venues, prices.</b> Shown as <code>TODO</code> above rather than guessed.</li>
-          <li><b>Tone notes</b> &mdash; phrases Kelly uses, colours she dislikes.</li>
+          <li><b>Venue photographs.</b> The shoot is all Kelly outdoors or in a studio with a proper ballet barre &mdash; nothing shows either village hall, so those pages keep an honest empty state.</li>
+          <li><b>Kelly&rsquo;s qualifications.</b> The <code>Person</code> structured data omits credentials entirely while this is empty, and a test pins that.</li>
+          <li><b>Contact email, phone and Instagram.</b> The footer and contact page hide these rows rather than printing a placeholder.</li>
+          <li><b>Real Google reviews.</b> The homepage shows an empty state; no testimonial will be invented.</li>
         </ul>
         <p class="cap" style="margin-top:16px;color:var(--muted)">
           Full list in <code>docs/03-OPEN-QUESTIONS.md</code>.

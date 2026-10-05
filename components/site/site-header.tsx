@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import Image from 'next/image';
+import { LOGO } from '@/lib/images';
 import { getSessionUser, isStaff } from '@/lib/supabase/auth';
 import { Button } from '@/components/ui/button';
 
@@ -16,8 +18,23 @@ export async function SiteHeader() {
   return (
     <header className="border-subtle bg-page/95 sticky top-0 z-50 border-b backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-5 md:px-8">
-        <Link href="/" className="font-display text-heading text-lg font-semibold tracking-tight">
-          Barre By Kelly
+        <Link
+          href="/"
+          className="focus-visible:outline-focus flex shrink-0 items-center gap-2.5 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
+        >
+          <Image
+            src={LOGO.src}
+            alt=""
+            width={40}
+            height={40}
+            priority
+            className="size-9 shrink-0"
+          />
+          {/* The mark alone is not legible enough at this size to stand in for
+              the name, so the wordmark stays as text. */}
+          <span className="font-display text-heading text-lg font-semibold tracking-tight">
+            Barre By Kelly
+          </span>
         </Link>
 
         <nav aria-label="Main" className="ml-auto hidden items-center gap-1 md:flex">

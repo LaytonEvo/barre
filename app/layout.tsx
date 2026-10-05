@@ -19,9 +19,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  // TODO (question A1): the town belongs in the title template for local search.
   title: {
-    default: 'Barre By Kelly',
+    default: 'Barre By Kelly — barre classes in Ringwood',
     template: '%s | Barre By Kelly',
   },
   description:
@@ -29,12 +28,18 @@ export const metadata: Metadata = {
   metadataBase: process.env.NEXT_PUBLIC_SITE_URL
     ? new URL(process.env.NEXT_PUBLIC_SITE_URL)
     : undefined,
-  openGraph: { type: 'website', locale: 'en_GB', siteName: 'Barre By Kelly' },
+  openGraph: {
+    type: 'website',
+    locale: 'en_GB',
+    siteName: 'Barre By Kelly',
+    // app/opengraph-image.jpg is picked up automatically by Next.
+  },
+  twitter: { card: 'summary_large_image' },
   robots: { index: true, follow: true },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#FAF4EC',
+  themeColor: '#FAF6F0',
   width: 'device-width',
   initialScale: 1,
 };

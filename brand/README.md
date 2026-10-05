@@ -1,25 +1,25 @@
-# /brand — assets needed
+# /brand — Kelly's assets
 
-**Currently empty.** Everything in `design/` is the Section 3.2 fallback direction, not
-Kelly's real brand. Drop these in and the palette gets re-derived:
+**Supplied 2026-10-05.** `logo.png` plus 14 photographs, originals kept in `photos/`.
 
-| File                                 | Notes                                                                                                                                                                                                       |
-| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `logo.svg` (preferred) or `logo.png` | Highest resolution available. Ask the original designer for the vector if one exists — it makes favicons, OG images and print all easier.                                                                   |
-| `cover.jpg`                          | The Facebook cover photo                                                                                                                                                                                    |
-| `photos/`                            | 15–30 of the best class, studio and Kelly photos. **Mix landscape and portrait** — the hero needs landscape, the mobile cards need portrait. Originals, not Facebook-compressed downloads, if she has them. |
-| `kelly-headshot.jpg`                 | For `/about` and `Person` JSON-LD                                                                                                                                                                           |
-| `notes.md`                           | Tone ("warm, encouraging, no judgement"), phrases she actually uses in posts, colours she likes **and dislikes**                                                                                            |
+| File                    | Used for                                                                                                                         |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `logo.png`              | 1752×1752 PNG, transparent. The mark is a soft mint, **#BBE7C4**, hue 132° — the whole palette derives from it. Header, favicon. |
+| `photos/*-original.jpg` | Untouched originals. The web copies live in `public/images/`, EXIF stripped and capped at 1600px.                                |
 
-## On photo quality
+## What the photos cover
 
-Facebook recompresses uploads fairly aggressively. If Kelly has the originals on her phone
-or camera roll, those are worth chasing — photography is the single biggest visual-quality
-lever on the whole site, well ahead of any styling decision.
+- **Outdoor lifestyle** (9 images) — Kelly in fields, by water, in woodland. Warm dry grass and low sun, which is why the palette keeps warm creams rather than cool greys.
+- **Studio at a barre** (4 images) — the clearest "this is what it actually is" pictures. Two are black and white.
+- **A real class** (1 image) — several people working at the barre together. Rare and valuable; it does more to answer "what is it like" than any amount of copy.
 
-## What happens when these land
+## Still needed
 
-1. Palette extracted from the logo and photos, replacing the primitives in
-   `design/tokens.css`. Semantic token names don't change, so no component is touched.
-2. `node design/contrast-check.mjs` re-run; any pair below 4.5:1 adjusted before use.
-3. Placeholder blocks replaced with real images (`next/image`, AVIF/WebP, responsive sizes).
+- **Photographs of the two village halls.** Nothing in the set shows either venue — the studio shots are a dance studio with a proper ballet barre, not St Leonards or St Ives. The venue pages keep an honest empty state until there is something real to show.
+- **A vector logo** (`.svg`), if the original designer has one. The PNG is high enough resolution for the web, but a vector makes print and very large displays cleaner.
+
+## If the logo is ever redrawn
+
+The palette is derived, not hand-picked: `design/tokens.css` keeps `#BBE7C4` unmodified as `green-200` and builds the rest of the scale at the same hue. Changing the brand colour means changing the primitives in that one file and re-running `npm run check:contrast`. No component holds a hex value.
+
+**One thing to know about the mint:** at 1.37:1 against white it cannot carry text or act as a button — it fails every accessibility threshold by a wide margin. It is used as a _surface_ (large blocks with dark text on it), and darker steps of the same hue carry headings, links and buttons. That is a deliberate choice, not a dilution of the brand.

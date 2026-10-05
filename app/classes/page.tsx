@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
+import { PHOTOS } from '@/lib/images';
 import { listClassTypes } from '@/lib/queries/catalogue';
 import { localSuffix, SITE } from '@/lib/seo/site';
 import { path } from '@/lib/routes';
@@ -20,6 +22,16 @@ export default async function ClassesPage() {
       <p className="text-secondary mt-4 max-w-[60ch] text-lg">
         Every class is 55 minutes, suitable for all levels, and taught by Kelly.
       </p>
+
+      <Image
+        src={PHOTOS.barrePlank.src}
+        alt={PHOTOS.barrePlank.alt}
+        width={PHOTOS.barrePlank.width}
+        height={PHOTOS.barrePlank.height}
+        priority
+        sizes="(min-width: 768px) 70vw, 100vw"
+        className="mt-8 w-full rounded-xl object-cover shadow-sm"
+      />
 
       <div className="mt-10 grid gap-4">
         {classTypes.map((classType) => (

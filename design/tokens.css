@@ -1,52 +1,62 @@
 /* ===========================================================================
    Barre By Kelly — design tokens
-   STATUS: PROPOSED (M0). Awaiting approval before any app code is written.
 
-   Palette is the Section 3.2 fallback direction ("premium boutique, warm and
-   welcoming"). No /brand assets were supplied, so nothing here is extracted
-   from Kelly's logo — see docs/02-DESIGN-DIRECTION.md.
+   Palette derived from Kelly's logo (2026-10-05). The logo mark is a soft mint
+   at #BBE7C4, hue 132°, and that exact value is kept as green-200 and used as a
+   brand SURFACE. It is far too light to carry text — white on it is 1.37:1 —
+   so headings, links and buttons use darker steps of the same hue, which is
+   what keeps the palette recognisably hers while staying readable.
+
+   Warm creams and sands are kept from the earlier direction because they match
+   the photography: Kelly's shoot is dry summer grass and low sun, and a cool
+   grey ground would fight it.
 
    Layering: PRIMITIVES (raw scales) -> SEMANTIC (what components consume).
-   Components must only ever reference semantic tokens, so re-skinning to
-   Kelly's real palette is a one-file change.
+   Components only ever reference semantic tokens, which is why swapping the
+   fallback plum for Kelly's green touched this file and nothing else.
+
+   Every pair is verified: npm run check:contrast
    =========================================================================== */
 
 :root {
-  /* ---- PRIMITIVES: colour ------------------------------------------------ */
-  --c-cream-50: #fdfaf6;
-  --c-cream-100: #faf4ec;
-  --c-cream-200: #f4e9dc;
-  --c-cream-300: #eadbc8;
+  /* ---- PRIMITIVES: warm neutrals ---------------------------------------- */
+  --c-cream-50: #fefcf9;
+  --c-cream-100: #faf6f0; /* page ground */
+  --c-cream-200: #f3ece1; /* sunk surfaces */
+  --c-cream-300: #e6d9c8; /* subtle borders */
 
-  --c-sand-300: #dcc7ae;
-  --c-sand-400: #c9ae90;
-  --c-sand-500: #b0916f;
+  --c-sand-400: #c6ad8e; /* stronger borders */
+  --c-sand-500: #a98d68;
 
-  --c-plum-400: #8a5b76;
-  --c-plum-500: #6e4360;
-  --c-plum-600: #573351;
-  --c-plum-700: #3f2440;
-  --c-plum-900: #241626;
+  /* ---- PRIMITIVES: brand green, hue 132° --------------------------------
+     green-200 is the logo colour, unmodified. */
+  --c-green-50: #edf8ef;
+  --c-green-100: #d9f2de;
+  --c-green-200: #bbe7c4; /* ← Kelly's logo mint */
+  --c-green-300: #97d8a5;
+  --c-green-400: #69bf7b;
+  --c-green-500: #419f54;
+  --c-green-600: #2f7f3f;
+  --c-green-700: #21632f; /* primary actions, links */
+  --c-green-800: #174a22; /* headings */
+  --c-green-900: #113217; /* inverse surfaces */
 
-  --c-blush-200: #f7dad4;
-  --c-blush-300: #efbdb4;
-  --c-blush-400: #e09a8e;
-  --c-blush-600: #b4584a;
+  /* ---- PRIMITIVES: clay accent ------------------------------------------
+     Picks up the straw and low-sun tones in the photography, and is the one
+     colour that is not green — which is exactly why the Book button uses it. */
+  --c-clay-200: #f7ded2;
+  --c-clay-300: #e8b79e;
+  --c-clay-600: #ae5430;
+  --c-clay-700: #8f4427;
 
-  --c-sage-200: #dce3da;
-  --c-sage-400: #9bae9c;
-  --c-sage-600: #5e7360;
-  --c-sage-700: #46573f;
-
-  --c-ink-900: #1f1a1f;
-  --c-ink-700: #3d353d;
-  --c-ink-500: #655c64;
-  --c-ink-400: #8b828a;
+  /* ---- PRIMITIVES: ink (very slightly green-cast, not neutral grey) ------ */
+  --c-ink-900: #1a1f1b;
+  --c-ink-700: #3a423b;
+  --c-ink-500: #626a63;
+  --c-ink-400: #878e88;
 
   --c-white: #ffffff;
 
-  --c-success-600: #2f6b4f;
-  --c-success-100: #dff0e6;
   --c-warn-600: #8a5a14;
   --c-warn-100: #fbebd2;
   --c-error-600: #a32c22;
@@ -58,41 +68,42 @@
   --bg-page: var(--c-cream-100);
   --bg-surface: var(--c-white);
   --bg-surface-sunk: var(--c-cream-200);
-  --bg-inverse: var(--c-plum-700);
-  --bg-accent-soft: var(--c-blush-200);
-  --bg-calm-soft: var(--c-sage-200);
+  --bg-inverse: var(--c-green-900);
+  --bg-accent-soft: var(--c-green-200); /* the logo mint, used large */
+  --bg-calm-soft: var(--c-green-100);
+  --bg-warm-soft: var(--c-clay-200);
 
-  --text-primary: var(--c-ink-900); /* 15.68:1 on page  */
-  --text-secondary: var(--c-ink-700); /* 10.83:1 on page  */
-  --text-muted: var(--c-ink-500); /*  5.88:1 on page  */
-  --text-disabled: var(--c-ink-400); /*  3.40:1 — NEVER for meaningful copy */
+  --text-primary: var(--c-ink-900); /* 15.53:1 on page */
+  --text-secondary: var(--c-ink-700); /*  9.64:1 */
+  --text-muted: var(--c-ink-500); /*  5.19:1 */
+  --text-disabled: var(--c-ink-400); /*  3.12:1 — NEVER for meaningful copy */
   --text-on-inverse: var(--c-cream-100);
-  --text-heading: var(--c-plum-700); /* 12.50:1 on page  */
-  --text-link: var(--c-plum-600); /*  9.62:1 on page  */
+  --text-heading: var(--c-green-800); /*  9.57:1 */
+  --text-link: var(--c-green-700); /*  6.75:1 */
 
   --border-subtle: var(--c-cream-300);
   --border-strong: var(--c-sand-400);
-  --border-focus: var(--c-plum-600);
+  --border-focus: var(--c-green-700);
 
   /* ---- SEMANTIC: actions ------------------------------------------------- */
-  --action-primary-bg: var(--c-plum-600); /* white text 10.51:1 */
-  --action-primary-bg-hover: var(--c-plum-500);
+  --action-primary-bg: var(--c-green-700); /* white text 7.27:1 */
+  --action-primary-bg-hover: var(--c-green-800);
   --action-primary-fg: var(--c-white);
 
-  --action-accent-bg: var(--c-blush-600); /* white text  4.73:1 */
-  --action-accent-bg-hover: #9e4c3f;
+  --action-accent-bg: var(--c-clay-600); /* white text 5.11:1 */
+  --action-accent-bg-hover: var(--c-clay-700);
   --action-accent-fg: var(--c-white);
 
   --action-secondary-bg: transparent;
-  --action-secondary-fg: var(--c-plum-600);
-  --action-secondary-border: var(--c-plum-600);
+  --action-secondary-fg: var(--c-green-700);
+  --action-secondary-border: var(--c-green-700);
 
   --action-destructive-bg: var(--c-error-600); /* white text 7.14:1 */
   --action-destructive-fg: var(--c-white);
 
-  /* ---- SEMANTIC: status (booking states) -------------------------------- */
-  --status-open-fg: var(--c-success-600);
-  --status-open-bg: var(--c-success-100);
+  /* ---- SEMANTIC: booking status ----------------------------------------- */
+  --status-open-fg: var(--c-green-700);
+  --status-open-bg: var(--c-green-100);
   --status-nearly-fg: var(--c-warn-600);
   --status-nearly-bg: var(--c-warn-100);
   --status-full-fg: var(--c-error-600);
@@ -102,23 +113,25 @@
   --status-cancelled-fg: var(--c-ink-700);
   --status-cancelled-bg: var(--c-cream-300);
 
-  /* ---- TYPE ------------------------------------------------------------- */
-  /* Display: Fraunces (variable, warm old-style serif — elegant not stuffy)
-     Body:    Inter (highest-legibility UI sans, excellent tabular figures
-              for timetables and prices) */
-  /* next/font supplies --font-fraunces / --font-inter at runtime. The second
+  /* ---- TYPE -------------------------------------------------------------
+     next/font supplies --font-fraunces / --font-inter at runtime. The second
      argument keeps this file usable standalone (design/styleguide.html), where
-     those variables do not exist. */
+     those variables do not exist.
+
+     Fraunces is warm and slightly airy, which suits the photography and the
+     "friendly, local" tone. Note that the logo's own lettering is a wide,
+     thin geometric sans — if a tighter match to the mark matters more than the
+     warmth, the display face is a one-line change here. */
   --font-display: var(--font-fraunces, 'Fraunces'), 'Iowan Old Style', Georgia, serif;
   --font-body:
     var(--font-inter, 'Inter'), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-numeric: var(--font-body);
 
   /* Fluid scale, mobile-first. clamp() so phones never get desktop type. */
-  --text-xs: 0.75rem; /* 12 */
-  --text-sm: 0.875rem; /* 14 */
-  --text-base: 1rem; /* 16 — min body size */
-  --text-lg: 1.125rem; /* 18 */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem; /* minimum body size; also stops iOS zooming inputs */
+  --text-lg: 1.125rem;
   --text-xl: clamp(1.25rem, 1.1rem + 0.7vw, 1.5rem);
   --text-2xl: clamp(1.5rem, 1.3rem + 1.1vw, 2rem);
   --text-3xl: clamp(1.875rem, 1.5rem + 1.9vw, 2.75rem);
@@ -132,14 +145,15 @@
 
   --tracking-display: -0.02em;
   --tracking-body: 0em;
-  --tracking-caps: 0.08em;
+  /* Wide tracking on small caps echoes the logo's lettering. */
+  --tracking-caps: 0.12em;
 
   --weight-regular: 400;
   --weight-medium: 500;
   --weight-semibold: 600;
   --weight-display: 500;
 
-  /* ---- SPACE: 4px base ------------------------------------------------- */
+  /* ---- SPACE: 4px base --------------------------------------------------- */
   --space-0: 0;
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -155,11 +169,11 @@
   --space-24: 6rem;
   --space-32: 8rem;
 
-  --gutter: var(--space-5); /* mobile page gutter */
-  --measure: 68ch; /* max line length for prose */
+  --gutter: var(--space-5);
+  --measure: 68ch;
   --container: 1200px;
 
-  /* ---- RADII: rounded, not bubbly -------------------------------------- */
+  /* ---- RADII: rounded, not bubbly ---------------------------------------- */
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
@@ -167,23 +181,23 @@
   --radius-2xl: 28px;
   --radius-pill: 999px;
 
-  /* ---- SHADOW: warm-tinted, never neutral grey ------------------------- */
-  --shadow-xs: 0 1px 2px rgba(63, 36, 64, 0.06);
-  --shadow-sm: 0 1px 3px rgba(63, 36, 64, 0.08), 0 1px 2px rgba(63, 36, 64, 0.04);
-  --shadow-md: 0 4px 12px rgba(63, 36, 64, 0.08), 0 2px 4px rgba(63, 36, 64, 0.04);
-  --shadow-lg: 0 12px 32px rgba(63, 36, 64, 0.1), 0 4px 8px rgba(63, 36, 64, 0.04);
-  --shadow-focus: 0 0 0 3px rgba(87, 51, 81, 0.35);
+  /* ---- SHADOW: green-tinted, never neutral grey -------------------------- */
+  --shadow-xs: 0 1px 2px rgba(23, 74, 34, 0.06);
+  --shadow-sm: 0 1px 3px rgba(23, 74, 34, 0.08), 0 1px 2px rgba(23, 74, 34, 0.04);
+  --shadow-md: 0 4px 12px rgba(23, 74, 34, 0.08), 0 2px 4px rgba(23, 74, 34, 0.04);
+  --shadow-lg: 0 12px 32px rgba(23, 74, 34, 0.1), 0 4px 8px rgba(23, 74, 34, 0.04);
+  --shadow-focus: 0 0 0 3px rgba(33, 99, 47, 0.35);
 
-  /* ---- MOTION ---------------------------------------------------------- */
+  /* ---- MOTION ------------------------------------------------------------ */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
   --dur-fast: 120ms;
   --dur-base: 200ms;
   --dur-slow: 360ms;
 
-  /* ---- TOUCH / LAYOUT -------------------------------------------------- */
-  --tap-min: 44px; /* WCAG 2.2 target size; booking CTAs use 48px */
-  --cta-height: 48px;
+  /* ---- TOUCH / LAYOUT ---------------------------------------------------- */
+  --tap-min: 44px; /* WCAG 2.2 target size */
+  --cta-height: 48px; /* booking CTAs, thumb-reachable */
   --z-header: 50;
   --z-dropdown: 60;
   --z-modal: 80;
@@ -201,7 +215,7 @@
   }
 }
 
-/* Reduced motion: honour it everywhere (Section 3.5). */
+/* Reduced motion honoured at the token level, so no component has to remember. */
 @media (prefers-reduced-motion: reduce) {
   :root {
     --dur-fast: 1ms;

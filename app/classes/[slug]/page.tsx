@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
+import { PHOTOS } from '@/lib/images';
 import { notFound } from 'next/navigation';
 import { createPublicClient, getClassType, listClassTypes } from '@/lib/queries/catalogue';
 import { getUpcomingSessions } from '@/lib/queries/timetable';
@@ -71,6 +73,16 @@ export default async function ClassTypePage({ params }: { params: Promise<{ slug
       {classType.description ? (
         <p className="text-secondary mt-6 max-w-[60ch] text-lg">{classType.description}</p>
       ) : null}
+
+      <Image
+        src={PHOTOS.barreFloor.src}
+        alt={PHOTOS.barreFloor.alt}
+        width={PHOTOS.barreFloor.width}
+        height={PHOTOS.barreFloor.height}
+        priority
+        sizes="(min-width: 768px) 70vw, 100vw"
+        className="mt-8 w-full rounded-xl object-cover shadow-sm"
+      />
 
       <section className="border-subtle mt-10 border-t pt-6">
         <h2 className="text-[length:var(--text-xl)]">What to expect</h2>

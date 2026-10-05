@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
+import { PHOTOS } from '@/lib/images';
 import { createClient } from '@/lib/supabase/server';
 import { InstructorJsonLd } from '@/lib/seo/json-ld';
 import { localSuffix, SITE } from '@/lib/seo/site';
@@ -13,10 +15,17 @@ export const metadata: Metadata = {
 
 export default async function AboutPage() {
   const supabase = await createClient();
+
+  // Queried by sort order rather than by a hard-coded slug. A slug can change
+  // (Kelly's did, when her surname arrived), and the brief is explicit that
+  // nothing may assume a single named instructor — when there are two, this
+  // page becomes a list rather than needing a rewrite.
   const { data: instructor } = await supabase
     .from('instructors')
-    .select('display_name, bio, qualifications')
-    .eq('slug', 'kelly')
+    .select('display_name, bio, qualifications, photo_path')
+    .eq('active', true)
+    .order('sort_order')
+    .limit(1)
     .maybeSingle();
 
   const name = instructor?.display_name ?? 'Kelly';
@@ -30,11 +39,37 @@ export default async function AboutPage() {
       <h1 className="text-[length:var(--text-4xl)]">{name}</h1>
 
       {bio ? (
-        <div className="text-secondary mt-6 grid max-w-[62ch] gap-4 text-lg">
-          {bio.split('\n\n').map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
-          ))}
-        </div>
+        <>
+          <div className="mt-8 grid items-start gap-8 sm:grid-cols-[1fr_1.3fr] sm:gap-10">
+            <Image
+              src={PHOTOS.portrait.src}
+              alt={`${name}, ${PHOTOS.portrait.alt.replace(/^Kelly /, '')}`}
+              width={PHOTOS.portrait.width}
+              height={PHOTOS.portrait.height}
+              priority
+              sizes="(min-width: 640px) 38vw, 100vw"
+              className="w-full rounded-xl object-cover shadow-sm"
+            />
+
+            {/* Kelly's own words, verbatim. */}
+            <div className="text-secondary grid gap-4 text-lg">
+              {bio.split('\n\n').map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </div>
+          </div>
+
+          <figure className="mt-12">
+            <Image
+              src={PHOTOS.barreStudio.src}
+              alt={PHOTOS.barreStudio.alt}
+              width={PHOTOS.barreStudio.width}
+              height={PHOTOS.barreStudio.height}
+              sizes="(min-width: 768px) 60vw, 100vw"
+              className="w-full rounded-xl object-cover shadow-sm"
+            />
+          </figure>
+        </>
       ) : (
         <>
           <p className="text-secondary mt-6 max-w-[62ch] text-lg">

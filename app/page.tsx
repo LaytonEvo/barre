@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
+import { GALLERY, PHOTOS } from '@/lib/images';
 import { getUpcomingSessions } from '@/lib/queries/timetable';
 import { listReviews, listVenues } from '@/lib/queries/catalogue';
 import { BusinessJsonLd } from '@/lib/seo/json-ld';
@@ -41,31 +43,51 @@ export default async function HomePage() {
     <>
       <BusinessJsonLd venues={venues} />
 
-      {/* Hero. A photo belongs here — until Kelly's arrive, the space is held by
-          type rather than filled with a stock image of another studio. */}
-      <section className="mx-auto max-w-5xl px-5 pt-14 pb-10 md:px-8 md:pt-20">
-        <Badge tone="open">Your first class is free</Badge>
+      {/* Hero.
 
-        <h1 className="font-display mt-6 text-[length:var(--text-5xl)] leading-[1.05]">
-          All levels, all bodies.
-        </h1>
+          The photo is the point of this section, so it carries the full width
+          on mobile with the type beneath it, and becomes a two-column split at
+          md where there is room for both. `priority` because this is the LCP
+          element, and explicit dimensions so nothing shifts as it loads. */}
+      <section className="mx-auto max-w-6xl px-5 pt-8 pb-10 md:px-8 md:pt-14">
+        <div className="grid items-center gap-8 md:grid-cols-[1.05fr_1fr] md:gap-12">
+          <div>
+            <Badge tone="open">Your first class is free</Badge>
 
-        <p className="text-secondary mt-6 max-w-[56ch] text-lg">
-          Ballet-inspired barre classes in {SITE.town}, St Leonards and St Ives. Low impact,
-          genuinely hard, and far friendlier than it sounds. Come and try one on us.
-        </p>
+            <h1 className="font-display mt-5 text-[length:var(--text-5xl)] leading-[1.05]">
+              All levels, all bodies.
+            </h1>
 
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link href="/timetable">
-            <Button variant="accent" size="lg">
-              Book your free class
-            </Button>
-          </Link>
-          <Link href="/new-here">
-            <Button variant="secondary" size="lg">
-              New to barre?
-            </Button>
-          </Link>
+            <p className="text-secondary mt-5 max-w-[48ch] text-lg">
+              Ballet-inspired barre classes at St Leonards and St Ives, just outside {SITE.town}.
+              Low impact, genuinely hard, and far friendlier than it sounds.
+            </p>
+
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link href="/timetable">
+                <Button variant="accent" size="lg">
+                  Book your free class
+                </Button>
+              </Link>
+              <Link href="/new-here">
+                <Button variant="secondary" size="lg">
+                  New to barre?
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          <div className="relative overflow-hidden rounded-xl shadow-md">
+            <Image
+              src={PHOTOS.fieldPath.src}
+              alt={PHOTOS.fieldPath.alt}
+              width={PHOTOS.fieldPath.width}
+              height={PHOTOS.fieldPath.height}
+              priority
+              sizes="(min-width: 768px) 46vw, 100vw"
+              className="h-full w-full object-cover"
+            />
+          </div>
         </div>
       </section>
 
@@ -146,16 +168,53 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Meet Kelly — held open until her bio and headshot arrive. */}
+      {/* Meet Kelly. Her own words, trimmed to the first paragraph with the
+          rest on /about. */}
       <section className="mx-auto max-w-5xl px-5 py-10 md:px-8">
         <h2 className="border-subtle border-t pt-6 text-[length:var(--text-2xl)]">Meet Kelly</h2>
-        <p className="text-secondary mt-6 max-w-[60ch]">
-          Kelly teaches every class herself. Her story and qualifications are on their way —{' '}
-          <Link href="/about" className="text-link underline">
-            about Kelly
-          </Link>
-          .
-        </p>
+
+        <div className="mt-6 grid items-start gap-6 sm:grid-cols-[1fr_1.4fr] sm:gap-10">
+          <Image
+            src={PHOTOS.portrait.src}
+            alt={PHOTOS.portrait.alt}
+            width={PHOTOS.portrait.width}
+            height={PHOTOS.portrait.height}
+            sizes="(min-width: 640px) 36vw, 100vw"
+            className="w-full rounded-xl object-cover shadow-sm"
+          />
+
+          <div className="grid gap-4">
+            <p className="text-secondary max-w-[56ch] text-lg">
+              Kelly teaches every class herself. Whether you are a former dancer or have never set
+              foot near a barre, you will be welcomed, encouraged and pushed just the right amount.
+            </p>
+            <div>
+              <Link href="/about">
+                <Button variant="secondary">More about Kelly</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* A strip of the shoot. Decorative, so each image's alt is empty — the
+          surrounding copy already says what these are. */}
+      <section className="mx-auto max-w-6xl px-5 py-10 md:px-8">
+        <h2 className="border-subtle sr-only border-t pt-6">Photographs</h2>
+        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          {GALLERY.map((image) => (
+            <li key={image.src} className="overflow-hidden rounded-lg">
+              <Image
+                src={image.src}
+                alt=""
+                width={image.width}
+                height={image.height}
+                sizes="(min-width: 1024px) 16vw, (min-width: 640px) 32vw, 48vw"
+                className="aspect-square w-full object-cover transition-transform duration-500 hover:scale-105"
+              />
+            </li>
+          ))}
+        </ul>
       </section>
 
       {/* Reviews. Renders an empty state rather than fabricated testimonials. */}

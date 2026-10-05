@@ -4,6 +4,53 @@
 
 ### M2 — Public site (in progress)
 
+**Kelly's brand assets arrived (2026-10-05), and the palette is now hers.**
+
+The logo mark is a soft mint, **#BBE7C4**, hue 132°. That exact value is kept unmodified as
+`green-200` and the rest of the scale is generated at the same hue, so the palette is derived
+rather than hand-picked. The fallback plum and blush are gone.
+
+One thing the mint forces: at **1.37:1 against white** it cannot carry text or act as a button —
+it fails every threshold by a wide margin. So it is used as a _surface_, in large blocks with dark
+text on it (12.22:1), while darker steps of the same hue carry headings (9.57:1), links (6.75:1)
+and the primary button (7.27:1). A warm clay accent, picked to match the straw tones in the
+photography, is reserved for the Book button so it is the one thing on a screen that is not green.
+All 20 pairs pass WCAG AA.
+
+Re-skinning touched `design/tokens.css` and nothing else — which is what the primitives/semantic
+split was built for, and the first real test of it.
+
+**Photography.** 14 images: outdoor lifestyle, studio work at a barre, and one genuine class shot.
+EXIF stripped (phone and camera files can carry GPS), capped at 1600px, originals kept in
+`brand/photos/`. `lib/images.ts` is a typed manifest carrying real dimensions — so nothing shifts
+as images load — and deliberate alt text, with decorative uses passing `alt=""` at the call site
+rather than making a screen reader repeat the caption beside it.
+
+Wired into the homepage hero and gallery, `/about`, `/classes`, and `/new-here` (the class photo,
+which answers "what is it actually like" better than any copy). A favicon inverted onto deep brand
+green, because the mint on a pale ground is invisible at 16px, and an Open Graph card from the hero.
+
+**Kelly Brooks**, with her bio stored verbatim.
+
+Two things found by checking rather than by the build, which was green throughout:
+
+- The migration renamed her slug to `kelly-brooks`, but `/about` still queried `slug = 'kelly'` and
+  would have silently shown the placeholder. It now queries by sort order, which also stops the
+  page assuming a single named instructor.
+- Image paths live in SQL where TypeScript cannot see them, so a test now walks the migration and
+  asserts every referenced file exists. A missing image is otherwise invisible — Next emits a
+  broken `<img>` and the build passes.
+
+**Flagged, not silently fixed:** the bio says the class is "based at St Leonards & St Ives Village
+Hall" and mentions the 6:30 and 7:30 classes, but does not mention Thursday at St Ives Primary
+School. Her words are left as written rather than edited; the timetable and locations pages carry
+both venues, so nobody is misled, but it is worth her adding a line.
+
+**Still missing:** photographs of either village hall — every image is Kelly outdoors or in a dance
+studio, so the venue pages keep their honest empty state.
+
+101 unit tests (was 80).
+
 **Capacity 25 and a £5 class (2026-10-05).** Both are working figures Layton set to get the site
 usable, and both are meant to move.
 

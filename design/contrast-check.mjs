@@ -23,26 +23,36 @@ const ALLOWED_BELOW_AA = new Map([
 ]);
 
 const PAIRS = [
-  ['ink.900 on cream.100', '#1F1A1F', '#FAF4EC', 'body text'],
-  ['ink.700 on cream.100', '#3D353D', '#FAF4EC', 'secondary text'],
-  ['ink.500 on cream.100', '#655C64', '#FAF4EC', 'muted text'],
-  ['ink.400 on cream.100', '#8B828A', '#FAF4EC', 'disabled controls'],
-  ['plum.600 on cream.100', '#573351', '#FAF4EC', 'links, focus ring'],
-  ['plum.700 on cream.100', '#3F2440', '#FAF4EC', 'display headings'],
-  ['white on plum.600', '#FFFFFF', '#573351', 'primary button'],
-  ['white on plum.500', '#FFFFFF', '#6E4360', 'primary button hover'],
-  ['white on blush.600', '#FFFFFF', '#B4584A', 'booking CTA'],
-  ['ink.900 on blush.200', '#1F1A1F', '#F7DAD4', 'accent surface text'],
-  ['ink.900 on sage.200', '#1F1A1F', '#DCE3DA', 'calm surface text'],
-  ['white on sage.600', '#FFFFFF', '#5E7360', 'sage button'],
-  ['sage.700 on cream.100', '#46573F', '#FAF4EC', 'sage text on cream'],
-  ['white on success.600', '#FFFFFF', '#2F6B4F', 'success badge'],
-  ['success.600 on success.100', '#2F6B4F', '#DFF0E6', 'spaces-left badge'],
+  // Text on the page ground
+  ['ink.900 on cream.100', '#1A1F1B', '#FAF6F0', 'body text'],
+  ['ink.700 on cream.100', '#3A423B', '#FAF6F0', 'secondary text'],
+  ['ink.500 on cream.100', '#626A63', '#FAF6F0', 'muted text'],
+  ['ink.400 on cream.100', '#878E88', '#FAF6F0', 'disabled controls'],
+
+  // Brand green carries headings, links and the primary action
+  ['green.800 on cream.100', '#174A22', '#FAF6F0', 'display headings'],
+  ['green.700 on cream.100', '#21632F', '#FAF6F0', 'links, focus ring'],
+  ['white on green.700', '#FFFFFF', '#21632F', 'primary button'],
+  ['white on green.800', '#FFFFFF', '#174A22', 'primary button hover'],
+  ['cream.100 on green.900', '#FAF6F0', '#113217', 'inverse surface'],
+
+  // The logo mint. Light by nature, so it is a surface and never a text colour.
+  ['ink.900 on green.200 (logo mint)', '#1A1F1B', '#BBE7C4', 'brand surface text'],
+  ['green.800 on green.200', '#174A22', '#BBE7C4', 'heading on brand surface'],
+  ['ink.900 on green.100', '#1A1F1B', '#D9F2DE', 'calm surface text'],
+
+  // Warm clay accent, reserved for the booking CTA
+  ['white on clay.600', '#FFFFFF', '#AE5430', 'booking CTA'],
+  ['white on clay.700', '#FFFFFF', '#8F4427', 'booking CTA hover'],
+  ['ink.900 on clay.200', '#1A1F1B', '#F7DED2', 'accent surface text'],
+
+  // Status
+  ['green.700 on green.100', '#21632F', '#D9F2DE', 'spaces-left badge'],
   ['warn.600 on warn.100', '#8A5A14', '#FBEBD2', 'nearly-full badge'],
   ['error.600 on error.100', '#A32C22', '#FADDDA', 'full badge'],
   ['white on error.600', '#FFFFFF', '#A32C22', 'destructive button'],
   ['info.600 on info.100', '#2B5B7A', '#DCEAF3', 'waitlist badge'],
-  ['ink.700 on cream.300', '#3D353D', '#EADBC8', 'cancelled badge'],
+  ['ink.700 on cream.300', '#3A423B', '#E6D9C8', 'cancelled badge'],
 ];
 
 const channels = (hex) => {
