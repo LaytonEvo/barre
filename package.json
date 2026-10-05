@@ -35,6 +35,8 @@
   "homepage": "https://github.com/LaytonEvo/barre#readme",
   "dependencies": {
     "@date-fns/tz": "^1.5.0",
+    "@mux/mux-node": "^15.5.0",
+    "@mux/mux-player-react": "^3.13.4",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.2",
     "class-variance-authority": "^0.7.1",

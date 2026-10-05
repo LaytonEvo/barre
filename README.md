@@ -173,6 +173,33 @@ Walk-ins attach to an existing account and the form will not create one, because
 accepting a waiver and a health declaration on someone's behalf — worthless to an insurer and
 false in the record.
 
+### The video library
+
+Members-only, and the "only" is load-bearing. Three independent things have to hold:
+
+1. **Assets are created with a `signed` playback policy.** A public one would be a URL no amount of
+   application code could take back.
+2. **Playback needs a short-lived JWT** signed with a private key held only on the server, so there
+   is no shareable URL — by the time one is passed on, it has expired. Mux checks a separate
+   audience for the stream, the thumbnail and the storyboard, so three tokens are minted per video.
+3. **The playback id leaves the database through `video_playback_grant()` and nowhere else**, and
+   only for somebody `can_watch_videos()` allows. It is `SECURITY DEFINER` with an explicit check
+   rather than a plain select under RLS, because the RLS policy on `videos` deliberately lets any
+   member read metadata — the library is an upsell — so a policy alone would hand the id to
+   everyone who can see the shelf.
+
+`tests/unit/mux-playback.test.ts` verifies the signing against a locally generated RSA key, so no
+Mux account is needed to know the tokens are right. `tests/db/videos.sql` is acceptance test 10, run
+as a real `authenticated` role: a non-member is refused, a member streams.
+
+Entitlement is a live membership that includes on-demand, an on-demand subscription, or — behind the
+`pack_holders_get_video_access` setting — a pack holder with credits. "Live" comes from
+`live_membership()`, which `book_session` also uses, so the two cannot come to disagree about
+whether a `past_due` card still counts.
+
+Uploads go from the browser straight to Mux and never through this server; the webhook is the only
+thing that learns the result, and it stores a playback id **only** if its policy is `signed`.
+
 ---
 
 ## Environment variables

@@ -14,11 +14,13 @@ export default async function ReportsPage() {
   await requireRole('admin');
   const supabase = await createClient();
 
-  const [{ data: attendance }, { data: revenue }, { data: atRisk }] = await Promise.all([
-    supabase.rpc('report_attendance', { p_weeks: 12 }),
-    supabase.rpc('report_revenue', { p_months: 12 }),
-    supabase.rpc('report_at_risk', { p_days: 21 }),
-  ]);
+  const [{ data: attendance }, { data: revenue }, { data: atRisk }, { data: popular }] =
+    await Promise.all([
+      supabase.rpc('report_attendance', { p_weeks: 12 }),
+      supabase.rpc('report_revenue', { p_months: 12 }),
+      supabase.rpc('report_at_risk', { p_days: 21 }),
+      supabase.rpc('report_popular_videos', { p_months: 3 }),
+    ]);
 
   const revenueTotal = (revenue ?? []).reduce((sum, row) => sum + Number(row.net_pence), 0);
 
@@ -179,6 +181,61 @@ export default async function ReportsPage() {
               </li>
             ))}
           </ul>
+        )}
+      </section>
+
+      {/* --- Popular videos --- */}
+      <section className="border-subtle mt-10 border-t pt-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-[length:var(--text-xl)]">Most watched videos</h2>
+          <Link href={path('/api/admin/reports/videos.csv')}>
+            <Button variant="ghost" size="sm">
+              Download CSV
+            </Button>
+          </Link>
+        </div>
+
+        <p className="text-muted mt-2 max-w-[60ch] text-sm">
+          Last three months. The completion rate is the more useful column: a video lots of people
+          start and few finish is usually too long or badly cued, not unpopular.
+        </p>
+
+        {!popular || popular.length === 0 ? (
+          <p className="text-muted mt-4 text-sm">
+            Nothing watched yet — this fills in once the library is published and members start
+            using it.
+          </p>
+        ) : (
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="text-muted">
+                  <th className="pb-2 font-medium">Video</th>
+                  <th className="pb-2 font-medium">Category</th>
+                  <th className="pb-2 text-right font-medium">Started</th>
+                  <th className="pb-2 text-right font-medium">Finished</th>
+                  <th className="pb-2 text-right font-medium">Rate</th>
+                </tr>
+              </thead>
+              <tbody>
+                {popular.slice(0, 25).map((row) => (
+                  <tr key={row.title}>
+                    <td className="border-subtle border-b py-2">{row.title}</td>
+                    <td className="border-subtle text-muted border-b py-2">{row.category}</td>
+                    <td className="border-subtle tabular border-b py-2 text-right">
+                      {row.started}
+                    </td>
+                    <td className="border-subtle tabular border-b py-2 text-right">
+                      {row.completed}
+                    </td>
+                    <td className="border-subtle tabular border-b py-2 text-right font-medium">
+                      {Number(row.completion_rate)}%
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </section>
     </div>

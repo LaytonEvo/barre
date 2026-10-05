@@ -88,6 +88,9 @@ export default async function AccountPage() {
           <Link href="/account/billing">
             <Button variant="secondary">Billing</Button>
           </Link>
+          <Link href="/account/videos">
+            <Button variant="secondary">At-home videos</Button>
+          </Link>
           <Link href="/timetable">
             <Button variant={readyToBook ? 'accent' : 'ghost'}>Book a class</Button>
           </Link>

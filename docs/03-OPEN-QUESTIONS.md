@@ -272,3 +272,84 @@ approximately, since it does not align to the UK tax year (6 April).
 **If Kelly's accountant wants figures to a year end**, the report needs an explicit date range
 rather than a month count. Small change, but I would rather build it once I know whether anyone
 actually needs it than guess at a year end.
+
+---
+
+## I. New at M7 (video library)
+
+### I1. ⚠️ Mux is a paid service, and this is the decision to take before launch
+
+Mux is in the brief's own stack table, so I built on it rather than asking first. But it is the only
+service in this project with a **usage-based** bill, and Kelly should see the shape of it before the
+library goes live:
+
+- **Storage** is charged per minute of video held, per month.
+- **Delivery** is charged per minute watched. Ten members watching a 45-minute class is 450 minutes.
+- Encoding is charged once per upload.
+
+For a library of twenty classes and a few dozen members this is small — plausibly a few pounds a
+month. It is not zero, and unlike Stripe it is **not proportional to revenue**: a month where nobody
+renews still costs the same to store, and a popular free trial costs more. Worth Kelly knowing that
+before the first invoice rather than after.
+
+**What I need from her:** a Mux account, then four values into the deployment —
+`MUX_TOKEN_ID`, `MUX_TOKEN_SECRET` (Settings → API Access Tokens),
+`MUX_SIGNING_KEY_ID`, `MUX_SIGNING_KEY_PRIVATE` (Settings → Signing Keys — the private half is shown
+once), and `MUX_WEBHOOK_SECRET` (Settings → Webhooks, pointed at `/api/mux/webhook`).
+
+Until those exist the library pages work and say so plainly: `/admin/videos` names the missing
+variables, and nothing pretends to play.
+
+**If she would rather not take on a usage-based bill**, say so and I will cost out the alternatives
+(Cloudflare Stream is flat-rate per minute stored and per 1,000 minutes delivered; Bunny Stream is
+cheaper still). Both support signed URLs, so the entitlement work is unaffected — it is a change of
+adapter, not of design.
+
+### I2. What does on-demand access actually cost, and what includes it?
+
+The data model handles every shape of this; the decisions are hers.
+
+- Is there an **on-demand-only** subscription for people who never come in person? The brief asks for
+  one, `product_kind = 'on_demand'` exists, no price is set.
+- Do the **studio memberships** include it? `products.includes_on_demand` is per product.
+- Do **pack holders** get it? `pack_holders_get_video_access` is `false`, which I would keep: giving
+  the library away with a £25 pack undercuts the on-demand product before it has a price.
+
+Nothing is hard-coded — all three are data. But all three are currently unanswered, and there is no
+membership or on-demand product seeded at all, which means **today no member can watch anything**.
+Kelly and her instructors can, because staff always can — that is how she checks a video plays before
+publishing it — so the library will look fine when she tests it and empty to everyone else until a
+product grants access. Worth knowing before she wonders why.
+
+### I3. Thumbnails are a deliberate gap
+
+Cards show a coloured panel with the duration rather than a still from the video. Mux generates
+thumbnails, but each one needs its own signed token, and minting forty of them to render a grid that
+may not be scrolled is a lot of signing for a page load.
+
+It reads cleanly and loads instantly, so this is fine for a launch library. Once there are enough
+videos that the page feels bare, real thumbnails are a contained follow-up — the signing helper
+already mints the thumbnail token.
+
+### I4. Programmes are built in the schema, not in the UI
+
+`programmes`, `programme_videos` and `programme_progress` exist with RLS, and the brief marks ordered
+series as optional. I have not built screens for them. A "4-Week Barre Foundations" series is a good
+retention tool, but it needs enough videos to fill one first — so it is better decided when Kelly has
+filmed a dozen classes and can see which naturally group.
+
+### I5. Live streaming is still a stub, as the brief asked
+
+`live_streams` exists as a data model only so Mux Live can be added later without a migration that
+touches `videos`. Nothing reads it. Flagging only so nobody reads the table as a half-finished
+feature.
+
+### I6. A pre-existing RLS leak I noticed in passing, worth tightening
+
+`programme_videos` has `using (true)` for any authenticated user, so a member could list which videos
+belong to an **unpublished** programme. The video rows themselves stay gated, so nothing is playable
+and no personal data is exposed — the leak is the titles of classes in a series Kelly has not
+launched.
+
+Harmless today because there are no programmes. I have left it rather than widen M7's diff, but it
+should be narrowed to published programmes when the programme UI is built (I4).

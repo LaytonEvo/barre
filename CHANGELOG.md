@@ -2,6 +2,73 @@
 
 ## [Unreleased]
 
+### M7 — Video library
+
+Barre in the front room, for the weeks somebody cannot get to a Monday class. This is the retention
+half of the brief, and the whole of it turns on one question: can a person who has not paid for it
+get something playable? **ACCEPTANCE TEST 10 says no, and is tested both ways** — a non-member is
+refused a playback id, an entitled member gets one and streams.
+
+**The library is visible to members who cannot watch it, deliberately.** Metadata stays readable; a
+shelf of thirty classes is a better argument for adding on-demand access than a locked door is. What
+is gated is anything playable. The two halves are separate tests, because conflating them is how you
+end up with a library nobody can browse or a gate that is not one.
+
+**Nothing playable exists without a signed token.** Mux assets are created with a `signed` playback
+policy, and playback needs a short-lived JWT signed with a private key that never leaves the server.
+So there is no URL to leak: by the time one is passed on it has expired. Three tokens are minted per
+video — Mux checks a separate audience for the stream, the thumbnail and the storyboard — and all of
+it is tested against a locally generated RSA key, so the signing is verified without a Mux account.
+
+**One definition of a live membership, now shared.** `book_session` had the predicate inline;
+video entitlement needed the same one. Rather than copy it, it is extracted as `live_membership()`
+and both use it, because the two disagreeing about whether a `past_due` card still counts is a bug
+that surfaces as one member complaining about one half of the product.
+
+**The equipment filter asks what you have, not what to search for.** Picking "mat" returns videos
+needing a mat _or less_ — never one that also wants weights you do not own. It is a subset test, and
+the UI says "what have you got to hand?" so the semantic is visible rather than surprising. The
+alternative reading returns a list of things the member cannot actually do.
+
+**Progress is saved on a timer and on tab-hide**, not on `timeupdate` — which fires four times a
+second and would mean a Server Action call per 250ms. Positions are clamped to the duration in the
+database, so a bad seek cannot store a resume point past the end, and completion is sticky, because
+re-watching a video should not quietly undo a programme's progress.
+
+**Uploads go from Kelly's phone straight to Mux**, never through this server: a 45-minute class
+through a serverless function is a timeout, not a feature. `XMLHttpRequest` rather than `fetch`,
+because fetch has no upload-progress event and a button that says nothing for eleven minutes on
+rural broadband is a button that gets pressed twice.
+
+**A video cannot be published before Mux can play it** — a database CHECK, not a UI check, so a
+scheduled release cannot put a member in front of a dead player. The admin action reports it as a
+sentence rather than a constraint name.
+
+**The webhook refuses a public playback id.** An asset can carry several; taking the first would
+store a public one if it were ever present, silently turning a members-only video into a permanent
+open URL with nothing in the UI looking wrong. The test that covers it puts the public id _first_ in
+the list, because `ids[0]` would otherwise pass every other test in the file.
+
+Also: continue-watching (ignoring anything under 30 seconds in, so a mis-tap does not litter the
+shelf), favourites, "new this week", a most-watched report with completion rates and CSV export, and
+`/admin/videos` for upload, details, scheduling and unpublishing.
+
+**Fixed a second hole in the test harness, worse than the first.** `run.sh` applied migrations
+through a pipeline ending in `|| true`, so a migration could fail with a hard `ERROR` and the suite
+still printed "All database checks passed" — a broken function stayed invisible until some later test
+happened to call it. My first fix read `PIPESTATUS` after that `|| true`, which resets it, so it
+reported success too; psql's status is now captured directly. Verified by breaking a migration on
+purpose and watching the run fail and name the file.
+
+**One thing I tried and backed out:** revoking `select` on `mux_playback_id` as defence in depth.
+`revoke select (col) on videos from authenticated` is accepted without error and does nothing — a
+table-level grant covers every column, and carving one out means granting the rest by hand and
+remembering to grant every future column. The migration now says so, and says why leaving it readable
+is sound: the id is opaque without a signed token, and the case that would make it dangerous is
+closed in the webhook instead.
+
+272 unit and component tests (was 232), 263 database checks (was 216), 58 routes building clean.
+
 ### M6 — Admin and instructor portal
 
 The half of the product Kelly actually lives in. Everything that previously required a developer

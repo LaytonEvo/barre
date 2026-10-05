@@ -197,6 +197,66 @@ export type Database = {
         Relationships: [];
       };
 
+      video_categories: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          sort_order: number;
+          active: boolean;
+        };
+        Insert: { name: string; slug: string } & Partial<Record<string, unknown>>;
+        Update: Partial<Record<string, unknown>>;
+        Relationships: [];
+      };
+
+      videos: {
+        Row: Timestamped & {
+          id: string;
+          mux_asset_id: string | null;
+          mux_playback_id: string | null;
+          mux_upload_id: string | null;
+          mux_status: string;
+          mux_error: string | null;
+          title: string;
+          slug: string;
+          description: string | null;
+          thumbnail_path: string | null;
+          duration_secs: number | null;
+          level: string;
+          category_id: string | null;
+          equipment: string[];
+          instructor_id: string | null;
+          safe_for_pregnancy: boolean;
+          safety_note: string | null;
+          publish_at: string | null;
+          published: boolean;
+        };
+        Insert: { title: string; slug: string } & Partial<Record<string, unknown>>;
+        Update: Partial<Record<string, unknown>>;
+        Relationships: [];
+      };
+
+      video_progress: {
+        Row: {
+          user_id: string;
+          video_id: string;
+          position_secs: number;
+          completed_at: string | null;
+          updated_at: string;
+        };
+        Insert: { user_id: string; video_id: string } & Partial<Record<string, unknown>>;
+        Update: Partial<Record<string, unknown>>;
+        Relationships: [];
+      };
+
+      video_favourites: {
+        Row: { user_id: string; video_id: string; created_at: string };
+        Insert: { user_id: string; video_id: string } & Partial<Record<string, unknown>>;
+        Update: Partial<Record<string, unknown>>;
+        Relationships: [];
+      };
+
       audit_log: {
         Row: {
           id: number;
@@ -814,6 +874,134 @@ export type Database = {
         }[];
       };
       promote_from_waitlist: { Args: { p_session_id: string }; Returns: string | null };
+
+      // --- Video library (M7) ---
+      can_watch_videos: { Args: { p_user_id?: string }; Returns: boolean };
+      live_membership: {
+        Args: { p_user_id: string };
+        Returns: {
+          membership_id: string;
+          product_id: string;
+          product_kind: string;
+          status: string;
+          is_unlimited: boolean;
+          max_bookings_per_day: number | null;
+          includes_on_demand: boolean;
+          current_period_end: string | null;
+        }[];
+      };
+      video_library: {
+        Args: {
+          p_category?: string | null;
+          p_length?: string | null;
+          p_level?: string | null;
+          p_equipment?: string[] | null;
+          p_favourites?: boolean;
+          p_pregnancy?: boolean;
+        };
+        Returns: {
+          id: string;
+          title: string;
+          slug: string;
+          description: string | null;
+          thumbnail_path: string | null;
+          duration_secs: number | null;
+          level: string;
+          category_name: string | null;
+          category_slug: string | null;
+          equipment: string[];
+          instructor_name: string | null;
+          safe_for_pregnancy: boolean;
+          safety_note: string | null;
+          publish_at: string | null;
+          is_new: boolean;
+          position_secs: number;
+          completed_at: string | null;
+          is_favourite: boolean;
+        }[];
+      };
+      continue_watching: {
+        Args: { p_limit?: number };
+        Returns: {
+          id: string;
+          title: string;
+          slug: string;
+          thumbnail_path: string | null;
+          duration_secs: number | null;
+          position_secs: number;
+          percent: number;
+        }[];
+      };
+      video_playback_grant: {
+        Args: { p_video_id: string };
+        Returns: {
+          playback_id: string;
+          title: string;
+          duration_secs: number | null;
+          position_secs: number;
+        }[];
+      };
+      save_video_progress: {
+        Args: { p_video_id: string; p_position_secs: number; p_completed?: boolean };
+        Returns: undefined;
+      };
+      toggle_video_favourite: { Args: { p_video_id: string }; Returns: boolean };
+      admin_create_video_draft: { Args: { p_title: string; p_upload_id: string }; Returns: string };
+      attach_mux_asset: {
+        Args: {
+          p_upload_id: string;
+          p_asset_id: string;
+          p_playback_id: string;
+          p_duration_secs?: number | null;
+        };
+        Returns: string | null;
+      };
+      mark_mux_errored: { Args: { p_upload_id: string; p_error: string }; Returns: undefined };
+      admin_update_video: {
+        Args: {
+          p_video_id: string;
+          p_title?: string | null;
+          p_description?: string | null;
+          p_category_slug?: string | null;
+          p_level?: string | null;
+          p_equipment?: string[] | null;
+          p_instructor_id?: string | null;
+          p_safe_for_pregnancy?: boolean | null;
+          p_safety_note?: string | null;
+        };
+        Returns: undefined;
+      };
+      admin_set_video_published: {
+        Args: { p_video_id: string; p_published: boolean; p_publish_at?: string | null };
+        Returns: undefined;
+      };
+      admin_videos: {
+        Args: Record<string, never>;
+        Returns: {
+          id: string;
+          title: string;
+          slug: string;
+          category_name: string | null;
+          duration_secs: number | null;
+          level: string;
+          mux_status: string;
+          mux_error: string | null;
+          published: boolean;
+          publish_at: string | null;
+          watchers: number;
+          created_at: string;
+        }[];
+      };
+      report_popular_videos: {
+        Args: { p_months?: number };
+        Returns: {
+          title: string;
+          category: string;
+          started: number;
+          completed: number;
+          completion_rate: number;
+        }[];
+      };
     };
 
     Enums: {

@@ -28,7 +28,7 @@ const config = [
             {
               name: '@/lib/supabase/admin',
               message:
-                'createAdminClient bypasses RLS. Import it only in Stripe webhook handlers, cron routes and the seed script.',
+                'createAdminClient bypasses RLS. Import it only in Stripe and Mux webhook handlers, cron routes and the seed script.',
             },
           ],
         },
@@ -55,6 +55,9 @@ const config = [
       'app/api/stripe/**',
       'app/api/cron/**',
       'app/api/webhooks/**',
+      // The Mux webhook, like Stripe's, runs with no signed-in user: Mux is the
+      // caller. Its own authority is the verified signature, not a session.
+      'app/api/mux/**',
       'lib/stripe/**',
       'lib/credits/**',
       'scripts/**',

@@ -93,6 +93,50 @@ as $$
   select coalesce((select (value #>> '{}') from public.settings where key = p_key), p_default);
 $$;
 
+-- -----------------------------------------------------------------------------
+-- live_membership(user)
+--
+-- Extracted from book_session, which had this logic inline. It is now the single
+-- definition of "this person's membership is live", because video access and
+-- booking access disagreeing about that would be a bug nobody would notice
+-- until a member complained — and then only about the half they noticed.
+--
+-- `past_due` stays live until dunning runs out: a card expiring is not a reason
+-- to lock someone out of Thursday's class, or out of the library they paid for.
+-- -----------------------------------------------------------------------------
+create or replace function public.live_membership(p_user_id uuid)
+returns table (
+  membership_id        uuid,
+  product_id           uuid,
+  product_kind         public.product_kind,
+  status               public.membership_status,
+  is_unlimited         boolean,
+  max_bookings_per_day integer,
+  includes_on_demand   boolean,
+  current_period_end   timestamptz
+)
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+  select
+    m.id, pr.id, pr.kind, m.status,
+    pr.is_unlimited, pr.max_bookings_per_day, pr.includes_on_demand,
+    m.current_period_end
+  from public.memberships m
+  join public.products pr on pr.id = m.product_id
+  where m.user_id = p_user_id
+    and m.status in ('trialing', 'active', 'past_due')
+    and (m.status <> 'past_due' or m.grace_until is null or m.grace_until > now())
+  limit 1;
+$$;
+
+comment on function public.live_membership(uuid) is
+  'The one definition of a live membership. Used by book_session and by video entitlement so the two cannot drift.';
+
+grant execute on function public.live_membership(uuid) to authenticated;
+
 -- =============================================================================
 -- BOOK
 --
@@ -190,16 +234,9 @@ begin
   end if;
 
   -- --- Entitlement -----------------------------------------------------------
-  select m.*, pr.is_unlimited, pr.max_bookings_per_day
-  into v_membership
-  from public.memberships m
-  join public.products pr on pr.id = m.product_id
-  where m.user_id = v_user
-    and m.status in ('trialing', 'active', 'past_due')
-    -- past_due is still allowed until the dunning grace period runs out: a card
-    -- expiring is not a reason to lock someone out of Thursday's class.
-    and (m.status <> 'past_due' or m.grace_until is null or m.grace_until > now())
-  limit 1;
+  -- `live_membership` is defined above and is also what video entitlement uses,
+  -- so "live" cannot come to mean two different things in two places.
+  select * into v_membership from public.live_membership(v_user);
 
   if found and v_membership.is_unlimited then
     v_max_per_day := coalesce(v_membership.max_bookings_per_day, 2);

@@ -18,6 +18,7 @@ const ALL = [
   { href: '/admin/schedule', label: 'Schedule', adminOnly: true },
   { href: '/admin/members', label: 'Members', adminOnly: true },
   { href: '/admin/enquiries', label: 'Enquiries', adminOnly: true },
+  { href: '/admin/videos', label: 'Videos', adminOnly: true },
   { href: '/admin/reports', label: 'Reports', adminOnly: true },
   { href: '/admin/content', label: 'Content', adminOnly: true },
   { href: '/admin/settings', label: 'Settings', adminOnly: true },
