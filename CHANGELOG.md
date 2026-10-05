@@ -2,7 +2,35 @@
 
 ## [Unreleased]
 
-### M2 — Public site (in progress)
+### M2 — Public site (complete, bar what needs staging)
+
+**Components are now actually rendered in tests**, which closes the gap I had been flagging every
+turn: no Docker here means no local Supabase, so the pages have never been opened in a browser.
+Rendering the components for real with `renderToStaticMarkup` is the closest substitute, and it
+exercises genuine logic rather than just proving things compile — that a full class swaps Book for
+the waitlist, that a cancelled one offers no action at all, that Earlier is disabled on the current
+week, that the active filter carries `aria-current` and not merely a colour, that every button
+clears 44px and keeps a visible focus style.
+
+Writing them immediately caught two mistakes in my own assertions, both worth recording: the UTC
+instant legitimately appears in the `<time>` element's machine-readable attribute while the visible
+text is UK local, so text and attributes have to be asserted separately; and React 19 emits
+`dateTime` rather than lowercasing it the way it does `className`, which is harmless since HTML
+attribute names are case-insensitive, but would have made the test fail on a React upgrade for no
+real reason.
+
+**Newsletter sign-up** on the homepage, storing `consent_at` — the timestamp is the point, being
+what UK GDPR and PECR require us to be able to show. A duplicate address returns success rather
+than "already subscribed", which would leak who is on the list to anyone who cared to probe.
+
+**Announcement banner**, scheduled by `starts_at` / `ends_at` in the database rather than by
+somebody remembering to switch it off. A banner about a cancelled class is actively harmful the day
+after. Renders nothing at all when there is none, so the header reserves no empty space.
+
+**Cookie policy** written from what the site actually does, not from a template: the Supabase auth
+cookies, the single consent key, and Plausible, which is never requested unless consent is granted.
+
+136 unit and component tests (was 101), 62 database checks, 30 routes.
 
 **Kelly's brand assets arrived (2026-10-05), and the palette is now hers.**
 

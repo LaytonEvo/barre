@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Fraunces, Inter } from 'next/font/google';
 import './globals.css';
 import { SiteHeader } from '@/components/site/site-header';
+import { AnnouncementBanner } from '@/components/site/announcement-banner';
 import { SiteFooter } from '@/components/site/site-footer';
 import { CookieConsent } from '@/components/site/cookie-consent';
 
@@ -51,6 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <a href="#main" className="skip-link">
           Skip to content
         </a>
+        <AnnouncementBanner />
         <SiteHeader />
         <main id="main" className="flex-1">
           {children}

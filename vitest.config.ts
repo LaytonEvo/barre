@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 export default defineConfig({
   test: {
     environment: 'node',
-    include: ['tests/unit/**/*.test.ts'],
+    include: ['tests/unit/**/*.test.ts', 'tests/components/**/*.test.tsx'],
 
     /**
      * Fixed placeholders rather than whatever is in a developer's .env.local.

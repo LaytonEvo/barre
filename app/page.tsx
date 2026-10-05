@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { GALLERY, PHOTOS } from '@/lib/images';
+import { NewsletterForm } from '@/components/site/newsletter-form';
 import { getUpcomingSessions } from '@/lib/queries/timetable';
 import { listReviews, listVenues } from '@/lib/queries/catalogue';
 import { BusinessJsonLd } from '@/lib/seo/json-ld';
@@ -241,6 +242,21 @@ export default async function HomePage() {
             ))}
           </ul>
         )}
+      </section>
+
+      <section className="mx-auto max-w-5xl px-5 py-10 md:px-8">
+        <div className="border-subtle grid gap-5 border-t pt-6 sm:grid-cols-[1.2fr_1fr] sm:gap-10">
+          <div>
+            <h2 className="text-[length:var(--text-2xl)]">Stay in the loop</h2>
+            <p className="text-secondary mt-3 max-w-[48ch]">
+              New classes, timetable changes, and the occasional pop-up. That is all — no daily
+              emails, and nothing sold on.
+            </p>
+          </div>
+          <div className="sm:pt-2">
+            <NewsletterForm source="homepage" />
+          </div>
+        </div>
       </section>
 
       <section className="mx-auto max-w-5xl px-5 py-10 pb-16 md:px-8">

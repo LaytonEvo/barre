@@ -94,7 +94,8 @@ supabase/
   migrations/        schema, then RLS, then settings defaults
   seed.sql           development data, all clearly fake
 tests/
-  unit/              policy logic, and a guard that settings and schema agree
+  unit/              policy, pricing, time, structured data, image manifest
+  components/        real renders of the timetable card, week nav, filters, UI
   db/                migrations + invariants + RLS against real Postgres
 ```
 
