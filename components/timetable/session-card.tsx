@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { BookButton, JoinWaitlistButton } from '@/components/timetable/booking-buttons';
 import { availabilityState } from '@/lib/policy/rules';
 import { formatUkTime, durationMins } from '@/lib/time';
 import type { TimetableSession } from '@/lib/queries/timetable';
@@ -14,7 +15,14 @@ import { path } from '@/lib/routes';
  * dead button. Status always carries text as well as colour: this is the most
  * colour-coded screen in the product, so colour alone is never the signal.
  */
-export function SessionCard({ session }: { session: TimetableSession }) {
+export function SessionCard({
+  session,
+  signedIn = false,
+}: {
+  session: TimetableSession;
+  /** Booking needs an account, so a logged-out visitor is sent to sign up. */
+  signedIn?: boolean;
+}) {
   const cancelled = session.status === 'cancelled';
   const state = availabilityState(session.spacesLeft, session.capacity);
   const mins = durationMins(session.startsAt, session.endsAt);
@@ -71,16 +79,16 @@ export function SessionCard({ session }: { session: TimetableSession }) {
                 : `${session.spacesLeft} space${session.spacesLeft === 1 ? '' : 's'} left`}
             </Badge>
 
-            {session.spacesLeft === 0 ? (
-              <Button variant="secondary" size="sm" disabled>
-                Waitlist opens soon
-              </Button>
-            ) : (
+            {!signedIn ? (
               <Link href="/signup">
-                <Button variant="accent" size="sm">
-                  Book
+                <Button variant={session.spacesLeft === 0 ? 'secondary' : 'accent'} size="sm">
+                  {session.spacesLeft === 0 ? 'Sign up to join waitlist' : 'Book'}
                 </Button>
               </Link>
+            ) : session.spacesLeft === 0 ? (
+              <JoinWaitlistButton sessionId={session.id} />
+            ) : (
+              <BookButton sessionId={session.id} />
             )}
           </>
         )}

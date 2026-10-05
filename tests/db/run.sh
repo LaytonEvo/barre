@@ -50,9 +50,19 @@ psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB" -v ON_ERROR_STOP=1 -q \
   -f "$ROOT/tests/db/ledger.sql" 2>&1 | sed 's/^NOTICE:  //' | grep -E 'PASS|FAIL'
 
 echo
+echo "== booking engine =="
+psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB" -v ON_ERROR_STOP=1 -q \
+  -f "$ROOT/tests/db/booking.sql" 2>&1 | sed 's/^NOTICE:  //' | grep -E 'PASS|FAIL'
+
+echo
 echo "== rls =="
 psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB" -v ON_ERROR_STOP=1 -q \
   -f "$ROOT/tests/db/rls.sql" 2>&1 | sed 's/^NOTICE:  //' | grep -E 'PASS|FAIL'
+
+echo
+echo "== concurrency (acceptance test 5) =="
+# Runs last: it spawns parallel connections and leaves a filled class behind.
+"$ROOT/tests/db/concurrency.sh"
 
 echo
 echo "All database checks passed."

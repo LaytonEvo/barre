@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { requireUser } from '@/lib/supabase/auth';
 import { createClient } from '@/lib/supabase/server';
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
@@ -73,6 +74,18 @@ export default async function AccountPage() {
           balance all work end to end. Bookings, purchases, the waiver and the video library land at
           M3 to M7.
         </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link href="/account/bookings">
+            <Button variant="secondary">My bookings</Button>
+          </Link>
+          <Link href="/account/billing">
+            <Button variant="secondary">Billing</Button>
+          </Link>
+          <Link href="/timetable">
+            <Button variant="accent">Book a class</Button>
+          </Link>
+        </div>
+
         <form action="/auth/signout" method="post" className="mt-6">
           <Button type="submit" variant="secondary">
             Log out

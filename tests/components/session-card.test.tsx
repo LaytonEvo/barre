@@ -28,8 +28,9 @@ const base: TimetableSession = {
   waitlistCount: 0,
 };
 
-const render = (session: TimetableSession) =>
-  renderToStaticMarkup(<SessionCard session={session} />);
+/** Signed out by default — the state most visitors arrive in. */
+const render = (session: TimetableSession, signedIn = false) =>
+  renderToStaticMarkup(<SessionCard session={session} signedIn={signedIn} />);
 
 /** Visible text only, with every tag and attribute stripped. */
 const visibleText = (html: string) =>
@@ -69,6 +70,18 @@ describe('SessionCard', () => {
     expect(html).toContain('Book');
   });
 
+  it('sends a signed-out visitor to sign up rather than to a dead button', () => {
+    expect(render(base)).toContain('href="/signup"');
+  });
+
+  it('gives a signed-in member the real booking control', () => {
+    const html = render(base, true);
+    // The action form, not a link away.
+    expect(html).toContain('<form');
+    expect(html).toContain('name="id"');
+    expect(html).not.toContain('href="/signup"');
+  });
+
   it('singularises one remaining space', () => {
     const html = render({ ...base, spacesLeft: 1 });
     expect(html).toContain('1 space left');
@@ -76,14 +89,21 @@ describe('SessionCard', () => {
   });
 
   it('switches to the waitlist action when full, and offers no Book button', () => {
+    const signedIn = render({ ...base, spacesLeft: 0 }, true);
+    expect(signedIn).toContain('Full');
+    expect(signedIn).toContain('Join waitlist');
+    expect(signedIn).not.toContain('>Book<');
+  });
+
+  it('points a signed-out visitor at sign-up when the class is full', () => {
     const html = render({ ...base, spacesLeft: 0 });
     expect(html).toContain('Full');
-    expect(html).toContain('Waitlist');
-    expect(html).not.toContain('>Book<');
+    expect(html).toContain('Sign up to join waitlist');
+    expect(html).toContain('href="/signup"');
   });
 
   it('marks a cancelled class without offering any action', () => {
-    const html = render({ ...base, status: 'cancelled' });
+    const html = render({ ...base, status: 'cancelled' }, true);
     expect(html).toContain('Cancelled');
     expect(html).not.toContain('>Book<');
     expect(html).not.toContain('Waitlist');

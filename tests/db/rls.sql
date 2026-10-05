@@ -40,6 +40,21 @@ values
   ('dddddddd-0000-4000-8000-00000000000b', 'v1', '{"q1":false}', false,
    'Bob private injury detail', now(), now() + interval '12 months');
 
+-- Capture the true row counts as superuser, BEFORE any role switch.
+--
+-- The admin assertions below have to compare against reality rather than a
+-- hard-coded number: earlier suites in the same database create their own
+-- members and questionnaires, so "an admin sees 2" was only ever true when this
+-- file ran first. Comparing to the real total says what is actually meant —
+-- an admin sees everything.
+create temporary table rls_expected as
+select
+  (select count(*) from public.health_questionnaires) as health_rows,
+  (select count(*) from public.profiles)              as profile_rows;
+
+-- Readable after the role switch below, which is the whole point of it.
+grant select on rls_expected to authenticated;
+
 -- Grant table privileges the way Supabase does. RLS filters rows; GRANT decides
 -- whether the role may issue the statement at all. Both are needed.
 --
@@ -166,10 +181,13 @@ set local request.jwt.claim.sub = 'dddddddd-0000-4000-8000-00000000000c';
 
 select assert(current_user = 'authenticated', 'role switch for the admin took effect');
 
-select assert((select count(*) from public.health_questionnaires) = 2,
+select assert(
+  (select count(*) from public.health_questionnaires)
+    = (select health_rows from rls_expected),
   'an admin can see every PAR-Q, which is what the register needs');
 
-select assert((select count(*) from public.profiles) >= 3,
+select assert(
+  (select count(*) from public.profiles) = (select profile_rows from rls_expected),
   'an admin can see every member');
 
 select assert(

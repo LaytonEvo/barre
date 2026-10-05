@@ -71,9 +71,11 @@ jobs:
       - uses: actions/checkout@v5
 
       # Applies every migration from scratch, then asserts the invariants in
-      # docs/01-DATA-MODEL.md hold — including that a member cannot read another
-      # member's health data, tested as a real authenticated role rather than by
-      # reading the policy SQL.
+      # docs/01-DATA-MODEL.md hold. That includes the two guarantees that cannot
+      # be checked by reading the SQL: that a member cannot read another
+      # member's health data (tested as a real authenticated role), and that 20
+      # simultaneous bookings at a 10-space class produce exactly 10 bookings
+      # (tested with genuinely parallel connections).
       - name: Database checks
         run: tests/db/run.sh
         env:

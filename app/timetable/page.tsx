@@ -12,6 +12,7 @@ import { FilterChips } from '@/components/timetable/filters';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { path } from '@/lib/routes';
+import { getSessionUser } from '@/lib/supabase/auth';
 
 export const metadata: Metadata = {
   title: `Timetable — ${localSuffix}`,
@@ -25,11 +26,12 @@ export default async function TimetablePage({ searchParams }: { searchParams: Pr
   const params = await searchParams;
   const weekStart = parseWeekParam(params.week);
 
-  const [policy, venues, classTypes, sessions] = await Promise.all([
+  const [policy, venues, classTypes, sessions, user] = await Promise.all([
     loadPolicy(),
     listVenues(),
     listClassTypes(),
     getWeekSessions(weekStart, { venueSlug: params.venue, classTypeSlug: params.class }),
+    getSessionUser(),
   ]);
 
   // Build hrefs that preserve the other filters, so changing the venue does not
@@ -103,7 +105,7 @@ export default async function TimetablePage({ searchParams }: { searchParams: Pr
                   {formatUkDayLong(day)}
                 </h2>
                 {byDay.get(key)?.map((session) => (
-                  <SessionCard key={session.id} session={session} />
+                  <SessionCard key={session.id} session={session} signedIn={Boolean(user)} />
                 ))}
               </section>
             );

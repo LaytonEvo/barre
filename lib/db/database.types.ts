@@ -431,6 +431,77 @@ export type Database = {
         Relationships: [];
       };
 
+      bookings: {
+        Row: Timestamped & {
+          id: string;
+          session_id: string;
+          user_id: string;
+          status:
+            | 'booked'
+            | 'attended'
+            | 'no_show_pending'
+            | 'no_show'
+            | 'cancelled_in_window'
+            | 'cancelled_late';
+          source: 'member' | 'admin' | 'walk_in' | 'waitlist';
+          entitlement_kind: 'credit' | 'membership' | 'payment';
+          ledger_entry_id: string | null;
+          purchase_id: string | null;
+          booked_at: string;
+          cancelled_at: string | null;
+          checked_in_at: string | null;
+          marked_by: string | null;
+        };
+        Insert: {
+          session_id: string;
+          user_id: string;
+          entitlement_kind: string;
+        } & Partial<Record<string, unknown>>;
+        Update: Partial<Record<string, unknown>>;
+        Relationships: [];
+      };
+
+      waitlist_entries: {
+        Row: {
+          id: string;
+          session_id: string;
+          user_id: string;
+          status: 'waiting' | 'promoted' | 'notified' | 'left';
+          joined_at: string;
+          promoted_at: string | null;
+          notified_at: string | null;
+          left_at: string | null;
+          booking_id: string | null;
+        };
+        Insert: { session_id: string; user_id: string };
+        Update: Partial<Record<string, unknown>>;
+        Relationships: [];
+      };
+
+      notifications: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          to_email: string | null;
+          to_phone: string | null;
+          channel: 'email' | 'sms';
+          template: string;
+          payload: Json;
+          subject_type: string | null;
+          subject_id: string | null;
+          scheduled_for: string;
+          sent_at: string | null;
+          status: 'queued' | 'sent' | 'failed' | 'cancelled' | 'skipped';
+          provider_message_id: string | null;
+          error: string | null;
+          attempts: number;
+          created_at: string;
+        };
+        Insert: { template: string } & Partial<Record<string, unknown>>;
+        Update: Partial<Record<string, unknown>>;
+        Relationships: [];
+      };
+
       announcements: {
         Row: {
           id: string;
@@ -510,6 +581,26 @@ export type Database = {
         Returns: string[];
       };
       expire_credits: { Args: Record<string, never>; Returns: number };
+      book_session: {
+        Args: { p_session_id: string; p_user_id?: string; p_source?: string };
+        Returns: string;
+      };
+      cancel_booking: {
+        Args: { p_booking_id: string; p_user_id?: string };
+        Returns: { outcome: 'cancelled_in_window' | 'cancelled_late'; credit_returned: boolean }[];
+      };
+      join_waitlist: {
+        Args: { p_session_id: string; p_user_id?: string };
+        Returns: number;
+      };
+      leave_waitlist: {
+        Args: { p_session_id: string; p_user_id?: string };
+        Returns: undefined;
+      };
+      cancel_session: { Args: { p_session_id: string; p_reason: string }; Returns: number };
+      mark_attendance: { Args: { p_booking_id: string; p_status: string }; Returns: undefined };
+      auto_mark_no_shows: { Args: Record<string, never>; Returns: number };
+      promote_from_waitlist: { Args: { p_session_id: string }; Returns: string | null };
     };
 
     Enums: {

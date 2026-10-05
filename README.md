@@ -115,6 +115,26 @@ describe behaviour the system does not have. `/policies/cancellation` is that in
 away from gated routes, but that is a convenience, not the boundary — a hidden nav link has
 never been a security control.
 
+### The booking engine
+
+`book_session()` runs as one transaction holding a `FOR UPDATE` lock on the session row. Without
+it, two requests both read "9 of 10 booked", both decide there is room, and both insert.
+
+`tests/db/concurrency.sh` fires 20 genuinely parallel connections at a 10-space class and asserts
+exactly 10 succeed. It synchronises inside Postgres rather than in the shell — every connection
+sleeps until a shared wall-clock instant — because a busy-wait starves the CPU enough that the
+processes stop overlapping, which would turn it into a serial test that always passes. The test
+was checked by removing the lock: all 20 then book, and the suite fails.
+
+**No gate is re-checked in TypeScript.** Waiver, PAR-Q, booking window, capacity and entitlement
+are all decided in the database, because a check in the action layer is one an attacker skips by
+calling the RPC directly. `lib/booking/errors.ts` only turns machine tokens into sentences.
+
+A credit booking and its ledger entry each need the other's id, which a `CHECK` cannot express —
+Postgres `CHECK` constraints are never deferrable. It is a deferred constraint trigger instead,
+and it re-reads the row at commit rather than trusting `NEW`, because deferring changes when a
+trigger runs, not what it sees.
+
 ### The credit ledger
 
 `credit_ledger` is append-only, enforced by a trigger that rejects `UPDATE` and `DELETE` even
