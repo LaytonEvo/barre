@@ -428,12 +428,23 @@ select assert(
   ),
   'RLS is enabled on every table in public');
 
+-- Naming them, rather than counting them. The count caught `rate_limits` being
+-- added, which is what an invariant is for — but a bare count cannot tell a
+-- deliberate addition from an accidental one, and the useful question is "which
+-- tables deny everyone, and is that list still the intended one?".
 select assert(
-  (select count(*) from pg_tables where schemaname = 'public'
-     and tablename not in (
-       select distinct tablename from pg_policies where schemaname = 'public'
-     )) = 2,
-  'exactly two tables are service-role only (stripe_events, session_generation_runs)');
+  (
+    select coalesce(array_agg(t.tablename order by t.tablename), '{}')
+    from (
+      select tablename::text as tablename
+      from pg_tables
+      where schemaname = 'public'
+        and tablename not in (
+          select distinct tablename from pg_policies where schemaname = 'public'
+        )
+    ) t
+  ) = array['rate_limits', 'session_generation_runs', 'stripe_events'],
+  'exactly these tables deny everyone but the service role: rate_limits, session_generation_runs, stripe_events');
 
 select assert(
   not exists (

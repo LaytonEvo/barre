@@ -51,10 +51,47 @@ and sign-up flows are testable without sending anything.
 | `npm run verify`          | Format, lint, typecheck, unit tests, contrast check — what CI runs                |
 | `npm run test`            | Vitest unit tests                                                                 |
 | `npm run test:db`         | Applies all migrations to a scratch database, then asserts the invariants and RLS |
+| `npm run test:e2e`        | Playwright against real Supabase and a production build                           |
+| `npm run test:a11y`       | The accessibility suite alone (WCAG 2.2 AA, axe on the real DOM)                  |
+| `npm run audit:security`  | RLS, grants, `search_path` and view security modes, against a live database       |
 | `npm run check:contrast`  | Verifies every colour pair against WCAG 2.2; **exits non-zero on a regression**   |
 | `npm run db:reset`        | Re-apply migrations and seed locally                                              |
 | `npm run db:types`        | Regenerate Supabase types                                                         |
 | `npm run lint` / `format` | ESLint / Prettier                                                                 |
+
+### Running the full stack locally
+
+The e2e and accessibility suites need real Supabase, not the bare-Postgres
+harness below.
+
+```bash
+supabase start          # Docker; first run pulls several GB
+npm run build
+npm run test:e2e        # Playwright starts `next start` itself
+```
+
+Two things that cost time here and are not obvious:
+
+- **The Postgres image may fail to pull.** The CLI pulls from
+  `public.ecr.aws`, whose CDN is blocked on some networks, and the failure is a
+  `403 Forbidden` partway through. The same image is on Docker Hub, so pull it
+  there and retag:
+
+  ```bash
+  docker pull supabase/postgres:<version>
+  docker tag supabase/postgres:<version> public.ecr.aws/supabase/postgres:<version>
+  ```
+
+  The version is in the error message.
+
+- **Playwright needs a browser path** when the container ships Chromium outside
+  Playwright's own cache. `playwright.config.ts` reads
+  `PLAYWRIGHT_CHROMIUM_PATH`; set it if `npx playwright install` is not an
+  option.
+
+The suite runs against a **production build**, not `next dev` — dev-only overlays
+and on-demand compiles produce tests that pass or fail on timing rather than
+behaviour.
 
 ### Running the database tests without Supabase CLI
 

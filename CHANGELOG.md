@@ -2,6 +2,83 @@
 
 ## [Unreleased]
 
+### M9 — Launch readiness
+
+**The e2e suite found a bug on its first real run.** The public timetable showed
+every class as completely empty, however full it was: `session_availability` was
+created `with (security_invoker = true)`, so it counted bookings under the RLS of
+whoever asked — and no visitor may read another member's bookings. `booked_count`
+was always 0 and `spaces_left` always equalled `capacity`.
+
+A sold-out class offered a Book button, the "only 2 spaces left" urgency the brief
+asks for could never appear, and the waitlist was never offered because nothing
+ever looked full. No overbooking resulted — `book_session` takes the row lock and
+refuses — so it never showed up as corrupt data. It was purely a lie told to every
+visitor, and it survived four milestones. Nothing could have caught it but a real
+browser acting as a real anonymous user.
+
+Also removed what hid it: `spacesLeft` fell back to `row.capacity` when
+availability could not be read, failing in the most dangerous direction. It is now
+`number | null` with an explicit `unknown` state, and the three call sites each
+had to decide what unknown means — the card shows no badge, the homepage says
+nothing, and the structured data omits the claim rather than telling Google a
+class is in stock when we do not know.
+
+**31 Playwright tests** against local Supabase and a production build. Acceptance
+tests 2, 3 and 12, the waiver gate, the full-class path, and the
+admin/instructor/member boundary. Chromium only and serial, deliberately: the
+genuinely concurrent case is acceptance test 5, which fires 20 real connections at
+Postgres where that can actually be proved.
+
+**Accessibility at WCAG 2.2 AA on the real DOM** — 12 public pages, the member
+account area, and Kelly's admin at phone width. It found a second real fault:
+muted text on Kelly's mint is 4.07:1, under the 4.5 needed for body text. The
+contrast script had only ever checked the darkest text colour against that
+surface, so it was treated as safe on partial evidence. Both shades are in the
+script now and the failing pair is barred with its reason.
+
+**Rate limiting on the two public write paths.** The enquiry action carried a
+comment saying proper limiting would "land with the other public forms at M8". M8
+came and went. Counters live in the database, because an in-process counter is
+per-instance and resets on every cold start — it protects nothing on serverless.
+Two buckets must both pass: per-IP, and a global backstop, because
+`x-forwarded-for` is a header a bot can vary freely and without the second bucket
+the first is bypassed by changing one string. A missing key counts against a
+shared bucket rather than being waved through.
+
+**A security audit that runs rather than describes.** `npm run audit:security`
+checks RLS coverage, deny-all tables by name, `search_path` pinning, view security
+modes and anon's execute grants against a live database. Prose goes stale the
+moment somebody adds a table; assertions do not.
+
+It immediately found that **nineteen SECURITY DEFINER functions were reachable by
+`anon`** — Postgres grants EXECUTE to PUBLIC by default, and the migrations
+revoked it only where they remembered to. None was exploitable: every one checks
+`auth.uid()` or a role first, which is why calling `admin_vouchers` as anon
+returned `not_allowed` rather than a list of vouchers. But "safe because each
+function remembers to check" holds only until one forgets. Execute is now revoked
+across the schema and granted back explicitly, leaving exactly two reachable by
+anon — `is_admin` and `is_staff`, which RLS policies themselves must be able to
+call. The revoke skips extension-owned functions, since revoking PUBLIC's execute
+on citext's operators would break every query touching a citext column.
+
+One existing invariant earned its place: it asserted exactly two service-role-only
+tables and caught `rate_limits` being added. It now names them rather than
+counting them, because a count cannot tell a deliberate addition from an accident.
+
+**Documentation**: `docs/04-LAUNCH-CHECKLIST.md` (blocking items first, Stripe live
+mode, DNS and SPF/DKIM/DMARC, data protection) and `docs/05-KELLYS-GUIDE.md` —
+plain English, written for a phone, covering the register, walk-ins, cancelling a
+class, vouchers, videos and what to check when something looks wrong.
+
+The README now records how to run the whole stack locally, including the two
+things that cost real time: the Supabase Postgres image failing to pull from its
+ECR mirror (pull from Docker Hub and retag), and Playwright needing an explicit
+Chromium path when the browser lives outside its own cache.
+
+352 unit and component tests, 369 database checks, 31 e2e, 8 security checks,
+21 contrast pairs.
+
 ### M8 — Growth and polish
 
 The emails, the gift vouchers, the promo codes and the automations. Also the point at

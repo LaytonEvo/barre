@@ -62,6 +62,11 @@ const config = [
       // inbox, not logged in, so there is no session to act under — the signed
       // token in the link is the authority. It writes one boolean on one row.
       'app/unsubscribe/**',
+      // Rate limiting for public forms. The counters live in a table with RLS and
+      // no policy, and the function is revoked from anon — deliberately, because a
+      // limit the caller can read or reset is not a limit. That means the service
+      // role is the only way in.
+      'lib/rate-limit.ts',
       'lib/stripe/**',
       'lib/credits/**',
       'scripts/**',
@@ -70,8 +75,9 @@ const config = [
     rules: { 'no-restricted-imports': 'off' },
   },
   {
-    // The contrast checker is a standalone Node script, not part of the app.
-    files: ['design/*.mjs'],
+    // Standalone command-line scripts, not part of the app. Printing to stdout is
+    // their entire output, so the no-console rule has nothing useful to say here.
+    files: ['design/*.mjs', 'scripts/**'],
     rules: { 'no-console': 'off' },
   },
 ];

@@ -41,5 +41,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Expiry failed.' }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, lotsExpired: data ?? 0 });
+  // Housekeeping rides along with the nightly job rather than having a cron of
+  // its own: the rate-limit table is pure scratch, and a missed prune costs a few
+  // rows, not correctness.
+  const { data: pruned } = await db.rpc('prune_rate_limits');
+
+  return NextResponse.json({ ok: true, lotsExpired: data ?? 0, rateLimitRowsPruned: pruned ?? 0 });
 }

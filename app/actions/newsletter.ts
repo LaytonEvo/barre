@@ -2,6 +2,7 @@
 
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 /**
  * Newsletter sign-up.
@@ -31,6 +32,14 @@ export async function subscribeToNewsletter(formData: FormData): Promise<Newslet
   }
 
   if (parsed.data.website) return { ok: true };
+
+  // A public write path, so rate limited per IP with a global backstop. Someone
+  // signing a friend up repeatedly is the benign case; a bot filling the list with
+  // addresses that will later bounce is the one that damages the sending domain.
+  const limit = await checkRateLimit('newsletter', 3);
+  if (!limit.allowed) {
+    return { ok: false, error: 'Please wait a little while before trying again.' };
+  }
 
   const supabase = await createClient();
   const { error } = await supabase.from('newsletter_subscribers').insert({

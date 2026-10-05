@@ -477,5 +477,63 @@ begin
     'running it again confirms nothing, so a retry is safe');
 end $$;
 
+-- ---------------------------------------------------------------------------
+-- Rate limiting on the public write paths
+-- ---------------------------------------------------------------------------
+do $$
+declare v_ok boolean; i integer; v_allowed integer := 0;
+begin
+  -- Five allowed, the sixth refused.
+  for i in 1..6 loop
+    v_ok := public.consume_rate_limit('test:1.2.3.4', 5, 3600);
+    if v_ok then v_allowed := v_allowed + 1; end if;
+  end loop;
+
+  perform assert(v_allowed = 5, 'a limit of five allows exactly five');
+  perform assert(not public.consume_rate_limit('test:1.2.3.4', 5, 3600),
+    'and keeps refusing once the window is spent');
+
+  -- A different key has its own allowance, or one noisy visitor would lock out
+  -- everybody else.
+  perform assert(public.consume_rate_limit('test:5.6.7.8', 5, 3600),
+    'a different IP is unaffected');
+
+  -- A missing key must not mean unlimited, or stripping a header bypasses it.
+  perform assert(public.consume_rate_limit('', 2, 3600), 'an empty key is still counted');
+  perform assert(public.consume_rate_limit(null, 2, 3600), 'and so is a null one');
+  perform assert(not public.consume_rate_limit(null, 2, 3600),
+    'ACCEPTANCE: an unattributable request cannot bypass the limit by having no key');
+
+  -- Housekeeping removes old windows but not live ones.
+  insert into public.rate_limits (bucket, window_start, count)
+  values ('ancient', now() - interval '10 days', 1);
+  perform assert(public.prune_rate_limits() >= 1, 'pruning removes stale windows');
+  perform assert(
+    exists (select 1 from public.rate_limits where bucket = 'test:1.2.3.4'),
+    'but leaves the current one alone');
+end $$;
+
+-- A member must not be able to read or reset the counters.
+begin;
+  set local role authenticated;
+  do $$
+  declare v_count integer;
+  begin
+    begin
+      select count(*) into v_count from public.rate_limits;
+      perform assert(v_count = 0, 'a member reads no rate-limit rows');
+    exception when insufficient_privilege then
+      perform assert(true, 'a member cannot read the rate-limit table at all');
+    end;
+
+    begin
+      perform public.consume_rate_limit('anything', 1, 60);
+      perform assert(false, 'a member could spend somebody else''s allowance');
+    exception when insufficient_privilege then
+      perform assert(true, 'and cannot call the limiter directly');
+    end;
+  end $$;
+commit;
+
 drop function assert(boolean, text);
 drop function ready_member(text, integer);

@@ -1045,6 +1045,13 @@ export type Database = {
           created_at: string;
         }[];
       };
+      // --- Rate limiting (M9) ---
+      consume_rate_limit: {
+        Args: { p_key: string; p_max: number; p_window_seconds?: number };
+        Returns: boolean;
+      };
+      prune_rate_limits: { Args: Record<string, never>; Returns: number };
+
       // --- Automations (M8) ---
       due_first_class_follow_ups: {
         Args: Record<string, never>;

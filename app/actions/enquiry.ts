@@ -3,14 +3,15 @@
 import { headers } from 'next/headers';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 /**
  * Enquiry submission.
  *
  * Anonymous visitors may insert into `enquiries` (RLS permits it), so this is a
  * public write path and gets treated as one: validated with Zod, length-capped,
- * and with a honeypot. Proper rate limiting lands with the other public forms at
- * M8; the honeypot stops the simplest bots in the meantime.
+ * and with a honeypot — and now rate limited per IP with a global backstop,
+ * because a honeypot stops a naive bot and nothing else.
  */
 
 const schema = z.object({
@@ -34,6 +35,17 @@ export async function submitEnquiry(formData: FormData): Promise<EnquiryResult> 
 
   // Honeypot filled: accept silently, so the bot does not learn it was caught.
   if (parsed.data.website) return { ok: true };
+
+  // Checked AFTER validation and the honeypot, so malformed and obviously-bot
+  // submissions do not consume a real person's allowance.
+  const limit = await checkRateLimit('enquiries', 5);
+  if (!limit.allowed) {
+    return {
+      ok: false,
+      error:
+        'That is a lot of messages in a short time. Please wait a little while, or email Kelly directly.',
+    };
+  }
 
   const headerList = await headers();
   const forwarded = headerList.get('x-forwarded-for');
