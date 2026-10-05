@@ -183,7 +183,92 @@ implemented. The rest still stand.
 
 ## G. What I have NOT done, deliberately
 
-- Not written any application code (M0 is plan-and-design; you approve before M1).
-- Not invented a town, venue, price, class time, qualification, review or member count.
+Updated at M6. The first and last lines here were true at M0 only; the two that remain are
+standing rules for the whole build.
+
+- Not invented a town, venue, price, class time, qualification, review or member count. Every
+  value I could not get from Kelly is a settings row marked **unconfirmed**, listed in
+  `docs/INPUTS-TO-COMPLETE.yaml`, and visible as such on `/admin/settings`.
 - Not added stock photography.
-- Not installed any dependency or created `package.json` — that's M1's first commit.
+- Not published the waiver or PAR-Q. They work end to end and are marked DRAFT where a member
+  would see them; the publisher demands an explicit legal-review confirmation (see E1).
+- Not let the admin UI create member accounts. See H4.
+
+---
+
+## H. New at M6 (admin portal)
+
+### H1. Who else needs a login, and as what?
+
+The portal has two roles and the difference is deliberate: `admin` sees members, credits, revenue
+and settings; `instructor` sees today's classes and the register for sessions they teach, and
+nothing else. If Kelly ever has a cover teacher, that person should be an `instructor` — they can
+run the class without gaining access to the member list or the takings.
+
+**I need from Kelly:** the name and email of anyone besides her who should be able to log in, and
+which of the two they should be. Until she says otherwise she is the only `admin` and there are no
+`instructor` accounts.
+
+### H2. The nine unconfirmed settings need a pass
+
+`/admin/settings` shows every business rule as an editable row. Nine of them carry an
+**unconfirmed** marker, which exists so that a value I guessed cannot quietly become policy. Kelly
+ticks each one off once it is actually hers. In full:
+
+| Setting                        | Current                      | What Kelly needs to decide                                                                            |
+| ------------------------------ | ---------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `contact_email`                | _empty_                      | Blocks launch — booking confirmations need a reply-to, and the site shows no contact route without it |
+| `contact_phone`                | _empty_                      | Optional, but a local business without one loses enquiries                                            |
+| `instagram_handle`             | _empty_                      | Optional; the footer link is hidden while empty                                                       |
+| `late_cancel_fee_pence`        | `0`                          | Currently no charge for cancelling inside 24h. Is that the intent, or should it cost a credit?        |
+| `no_show_auto_mark_mins`       | `30`                         | From the brief; nobody has checked it against how her classes actually run                            |
+| `membership_grace_period_days` | `7`                          | How long a failed subscription payment keeps access before it lapses                                  |
+| `membership_rollover_cap`      | `0`                          | `0` = unused credits never roll over into the next month                                              |
+| `vat_registered`               | `false`                      | Affects receipts. Almost certainly correct at this turnover, but it is a tax question, not mine       |
+| `pack_expiry_days_note`        | 5-pack 180 days, 10-pack 365 | My guess. Pack expiry is the setting members complain about, so it should be hers                     |
+
+Three values I was asked for directly are **confirmed** and not in that list: capacity 25, class
+price £5, and the 24-hour cancellation window.
+
+One more worth surfacing even though it is marked confirmed:
+`no_show_auto_mark_requires_confirmation` is `true`, which implements the pending no-show I argued
+for in F1 rather than the brief's straight auto-mark — the automatic mark creates a _pending_
+no-show that Kelly confirms with one tap from the Today view, and it auto-confirms after 48 hours.
+**If she would rather have the brief's behaviour, that is a one-row change and no code.**
+
+### H3. The at-risk report needs a definition from Kelly, not from me
+
+`report_at_risk` lists members who have attended at least one class and not attended for **21
+days** — that number is mine, and it is the whole definition. It deliberately has no "used to come
+regularly" threshold, so somebody who came once and never returned appears too; for a business
+this size that is a feature, because that person is the most winnable and the easiest to miss.
+
+For a class running twice a week, 21 days is six missed chances. Kelly knows her members and knows
+which of them simply go away in August. **This is the kind of threshold that is obvious once the
+person who runs the business looks at it** — and if 21 proves wrong it should become a settings row
+rather than a number in two call sites.
+
+### H4. The walk-in form will not create an account, and I think that is right
+
+Registering a walk-in requires an existing account. The form explains why and asks the person to
+sign up on their phone, which takes under a minute.
+
+The alternative — Kelly creating the account herself — means she accepts a waiver and a health
+declaration on their behalf. That record is worth nothing to an insurer, and it is a false
+statement in exactly the place where the truth matters. The 60 seconds of friction buys a record
+that holds up.
+
+**Flagging it because it is a real operational cost** and Kelly is the one who pays it, on a
+Monday evening with somebody standing in front of her. If it turns out to be a genuine problem in
+practice, the honest fix is a fast sign-up link (QR code on the door) rather than letting her sign
+for other people.
+
+### H5. Revenue reporting is a rolling window, not a tax year
+
+`report_revenue` groups by calendar month over a rolling window — 12 months on screen, 24 in the
+CSV export. That answers "how is it going" well and "what do I give my accountant" only
+approximately, since it does not align to the UK tax year (6 April).
+
+**If Kelly's accountant wants figures to a year end**, the report needs an explicit date range
+rather than a month count. Small change, but I would rather build it once I know whether anyone
+actually needs it than guess at a year end.

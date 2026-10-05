@@ -2,6 +2,80 @@
 
 ## [Unreleased]
 
+### M6 — Admin and instructor portal
+
+The half of the product Kelly actually lives in. Everything that previously required a developer
+with database access is now a page she can reach on her phone between classes.
+
+**The register is built for a cold village hall, not a desk.** Thumb-sized Here / No-show buttons
+that respond immediately and reconcile with the server afterwards, because a tap that appears to
+do nothing gets tapped again. First-timers carry a badge, so Kelly knows who to greet and who
+needs the beginner's explanation before the music starts. A flagged health answer shows as a
+discreet marker that expands on tap — the detail is one deliberate action away rather than on
+display in a room full of people, which is the right default for special category data.
+
+**Walk-ins are registered against an existing account, and the form refuses to create one.** It
+would mean accepting a waiver and a health declaration on somebody's behalf, which is worth
+nothing to an insurer and is a lie in the record. Instead it asks the person to sign up on their
+phone there and then, which takes under a minute and produces evidence that holds.
+
+**A cover teacher is not an administrator.** The instructor role gets today's classes and the
+register for sessions they are teaching, and nothing else — no member list, no credit ledger, no
+revenue. That boundary is enforced in the database, not in the navigation, and
+`tests/db/admin.sql` asserts each half of it: the register they can reach, and the four things
+they cannot.
+
+**Every state change that touches money or capacity is audited** to an append-only table — who,
+when, what the value was before, what it is now. `admin_adjust_credits` will not run without a
+reason, because an unexplained adjustment is indistinguishable from a mistake six months later.
+
+**Cancelling a class tells you the cost before you commit**: the confirmation names how many
+people are booked and that all of them will be refunded in full, then does exactly that
+(ACCEPTANCE TEST 7). Capacity can be raised and lowered, but never below the number already
+booked — and raising it immediately books whoever is next on the waitlist, verified in test.
+
+**Settings are editable, which is what made "nothing hard-coded" true rather than aspirational.**
+The 25-space capacity, the £5 class price, the 24-hour cancellation window and the rest are rows
+Kelly can change, grouped by what they affect rather than by column name, each showing the
+business consequence in plain words. The ones I filled in with assumptions are marked
+"unconfirmed" until she ticks them off, so a placeholder cannot quietly become a fact.
+
+**Reports export as CSV** — attendance, revenue, and an at-risk list of members who used to come
+and have stopped. Cells that a spreadsheet would execute (`=`, `+`, `-`, `@`) are neutralised,
+because the names in those files come from a public sign-up form and the person opening them is
+not thinking about formula injection.
+
+**The content page is how the launch blocker gets cleared.** The waiver publisher will not publish
+without an explicit confirmation that the wording has been checked against the insurance policy
+and reviewed by a legal professional — a tick Kelly can only honestly give after that has
+happened.
+
+**Closed a hole I had left in my own design.** `docs/03 §F1` argued against the brief's straight
+auto-marking of no-shows: an automated mark occasionally punishes somebody Kelly simply forgot to
+check in, and that member cannot prove otherwise. The agreed design was a _pending_ no-show that
+Kelly confirms, or that auto-confirms after 48 hours. The first half was built at M5; nothing ever
+did the auto-confirming, so pending no-shows stayed pending for ever — a record permanently
+provisional, which is manual admin wearing a different hat.
+
+Now `confirm_pending_no_shows()` settles undisputed ones after a settings-driven window, Kelly's
+correction always beats the job (verified by a test that fails when the guard is removed), and the
+register shows a pending no-show as a question — "Marked absent — confirm?" — rather than as
+settled, so the one row that still wants a human does not get scrolled past.
+
+Never a money bug: `forfeit_credit` is passive, so a pending row cost nobody anything. It was the
+attendance record, and the honesty of Kelly's own reports, that needed it.
+
+**Both nightly jobs now have somewhere to be called from**, and the README says how to schedule
+them. They stay `POST`-only and run from pg_cron rather than Vercel Cron, because Vercel Cron
+issues a `GET` and a prefetch or a crawler should not be able to mark a hall full of members
+absent.
+
+**Fixed a flaw in the test harness itself**: `run.sh` filtered output to lines matching
+`PASS|FAIL`, which silently swallowed real psql `ERROR` lines — a suite could abort and show
+nothing but its last success. It now surfaces `ERROR`, `DETAIL` and `CONTEXT`. Found by hitting it.
+
+232 unit and component tests (was 217), 216 database checks (was 177), 53 routes building clean.
+
 ### M3 — Onboarding
 
 Booking now works end to end: the gate M5 enforces has a flow behind it.

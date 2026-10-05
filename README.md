@@ -154,6 +154,25 @@ Credits are consumed soonest-expiry-first (a never-expiring credit goes last, be
 cannot be lost by waiting), and a refund restores the credit **with its original expiry**, so
 cancelling cannot be used to extend a pack. Every path has a test in `tests/db/ledger.sql`.
 
+### The admin portal
+
+`/admin` is Kelly's half of the product. Two roles reach it and they are not the same: `admin`
+sees everything, `instructor` sees today's classes and the register for sessions they are teaching
+and nothing more. **The boundary lives in the database**, not in which links the nav renders — a
+cover teacher who guesses a URL still gets nothing, and `tests/db/admin.sql` asserts both halves.
+
+Every admin mutation goes through a `SECURITY DEFINER` function that writes to `audit_log`, an
+append-only record of who changed what, from which value to which. `admin_adjust_credits` requires
+a reason string; an adjustment nobody explained is indistinguishable from an accident later.
+
+The register assumes a phone held in one hand in a cold hall: large tap targets, optimistic
+state, and flagged health answers behind one deliberate tap rather than on display in a room full
+of people.
+
+Walk-ins attach to an existing account and the form will not create one, because that would mean
+accepting a waiver and a health declaration on someone's behalf — worthless to an insurer and
+false in the record.
+
 ---
 
 ## Environment variables
@@ -198,9 +217,39 @@ Not yet connected. To set it up:
 2. Add the environment variables from `.env.example` for Production and Preview.
 3. Point the Supabase project's auth redirect URLs at the deployed domain plus
    `/auth/callback`.
-4. Domain, DNS and email authentication (SPF/DKIM/DMARC for Resend) are M9.
+4. **Schedule the two nightly jobs** (below) — nothing runs them automatically yet.
+5. Domain, DNS and email authentication (SPF/DKIM/DMARC for Resend) are M9.
 
 Every push gets a preview deployment once the repository is connected.
+
+### Scheduled jobs
+
+Two endpoints need a nightly trigger, both authenticated with `CRON_SECRET`:
+
+| Endpoint                   | When  | What it does                                                     |
+| -------------------------- | ----- | ---------------------------------------------------------------- |
+| `/api/cron/attendance`     | 02:00 | Auto-marks unchecked-in bookings, then confirms pending no-shows |
+| `/api/cron/expire-credits` | 02:30 | Writes the audit rows explaining expired credits                 |
+
+They are scheduled with Supabase **pg_cron**, not Vercel Cron, for one concrete
+reason: Vercel Cron issues a `GET`, and both of these mutate data. Keeping them
+`POST`-only means a crawler, a prefetch or an accidental browser visit cannot
+mark a hall full of members absent.
+
+```sql
+select cron.schedule('attendance', '0 2 * * *', $$
+  select net.http_post(
+    url     := 'https://<domain>/api/cron/attendance',
+    headers := jsonb_build_object('x-cron-secret', '<CRON_SECRET>')
+  );
+$$);
+```
+
+Neither job is load-bearing for correctness. Credit expiry only writes the
+explanation — `credit_balance` already ignores expired lots by date, so a missed
+run can never let somebody book on dead credits. Attendance fails in the safe
+direction too: if it does not run, bookings stay `booked` and nobody is marked
+absent by a job that never happened.
 
 ---
 

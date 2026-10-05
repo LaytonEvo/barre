@@ -42,27 +42,32 @@ run "$ROOT/supabase/seed.sql"
 echo
 echo "== invariants =="
 psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB" -v ON_ERROR_STOP=1 -q \
-  -f "$ROOT/tests/db/invariants.sql" 2>&1 | sed 's/^NOTICE:  //' | grep -E 'PASS|FAIL|SKIP'
+  -f "$ROOT/tests/db/invariants.sql" 2>&1 | sed 's/^NOTICE:  //' | grep -E 'PASS|FAIL|SKIP|ERROR|DETAIL|CONTEXT'
 
 echo
 echo "== credit ledger =="
 psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB" -v ON_ERROR_STOP=1 -q \
-  -f "$ROOT/tests/db/ledger.sql" 2>&1 | sed 's/^NOTICE:  //' | grep -E 'PASS|FAIL'
+  -f "$ROOT/tests/db/ledger.sql" 2>&1 | sed 's/^NOTICE:  //' | grep -E 'PASS|FAIL|ERROR|DETAIL|CONTEXT'
 
 echo
 echo "== booking engine =="
 psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB" -v ON_ERROR_STOP=1 -q \
-  -f "$ROOT/tests/db/booking.sql" 2>&1 | sed 's/^NOTICE:  //' | grep -E 'PASS|FAIL'
+  -f "$ROOT/tests/db/booking.sql" 2>&1 | sed 's/^NOTICE:  //' | grep -E 'PASS|FAIL|ERROR|DETAIL|CONTEXT'
 
 echo
 echo "== onboarding =="
 psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB" -v ON_ERROR_STOP=1 -q \
-  -f "$ROOT/tests/db/onboarding.sql" 2>&1 | sed 's/^NOTICE:  //' | grep -E 'PASS|FAIL'
+  -f "$ROOT/tests/db/onboarding.sql" 2>&1 | sed 's/^NOTICE:  //' | grep -E 'PASS|FAIL|ERROR|DETAIL|CONTEXT'
+
+echo
+echo "== admin =="
+psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB" -v ON_ERROR_STOP=1 -q \
+  -f "$ROOT/tests/db/admin.sql" 2>&1 | sed 's/^NOTICE:  //' | grep -E 'PASS|FAIL|ERROR|DETAIL|CONTEXT'
 
 echo
 echo "== rls =="
 psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB" -v ON_ERROR_STOP=1 -q \
-  -f "$ROOT/tests/db/rls.sql" 2>&1 | sed 's/^NOTICE:  //' | grep -E 'PASS|FAIL'
+  -f "$ROOT/tests/db/rls.sql" 2>&1 | sed 's/^NOTICE:  //' | grep -E 'PASS|FAIL|ERROR|DETAIL|CONTEXT'
 
 echo
 echo "== concurrency (acceptance test 5) =="

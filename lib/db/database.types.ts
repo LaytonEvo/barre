@@ -169,6 +169,51 @@ export type Database = {
         Relationships: [];
       };
 
+      schedule_templates: {
+        Row: Timestamped & {
+          id: string;
+          class_type_id: string;
+          venue_id: string;
+          instructor_id: string;
+          weekday: number;
+          start_time_local: string;
+          duration_mins: number;
+          capacity: number;
+          effective_from: string;
+          effective_to: string | null;
+          active: boolean;
+        };
+        Insert: {
+          class_type_id: string;
+          venue_id: string;
+          instructor_id: string;
+          weekday: number;
+          start_time_local: string;
+          duration_mins: number;
+          capacity: number;
+          effective_from: string;
+        } & Partial<Record<string, unknown>>;
+        Update: Partial<Record<string, unknown>>;
+        Relationships: [];
+      };
+
+      audit_log: {
+        Row: {
+          id: number;
+          actor_id: string | null;
+          action: string;
+          entity: string;
+          entity_id: string | null;
+          before: Json | null;
+          after: Json | null;
+          ip_address: string | null;
+          created_at: string;
+        };
+        Insert: { action: string; entity: string } & Partial<Record<string, unknown>>;
+        Update: never;
+        Relationships: [];
+      };
+
       class_sessions: {
         Row: Timestamped & {
           id: string;
@@ -655,12 +700,119 @@ export type Database = {
       cancel_session: { Args: { p_session_id: string; p_reason: string }; Returns: number };
       mark_attendance: { Args: { p_booking_id: string; p_status: string }; Returns: undefined };
       auto_mark_no_shows: { Args: Record<string, never>; Returns: number };
+      confirm_pending_no_shows: { Args: Record<string, never>; Returns: number };
       publish_waiver_version: {
         Args: { p_version_label: string; p_body_markdown: string; p_body_sha256: string };
         Returns: string;
       };
       export_member_data: { Args: { p_user_id?: string }; Returns: Json };
       anonymise_member: { Args: { p_user_id: string; p_reason?: string }; Returns: undefined };
+      register_for_session: {
+        Args: { p_session_id: string };
+        Returns: {
+          booking_id: string;
+          user_id: string;
+          full_name: string | null;
+          initials: string | null;
+          status:
+            | 'booked'
+            | 'attended'
+            | 'no_show_pending'
+            | 'no_show'
+            | 'cancelled_in_window'
+            | 'cancelled_late';
+          source: 'member' | 'admin' | 'walk_in' | 'waitlist';
+          entitlement_kind: string;
+          is_first_class: boolean;
+          attended_count: number;
+          health_flagged: boolean;
+          health_summary: string | null;
+          health_reviewed: boolean;
+          waiver_signed: boolean;
+          emergency_contact: string | null;
+        }[];
+      };
+      admin_today: {
+        Args: { p_date?: string | null };
+        Returns: {
+          session_id: string;
+          starts_at: string;
+          ends_at: string;
+          class_name: string;
+          venue_name: string;
+          instructor: string;
+          capacity: number;
+          booked: number;
+          waitlist: number;
+          first_timers: number;
+          flagged: number;
+          status: 'scheduled' | 'cancelled';
+          all_marked: boolean;
+        }[];
+      };
+      admin_search_members: {
+        Args: { p_query?: string | null };
+        Returns: {
+          user_id: string;
+          full_name: string | null;
+          email: string;
+          phone: string | null;
+          credits: number;
+          attended: number;
+          last_booking: string | null;
+          health_flagged: boolean;
+          waiver_signed: boolean;
+          anonymised: boolean;
+        }[];
+      };
+      admin_adjust_credits: {
+        Args: { p_user_id: string; p_delta: number; p_reason: string };
+        Returns: number;
+      };
+      admin_set_session_capacity: {
+        Args: { p_session_id: string; p_capacity: number };
+        Returns: undefined;
+      };
+      admin_set_setting: {
+        Args: { p_key: string; p_value: Json; p_confirmed?: boolean };
+        Returns: undefined;
+      };
+      report_attendance: {
+        Args: { p_weeks?: number };
+        Returns: {
+          week_starting: string;
+          sessions: number;
+          capacity: number;
+          booked: number;
+          attended: number;
+          no_shows: number;
+          fill_rate: number;
+        }[];
+      };
+      report_revenue: {
+        Args: { p_months?: number };
+        Returns: {
+          month: string;
+          product_name: string;
+          purchases: number;
+          gross_pence: number;
+          refunded_pence: number;
+          net_pence: number;
+        }[];
+      };
+      report_at_risk: {
+        Args: { p_days?: number };
+        Returns: {
+          user_id: string;
+          full_name: string | null;
+          email: string;
+          last_class: string;
+          days_since: number;
+          attended_total: number;
+          credits: number;
+          marketing_ok: boolean;
+        }[];
+      };
       promote_from_waitlist: { Args: { p_session_id: string }; Returns: string | null };
     };
 
