@@ -66,6 +66,31 @@ anything. Without it the queue grows and no member hears from the system.
 
 ---
 
+## 1.6 Staging, and keeping it private
+
+The site is being built as a surprise, so staging is closed by default:
+
+- `NEXT_PUBLIC_SITE_ENV` defaults to `staging` when unset. On anything but
+  `production` the site serves `Disallow: /`, a `noindex` meta tag and an empty
+  sitemap. Both the robots file and the meta tag are needed: robots.txt asks a
+  crawler not to fetch, the meta tag is what keeps a page out of the index when
+  somebody links to it.
+- `STAGING_PASSWORD` puts the whole site behind a browser password prompt. Any
+  username works. `/api/*` stays open, because webhooks and cron authenticate
+  themselves and cannot type a password.
+
+Both are read at **run time**, so one build can serve either environment — the
+`robots.txt` and `sitemap.xml` routes are deliberately dynamic for that reason.
+A statically generated version froze to whatever the build knew, which would have
+meant a staging artifact promoted to production kept serving `Disallow: /`
+without anything looking wrong.
+
+**At launch**: set `NEXT_PUBLIC_SITE_ENV=production` and clear `STAGING_PASSWORD`.
+Check `https://<domain>/robots.txt` says `Allow: /` afterwards — that one line is
+the difference between being found and not.
+
+---
+
 ## 2. Domain, DNS and email authentication
 
 Do this once, with Resend, and it covers both deliverability and §1.1.

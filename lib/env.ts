@@ -14,6 +14,15 @@ const clientSchema = z.object({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
   NEXT_PUBLIC_SITE_URL: z.string().url(),
   NEXT_PUBLIC_PLAUSIBLE_DOMAIN: z.string().optional(),
+  /**
+   * Which deployment this is.
+   *
+   * Defaults to 'staging' deliberately. A forgotten variable then means "do not
+   * let search engines near it", which is the safe direction to fail in: a
+   * staging site quietly indexed is very hard to undo, and this one is a
+   * surprise for the person it is named after.
+   */
+  NEXT_PUBLIC_SITE_ENV: z.enum(['production', 'staging']).default('staging'),
 });
 
 const serverSchema = z.object({
@@ -58,6 +67,7 @@ export const clientEnv = parse(
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_PLAUSIBLE_DOMAIN: process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN,
+    NEXT_PUBLIC_SITE_ENV: process.env.NEXT_PUBLIC_SITE_ENV,
   },
   'client',
 );

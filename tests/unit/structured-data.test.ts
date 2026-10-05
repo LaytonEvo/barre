@@ -39,6 +39,7 @@ const session: TimetableSession = {
   endsAt: '2026-10-05T18:25:00Z',
   capacity: 16,
   status: 'scheduled',
+  hasStarted: false,
   note: null,
   classType: { name: 'Barre', slug: 'barre', level: 'all_levels' },
   venue: { name: villageHall.name, slug: villageHall.slug, city: 'Ringwood' },

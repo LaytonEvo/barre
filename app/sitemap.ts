@@ -1,6 +1,16 @@
 import type { MetadataRoute } from 'next';
 import { createPublicClient, listClassTypes, listVenues } from '@/lib/queries/catalogue';
-import { siteUrl } from '@/lib/seo/site';
+import { IS_PRODUCTION_SITE, siteUrl } from '@/lib/seo/site';
+
+/**
+ * Computed per request rather than prerendered.
+ *
+ * `NEXT_PUBLIC_SITE_ENV` is read at build time for a statically generated route,
+ * which froze sitemap to whatever the BUILD knew. A single artifact promoted from
+ * staging to production would then keep serving the staging answer — and the
+ * failure is invisible, because the page itself looks right.
+ */
+export const dynamic = 'force-dynamic';
 
 /**
  * Generated from the database, so a new venue or class type appears in the
@@ -10,6 +20,10 @@ import { siteUrl } from '@/lib/seo/site';
  * — robots.ts disallows them too.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // Nothing to offer a crawler on staging, and offering it would undercut the
+  // noindex everywhere else.
+  if (!IS_PRODUCTION_SITE) return [];
+
   // Runs without a request during prerender, so use the anonymous client.
   const client = createPublicClient();
   const [venues, classTypes] = await Promise.all([listVenues(client), listClassTypes(client)]);

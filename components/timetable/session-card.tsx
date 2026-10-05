@@ -25,6 +25,11 @@ export function SessionCard({
   signedIn?: boolean;
 }) {
   const cancelled = session.status === 'cancelled';
+  // A class earlier the same day is still in the week view, and was still
+  // offering a Book button that could only ever fail with "that class has
+  // already started". Showing it as finished is honest and one fewer dead end.
+  // Decided on the server's clock, where the booking engine's is.
+  const started = session.hasStarted;
   const state = availabilityState(session.spacesLeft, session.capacity);
   const mins = durationMins(session.startsAt, session.endsAt);
 
@@ -72,6 +77,8 @@ export function SessionCard({
       <div className="flex flex-wrap items-center justify-between gap-2">
         {cancelled ? (
           <Badge tone="cancelled">Cancelled</Badge>
+        ) : started ? (
+          <Badge tone="neutral">Finished</Badge>
         ) : (
           <>
             {/* No badge at all when availability is unknown. Saying "25 spaces

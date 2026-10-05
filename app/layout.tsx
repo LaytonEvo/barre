@@ -5,6 +5,7 @@ import { SiteHeader } from '@/components/site/site-header';
 import { AnnouncementBanner } from '@/components/site/announcement-banner';
 import { SiteFooter } from '@/components/site/site-footer';
 import { CookieConsent } from '@/components/site/cookie-consent';
+import { IS_PRODUCTION_SITE } from '@/lib/seo/site';
 
 const fraunces = Fraunces({
   subsets: ['latin'],
@@ -36,7 +37,12 @@ export const metadata: Metadata = {
     // app/opengraph-image.jpg is picked up automatically by Next.
   },
   twitter: { card: 'summary_large_image' },
-  robots: { index: true, follow: true },
+  // noindex on anything that is not the real site. robots.txt asks a crawler not
+  // to fetch; this tag is what actually keeps a page out of the index when
+  // somebody links to it, so both are needed.
+  robots: IS_PRODUCTION_SITE
+    ? { index: true, follow: true }
+    : { index: false, follow: false, nocache: true },
 };
 
 export const viewport: Viewport = {

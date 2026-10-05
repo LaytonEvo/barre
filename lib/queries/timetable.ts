@@ -11,6 +11,13 @@ export type TimetableSession = {
   classType: { name: string; slug: string; level: string };
   venue: { name: string; slug: string; city: string | null };
   instructor: { displayName: string };
+  /**
+   * Whether the class has already begun, decided on the SERVER's clock.
+   *
+   * Computed here rather than in the card: calling Date.now() during render is
+   * impure, and the browser's clock is not the one the booking engine uses.
+   */
+  hasStarted: boolean;
   /** `null` when availability could not be read — never guessed. */
   spacesLeft: number | null;
   bookedCount: number | null;
@@ -55,6 +62,9 @@ async function withAvailability(rows: SessionRow[]): Promise<TimetableSession[]>
     );
 
   const byId = new Map((availability ?? []).map((a) => [a.session_id, a]));
+  // One timestamp for the whole batch, so two cards in the same list cannot
+  // disagree about whether a class has started.
+  const now = Date.now();
 
   return rows.flatMap((row) => {
     // An inner join guarantees these, but the generated types cannot express
@@ -70,6 +80,7 @@ async function withAvailability(rows: SessionRow[]): Promise<TimetableSession[]>
         capacity: row.capacity,
         status: row.status,
         note: row.note,
+        hasStarted: new Date(row.starts_at).getTime() <= now,
         classType: row.class_types,
         venue: row.venues,
         instructor: { displayName: row.instructors.display_name },

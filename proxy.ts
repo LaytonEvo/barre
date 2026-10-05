@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { stagingGate } from '@/lib/staging-gate';
 
 /**
  * Refreshes the Supabase session on every request so Server Components see a
@@ -13,6 +14,11 @@ import { createServerClient } from '@supabase/ssr';
 const GATED_PREFIXES = ['/account', '/admin'];
 
 export async function proxy(request: NextRequest) {
+  // Before anything else, including the Supabase round trip: a visitor without
+  // the staging password should not reach the application at all.
+  const challenge = stagingGate(request);
+  if (challenge) return challenge;
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(

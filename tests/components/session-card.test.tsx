@@ -15,6 +15,7 @@ const base: TimetableSession = {
   endsAt: '2026-10-05T18:25:00Z',
   capacity: 25,
   status: 'scheduled',
+  hasStarted: false,
   note: null,
   classType: { name: 'Barre', slug: 'barre', level: 'all_levels' },
   venue: {
@@ -141,5 +142,19 @@ describe('SessionCard', () => {
     // browser parses it as `datetime` either way — but pinning the exact casing
     // would make this test fail on a React upgrade for no real reason.
     expect(render(base)).toMatch(/datetime="2026-10-05T17:30:00Z"/i);
+  });
+});
+
+describe('a class that has already started', () => {
+  it('shows as finished instead of offering a Book button that can only fail', () => {
+    // The week view includes earlier classes today. Booking one returns "that
+    // class has already started", so offering the button was a dead end.
+    const html = render({ ...base, hasStarted: true });
+    expect(html).toContain('Finished');
+    expect(html).not.toContain('>Book<');
+  });
+
+  it('still offers Book on a class that has not started', () => {
+    expect(render({ ...base, hasStarted: false })).toContain('Book');
   });
 });

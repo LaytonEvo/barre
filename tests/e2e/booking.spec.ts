@@ -27,21 +27,17 @@ test.describe('booking', () => {
     await login(page, member.email);
     await page.goto(`/timetable`);
 
-    // Find the card for our session by its booking form, then book.
-    const card = page.locator(`[data-session-id="${sessionId}"]`);
-    const hasTestId = (await card.count()) > 0;
+    // The card carries the session id as its DOM id, so book THE session this
+    // test created. Clicking "the first Book button" picked up whatever else was
+    // on the page — including a class earlier the same day, which could only
+    // ever fail with "that class has already started".
+    // An attribute selector, not `#id`: a CSS id selector cannot begin with a
+    // digit and a UUID often does.
+    const card = page.locator(`[id="${sessionId}"]`);
+    await expect(card).toBeVisible();
+    await card.getByRole('button', { name: /^Book$/ }).click();
 
-    if (hasTestId) {
-      await card.getByRole('button', { name: /^Book$/ }).click();
-    } else {
-      // The card carries no test id, so fall back to the first bookable class.
-      await page
-        .getByRole('button', { name: /^Book$/ })
-        .first()
-        .click();
-    }
-
-    await expect(page.getByText(/booked|you're in|see you/i).first()).toBeVisible({
+    await expect(card.getByText(/booked|see you/i).first()).toBeVisible({
       timeout: 15_000,
     });
 
