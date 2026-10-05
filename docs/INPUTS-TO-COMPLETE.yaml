@@ -1,0 +1,172 @@
+# =============================================================================
+# Barre By Kelly — inputs needed to continue
+#
+# Fill in what you have and leave the rest. Partial is genuinely useful: each
+# block unblocks different work, so anything you complete lets me start that
+# piece. Replace TODO with the value; delete the "# blocks:" comments if you like.
+#
+# Anything still TODO stays a visible placeholder in the product — I won't guess
+# a venue, price, class time, qualification or review.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. THE ONE THAT UNBLOCKS MOST
+#
+# Every local-SEO decision depends on this: page titles, the LocalBusiness and
+# Event structured data, "barre classes [town]" targeting, the map embeds.
+# Without it, M2's SEO work is guesswork I'd have to redo.
+# -----------------------------------------------------------------------------
+location:
+  town: TODO # the town or area people would search for
+  county: TODO # optional, helps disambiguate
+  nearby_towns: [] # optional: places worth targeting too
+
+# -----------------------------------------------------------------------------
+# 2. IDENTITY AND CONTACT
+# blocks: footer, /contact, /about, email "from" address, DNS at M9
+# -----------------------------------------------------------------------------
+business:
+  instructor_surname: TODO
+  how_kelly_wants_crediting: TODO # e.g. "Kelly Smith" / "Kelly" / "Kelly, Barre By Kelly"
+  contact_email: TODO
+  contact_phone: TODO
+  instagram_handle: TODO # with or without the @
+  domain: TODO # e.g. barrebykelly.co.uk — bought already, or to buy?
+
+  # Exact wording please. I won't paraphrase or infer a certification: stating a
+  # qualification someone doesn't hold is a real problem, not a copy nit.
+  qualifications:
+    - TODO
+
+  # Does a Google Business Profile exist? Are there reviews on it?
+  # The homepage renders an empty reviews state until real ones exist.
+  google_business_profile: TODO # URL, or "none yet"
+
+# -----------------------------------------------------------------------------
+# 3. VENUES
+# blocks: /locations/[slug] (one page per venue, the main local-SEO asset),
+#         and capacity feeds the booking engine
+# -----------------------------------------------------------------------------
+venues:
+  - name: TODO
+    address: TODO # full address
+    postcode: TODO
+    capacity: TODO # max people per class here
+    parking: TODO
+    access_notes: TODO # entrance, changing, toilets, stairs/step-free
+    equipment_provided: TODO # mats? small balls? weights? nothing?
+  # - add more venues as needed
+
+# -----------------------------------------------------------------------------
+# 4. CLASSES AND TIMETABLE
+# blocks: /timetable, /classes/[slug], and the schedule_templates rows
+# -----------------------------------------------------------------------------
+class_types:
+  - name: TODO # e.g. the name Kelly actually uses
+    level: TODO # all levels / beginner / improver
+    duration_mins: TODO
+    what_to_expect: TODO # a sentence or two in Kelly's words is ideal
+    what_to_bring: TODO
+
+timetable:
+  - day: TODO # Monday … Sunday
+    time: TODO # HH:MM, 24h
+    duration_mins: TODO
+    class_type: TODO # must match a name above
+    venue: TODO # must match a venue name above
+  # three rows expected for now, per the brief
+
+# -----------------------------------------------------------------------------
+# 5. PRICING
+# blocks: M4 (Stripe products, Checkout) and /pricing
+# All values in pounds, e.g. 12.50
+# -----------------------------------------------------------------------------
+pricing:
+  drop_in: TODO
+
+  intro_offer:
+    type: TODO # "single_class" or "days_unlimited"
+    price: TODO
+    days: TODO # only if days_unlimited
+
+  packs:
+    - classes: 5
+      price: TODO
+      expiry_days: TODO
+    - classes: 10
+      price: TODO
+      expiry_days: TODO
+
+  memberships:
+    - name: TODO # e.g. "4 classes a month"
+      price_monthly: TODO
+      credits_per_month: TODO # a number, or "unlimited"
+    # - add more tiers
+
+  on_demand_only_monthly: TODO # price, or "members only", or "not offering"
+
+  vat_registered: TODO # true / false
+
+# -----------------------------------------------------------------------------
+# 6. BOOKING AND CANCELLATION RULES
+# blocks: M5. These are the 19 settings currently marked unconfirmed in /admin.
+# The brief's own "e.g." figures are in brackets as a starting point.
+# -----------------------------------------------------------------------------
+policies:
+  cancellation_window_hours: TODO # [brief suggested 12]
+  late_cancel_penalty: TODO # forfeit_credit / fee / none
+  late_cancel_fee: TODO # £, only if penalty is "fee"
+  no_show_penalty: TODO # forfeit_credit / fee / none — same as late cancel?
+  booking_window_days: TODO # [brief suggested 14]
+  waitlist_cutoff_hours: TODO # [brief suggested 2]
+  unlimited_max_bookings_per_day: TODO # stops one member holding the whole timetable
+  membership_credit_rollover: TODO # expire / rollover
+  membership_rollover_cap: TODO # only if rollover
+  class_cancelled_default_remedy: TODO # refund / credit (drop-in payers can choose either)
+  pack_holders_get_video_access: TODO # true / false
+
+  # Card-fingerprint blocking is the strongest intro-offer check, but it can
+  # catch a genuine second person sharing a household card.
+  intro_offer_card_blocking: TODO # "block" or "flag_for_review"
+
+# -----------------------------------------------------------------------------
+# 7. QUICK YES / NO
+# -----------------------------------------------------------------------------
+decisions:
+  # Auto no-show marking at +30 mins. If it carries a financial penalty it will
+  # occasionally charge someone Kelly forgot to check in, with no way for them
+  # to prove otherwise. My suggestion: the auto-mark creates a PENDING no-show
+  # Kelly confirms with one tap (auto-confirming after 48h). Still no routine
+  # admin, but a mistake is recoverable. Already built this way, easy to switch.
+  no_show_requires_confirmation: TODO # true (my recommendation) / false
+
+  sentry_error_monitoring: TODO # true / false — free tier
+  separate_layton_admin_account: TODO # true / false — so the audit log tells you apart
+  build_sms_behind_flag_at_m8: TODO # true / false
+
+  # Mux charges per minute stored and streamed. Confirm before M7, not now.
+  mux_confirmed: TODO # true / false / "decide later"
+
+# -----------------------------------------------------------------------------
+# 8. THINGS ONLY KELLY CAN SUPPLY
+# -----------------------------------------------------------------------------
+from_kelly:
+  # Drop into /brand — see brand/README.md for the full list.
+  # Originals from her phone beat Facebook downloads: Facebook recompresses hard,
+  # and photography is the biggest visual-quality lever on the whole site.
+  brand_assets_supplied: TODO # true / false
+
+  # Her insurer very likely has required waiver wording. I'll draft something
+  # sensible, clearly marked DRAFT, but it must not go live unreviewed.
+  insurer_waiver_wording_available: TODO # true / false / "asking her"
+
+  # ⚠️ She processes health data (PAR-Q), which is special category data under
+  # UK GDPR. She almost certainly needs to pay the ICO data protection fee
+  # (~£52/yr for most small businesses). There are penalties for not registering
+  # when required. This is the compliance item most likely to be missed.
+  ico_registration_checked: TODO # true / false / "asking her"
+
+  data_controller_name: TODO # for the privacy policy
+  data_controller_address: TODO
+
+  tone_notes_supplied: TODO # true / false — brand/notes.md
