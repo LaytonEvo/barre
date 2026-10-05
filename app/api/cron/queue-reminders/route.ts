@@ -5,13 +5,20 @@ import { createAdminClient } from '@/lib/supabase/admin';
 /**
  * Queue class reminders.
  *
- * This only writes rows into `notifications`; sending is M8. Splitting the two
- * means the decision about WHO gets a reminder is made once, deterministically,
- * and can be inspected before anything leaves the building.
+ * This only writes rows into `notifications`; `/api/cron/send-email` sends them.
+ * Splitting the two means the decision about WHO gets a reminder is made once,
+ * deterministically, and can be inspected before anything leaves the building.
+ *
+ * The selection and the payload are both in `queue_class_reminders()`. They used
+ * to be here, and the payload was wrong: it carried `{booking_id, hours_before}`
+ * while the template needs the class, the time, the venue and the cancellation
+ * window, so every reminder would have failed to render. Building it from
+ * `booking_email_payload` — the same function the confirmation email uses — is
+ * what stops that happening again.
  *
  * Double-sending is prevented by the unique index on
- * (user_id, template, subject_type, subject_id), so two overlapping runs cannot
- * both queue the same reminder — the second loses on the index rather than
+ * (user_id, template, subject_type, subject_id): two overlapping runs cannot both
+ * queue the same reminder, because the second loses on the index rather than
  * relying on this code to remember.
  */
 export const dynamic = 'force-dynamic';
@@ -30,52 +37,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorised.' }, { status: 401 });
   }
 
-  const db = createAdminClient();
+  const { data, error } = await createAdminClient().rpc('queue_class_reminders');
 
-  const { data: setting } = await db
-    .from('settings')
-    .select('value')
-    .eq('key', 'reminder_offsets_hours')
-    .maybeSingle();
-
-  const offsets = Array.isArray(setting?.value) ? (setting.value as number[]) : [24, 2];
-
-  let queued = 0;
-
-  for (const hours of offsets) {
-    // Sessions starting inside this offset but not yet inside the next one down.
-    const windowStart = new Date(Date.now() + hours * 3_600_000 - 30 * 60_000).toISOString();
-    const windowEnd = new Date(Date.now() + hours * 3_600_000 + 30 * 60_000).toISOString();
-
-    const { data: sessions } = await db
-      .from('class_sessions')
-      .select('id, starts_at')
-      .eq('status', 'scheduled')
-      .gte('starts_at', windowStart)
-      .lt('starts_at', windowEnd);
-
-    for (const session of sessions ?? []) {
-      const { data: bookings } = await db
-        .from('bookings')
-        .select('id, user_id')
-        .eq('session_id', session.id)
-        .eq('status', 'booked');
-
-      for (const booking of bookings ?? []) {
-        const { error } = await db.from('notifications').insert({
-          user_id: booking.user_id,
-          template: `reminder_${hours}h`,
-          subject_type: 'class_session',
-          subject_id: session.id,
-          scheduled_for: new Date().toISOString(),
-          payload: { booking_id: booking.id, hours_before: hours },
-        });
-
-        // 23505 is the dedupe index doing its job, not a failure.
-        if (!error) queued += 1;
-      }
-    }
+  if (error) {
+    console.error('Queueing reminders failed', error);
+    return NextResponse.json({ error: 'Could not queue reminders.' }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, queued });
+  return NextResponse.json({ ok: true, queued: data ?? 0 });
 }

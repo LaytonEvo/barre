@@ -515,6 +515,93 @@ begin
     'ACCEPTANCE: nobody gets both a class-cancelled and a booking-cancelled email');
 end $$;
 
+-- ---------------------------------------------------------------------------
+-- Class reminders
+--
+-- The original version of this job queued a payload the reminder template could
+-- not render, so no reminder could ever have been sent. These assert the payload
+-- carries the fields the template actually requires — the check that was missing.
+-- ---------------------------------------------------------------------------
+do $$
+declare
+  v_tomorrow uuid;
+  v_soon     uuid;
+  v_far      uuid;
+  v_session  uuid;
+  v_payload  jsonb;
+  v_queued   integer;
+begin
+  v_tomorrow := a_member('rem-tomorrow@test');
+  v_soon     := a_member('rem-soon@test');
+  v_far      := a_member('rem-far@test');
+
+  -- A class in ~24 hours.
+  insert into public.class_sessions
+    (class_type_id, venue_id, instructor_id, starts_at, ends_at, capacity, is_one_off)
+  select ct.id, v.id, i.id, now() + interval '24 hours', now() + interval '24 hours 55 minutes', 25, true
+  from public.class_types ct, public.venues v, public.instructors i
+  where i.slug = 'kelly-brooks' limit 1
+  returning id into v_session;
+  insert into public.bookings (session_id, user_id, entitlement_kind, status, source)
+  values (v_session, v_tomorrow, 'payment', 'booked', 'member');
+
+  -- A class in ~2 hours.
+  insert into public.class_sessions
+    (class_type_id, venue_id, instructor_id, starts_at, ends_at, capacity, is_one_off)
+  select ct.id, v.id, i.id, now() + interval '2 hours', now() + interval '2 hours 55 minutes', 25, true
+  from public.class_types ct, public.venues v, public.instructors i
+  where i.slug = 'kelly-brooks' limit 1
+  returning id into v_session;
+  insert into public.bookings (session_id, user_id, entitlement_kind, status, source)
+  values (v_session, v_soon, 'payment', 'booked', 'member');
+
+  -- A class next week: not due a reminder yet.
+  insert into public.class_sessions
+    (class_type_id, venue_id, instructor_id, starts_at, ends_at, capacity, is_one_off)
+  select ct.id, v.id, i.id, now() + interval '7 days', now() + interval '7 days 55 minutes', 25, true
+  from public.class_types ct, public.venues v, public.instructors i
+  where i.slug = 'kelly-brooks' limit 1
+  returning id into v_session;
+  insert into public.bookings (session_id, user_id, entitlement_kind, status, source)
+  values (v_session, v_far, 'payment', 'booked', 'member');
+
+  v_queued := public.queue_class_reminders();
+  perform assert(v_queued >= 2, 'the reminder job queues the classes that are due');
+
+  perform assert(
+    exists (select 1 from public.notifications
+            where user_id = v_tomorrow and template = 'reminder_24h'),
+    'a class in 24 hours gets a 24h reminder');
+
+  perform assert(
+    exists (select 1 from public.notifications
+            where user_id = v_soon and template = 'reminder_2h'),
+    'a class in 2 hours gets a 2h reminder');
+
+  perform assert(
+    not exists (select 1 from public.notifications
+                where user_id = v_far and template like 'reminder%'),
+    'a class next week gets neither yet');
+
+  -- THE REGRESSION TEST. Every field the reminder template requires must be
+  -- present, or the email fails to render and the member hears nothing.
+  select payload into v_payload from public.notifications
+    where user_id = v_tomorrow and template = 'reminder_24h';
+
+  perform assert(v_payload ? 'className',          'the payload carries className');
+  perform assert(v_payload ? 'when',               'and when');
+  perform assert(v_payload ? 'venueName',          'and venueName');
+  perform assert(v_payload ? 'hoursBefore',        'and hoursBefore');
+  perform assert(v_payload ? 'cancellationHours',  'and cancellationHours');
+  perform assert((v_payload ->> 'hoursBefore')::integer = 24,
+    'with hoursBefore matching which reminder this is');
+
+  -- Running again queues nothing: the dedupe index, not this code, is what makes
+  -- a job that runs every half hour safe.
+  perform assert(public.queue_class_reminders() = 0,
+    'running the job again queues nothing, so overlapping runs cannot double-send');
+end $$;
+
 drop function assert(boolean, text);
 drop function a_member(text, boolean);
 drop function attended_ago(uuid, numeric);

@@ -99,7 +99,30 @@ Four bugs the tests caught, all mine:
   per-segment limit from 160 characters to 70 and doubling what every one of those
   texts costs. A test now rejects any non-ASCII character in an SMS body.
 
-332 unit and component tests (was 272), 344 database checks (was 263), 66 routes.
+**Found two gaps while reviewing M8 before moving on, and fixed both.**
+
+The first was a real defect. `/api/cron/queue-reminders` was written at M5, before any
+template existed, and queued the payload `{booking_id, hours_before}`. The reminder
+template needs the class, the time, the venue and the cancellation window — so **every
+class reminder would have failed to render**, been retried three times and been marked
+failed. Nobody would ever have received one, and the only symptom would have been a
+growing pile of failed rows somebody had to go and look at.
+
+The job is now in SQL and builds its payload from `booking_email_payload`, the same
+function the confirmation email uses, so a reminder cannot drift away from a
+confirmation again. A test asserts every field the template requires is present — the
+check that was missing. (The queue/dispatch split is what made this survivable rather
+than silent: the rows would have been sitting there, not lost.)
+
+The second was the most consequential untested function in the milestone:
+`dispatchEmails` decides whether marketing reaches somebody who has not consented, and
+nothing exercised it. It now has 17 tests against a stubbed provider, including that a
+win-back to a non-consenting member is skipped with a reason, that transactional email
+still goes to the same member, that an erased member is never emailed whatever is
+queued, and that one unrenderable row does not abandon the rest of the batch. Verified
+by removing the consent check and watching the right test fail.
+
+349 unit and component tests (was 272), 355 database checks (was 263), 66 routes.
 
 ### M7 — Video library
 

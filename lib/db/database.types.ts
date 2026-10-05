@@ -1081,6 +1081,10 @@ export type Database = {
         }[];
       };
 
+      queue_class_reminders: { Args: Record<string, never>; Returns: number };
+      booking_email_payload: { Args: { p_booking_id: string }; Returns: Record<string, unknown> };
+      widest_expiry_warning_days: { Args: Record<string, never>; Returns: number };
+
       // --- Gift vouchers (M8) ---
       create_voucher: {
         Args: {
