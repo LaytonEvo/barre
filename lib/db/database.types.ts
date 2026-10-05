@@ -50,10 +50,16 @@ export type Database = {
           last_name?: string | null;
           phone?: string | null;
         };
+        // Mirrors what the DATABASE permits, not what a member may change.
+        // Restricting members is RLS's job, backed by the Zod schema on the
+        // profile action; the service-role client legitimately writes
+        // stripe_customer_id and anonymised_at. Narrowing the type instead would
+        // have put the rule in the one layer an attacker never reaches.
         Update: Partial<{
           first_name: string | null;
           last_name: string | null;
           phone: string | null;
+          phone_normalised: string | null;
           date_of_birth: string | null;
           emergency_contact_name: string | null;
           emergency_contact_phone: string | null;
@@ -61,6 +67,8 @@ export type Database = {
           marketing_consent_at: string | null;
           notify_email: boolean;
           notify_sms: boolean;
+          stripe_customer_id: string | null;
+          anonymised_at: string | null;
         }>;
         Relationships: [];
       };
@@ -188,6 +196,115 @@ export type Database = {
           capacity: number;
         } & Partial<Record<string, unknown>>;
         Update: Partial<Record<string, unknown>>;
+        Relationships: [];
+      };
+
+      purchases: {
+        Row: Timestamped & {
+          id: string;
+          user_id: string;
+          product_id: string;
+          stripe_checkout_session_id: string | null;
+          stripe_payment_intent_id: string | null;
+          stripe_invoice_id: string | null;
+          amount_pence: number;
+          discount_pence: number;
+          promo_code: string | null;
+          voucher_id: string | null;
+          status: 'pending' | 'paid' | 'refunded' | 'partially_refunded' | 'failed';
+          purchased_at: string | null;
+          refunded_at: string | null;
+          refunded_pence: number;
+        };
+        Insert: {
+          user_id: string;
+          product_id: string;
+          amount_pence: number;
+        } & Partial<Record<string, unknown>>;
+        Update: Partial<Record<string, unknown>>;
+        Relationships: [];
+      };
+
+      memberships: {
+        Row: Timestamped & {
+          id: string;
+          user_id: string;
+          product_id: string;
+          stripe_subscription_id: string;
+          status:
+            'trialing' | 'active' | 'past_due' | 'paused' | 'cancelled' | 'incomplete_expired';
+          current_period_start: string | null;
+          current_period_end: string | null;
+          cancel_at_period_end: boolean;
+          grace_until: string | null;
+          cancelled_at: string | null;
+        };
+        Insert: {
+          user_id: string;
+          product_id: string;
+          stripe_subscription_id: string;
+          status: string;
+        } & Partial<Record<string, unknown>>;
+        Update: Partial<Record<string, unknown>>;
+        Relationships: [];
+      };
+
+      stripe_events: {
+        Row: {
+          id: string;
+          type: string;
+          payload: Json;
+          received_at: string;
+          processed_at: string | null;
+          error: string | null;
+        };
+        Insert: { id: string; type: string; payload: Json };
+        Update: Partial<{ processed_at: string | null; error: string | null }>;
+        Relationships: [];
+      };
+
+      intro_offer_claims: {
+        Row: {
+          id: string;
+          user_id: string;
+          product_id: string;
+          email_normalised: string;
+          phone_normalised: string | null;
+          card_fingerprint: string | null;
+          purchase_id: string | null;
+          claimed_at: string;
+        };
+        Insert: {
+          user_id: string;
+          product_id: string;
+          email_normalised: string;
+          phone_normalised?: string | null;
+          card_fingerprint?: string | null;
+          purchase_id?: string | null;
+        };
+        Update: Partial<Record<string, unknown>>;
+        Relationships: [];
+      };
+
+      credit_ledger: {
+        Row: {
+          id: string;
+          user_id: string;
+          delta: number;
+          kind: string;
+          reason: string | null;
+          expires_at: string | null;
+          purchase_id: string | null;
+          membership_id: string | null;
+          session_id: string | null;
+          booking_id: string | null;
+          voucher_id: string | null;
+          source_entry_id: string | null;
+          admin_id: string | null;
+          created_at: string;
+        };
+        Insert: { user_id: string; delta: number; kind: string } & Partial<Record<string, unknown>>;
+        Update: never;
         Relationships: [];
       };
 
@@ -362,6 +479,37 @@ export type Database = {
         Args: { p_weeks_ahead?: number; p_from?: string };
         Returns: { created: number; skipped: number }[];
       };
+      grant_credits: {
+        Args: {
+          p_user_id: string;
+          p_quantity: number;
+          p_kind: string;
+          p_expires_at?: string | null;
+          p_purchase_id?: string | null;
+          p_membership_id?: string | null;
+          p_voucher_id?: string | null;
+          p_admin_id?: string | null;
+          p_reason?: string | null;
+        };
+        Returns: string;
+      };
+      consume_credits: {
+        Args: {
+          p_user_id: string;
+          p_quantity: number;
+          p_kind?: string;
+          p_booking_id?: string | null;
+          p_session_id?: string | null;
+          p_admin_id?: string | null;
+          p_reason?: string | null;
+        };
+        Returns: string[];
+      };
+      refund_booking_credits: {
+        Args: { p_booking_id: string; p_kind?: string; p_reason?: string | null };
+        Returns: string[];
+      };
+      expire_credits: { Args: Record<string, never>; Returns: number };
     };
 
     Enums: {

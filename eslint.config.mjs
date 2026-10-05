@@ -41,12 +41,22 @@ const config = [
     },
   },
   {
-    // The webhook, cron and seed paths are exactly where the service-role client
-    // belongs, so the rule above is lifted for them.
+    // Where the service-role client legitimately belongs, and why:
+    //
+    //   app/api/stripe/**  webhook handlers — the member has no session, and
+    //                      Stripe is the authority for what was paid
+    //   app/api/cron/**    scheduled jobs — session generation, credit expiry
+    //   lib/stripe/**      fulfilment, product sync, customer creation
+    //   lib/credits/**     the free intro offer, granted with no payment
+    //   scripts/, supabase/  seeding and one-off maintenance
+    //
+    // Everything else goes through the member's own client so RLS applies.
     files: [
       'app/api/stripe/**',
       'app/api/cron/**',
       'app/api/webhooks/**',
+      'lib/stripe/**',
+      'lib/credits/**',
       'scripts/**',
       'supabase/**',
     ],

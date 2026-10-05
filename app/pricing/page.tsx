@@ -7,6 +7,8 @@ import { formatPence } from '@/lib/utils';
 import { freeClasses, pricePerClassPence, savingPercent } from '@/lib/pricing';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { BuyButton } from '@/components/site/buy-button';
+import { getSessionUser } from '@/lib/supabase/auth';
 
 export const metadata: Metadata = {
   title: `Prices — ${localSuffix}`,
@@ -15,10 +17,11 @@ export const metadata: Metadata = {
 };
 
 export default async function PricingPage() {
-  const [products, pendingPacks, policy] = await Promise.all([
+  const [products, pendingPacks, policy, user] = await Promise.all([
     listActiveProducts(),
     listPendingPacks(),
     loadPolicy(),
+    getSessionUser(),
   ]);
 
   const intro = products.find((product) => product.kind === 'intro_offer');
@@ -68,6 +71,19 @@ export default async function PricingPage() {
               <p className="tabular text-heading font-display mt-1 text-[length:var(--text-xl)]">
                 {formatPence(dropIn.pricePence)}
               </p>
+              <div className="mt-2">
+                {user ? (
+                  <BuyButton slug={dropIn.slug} size="sm">
+                    Buy a single class
+                  </BuyButton>
+                ) : (
+                  <Link href="/signup">
+                    <Button variant="secondary" size="sm">
+                      Sign up to buy
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </article>
           ) : null}
 
@@ -104,6 +120,20 @@ export default async function PricingPage() {
                     Works out {formatPence(perClass)} a class
                   </p>
                 ) : null}
+
+                <div className="mt-2">
+                  {user ? (
+                    <BuyButton slug={pack.slug} size="sm">
+                      Buy this pack
+                    </BuyButton>
+                  ) : (
+                    <Link href="/signup">
+                      <Button variant="secondary" size="sm">
+                        Sign up to buy
+                      </Button>
+                    </Link>
+                  )}
+                </div>
               </article>
             );
           })}

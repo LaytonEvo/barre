@@ -2,6 +2,51 @@
 
 ## [Unreleased]
 
+### M4 — Payments & credits
+
+**Fixed a real bug in `credit_balance` before anything depended on it.** The old definition was
+`sum(delta)` filtered by expiry, which looks right and is not: a grant carries an expiry, the
+debits that consume it do not. Once the grant expired its debits stayed in the sum, so a member
+who bought a 5-pack, used two classes and let the rest lapse ended up with a balance of **minus
+two**. Reproduced against a real database before the fix was written.
+
+The ledger now uses per-lot accounting — a positive row is a lot, every negative row names the
+lot it consumes (enforced by a `CHECK`, so an unattributed debit cannot exist), and the balance
+is what remains in unexpired lots. A useful consequence: **expiry needs no cron to be correct**.
+The nightly job writes the audit row explaining where credits went; a missed run can never let
+somebody book with dead credits. A job the system's correctness depends on is a job that will
+eventually take the system down.
+
+**Ledger functions**: `grant_credits`, `consume_credits` (FIFO, row-locked so two bookings cannot
+race for the last credit), `refund_booking_credits` and `expire_credits`. 29 tests in
+`tests/db/ledger.sql` covering every path, including the regression above, that a refund keeps the
+**original** expiry so cancelling cannot extend a pack, that a never-expiring credit is spent last
+(being the one that cannot be lost by waiting), and that both expiry and refunds are idempotent.
+
+**Stripe**: client, product/price sync, Checkout, Customer Portal, and the webhook.
+
+Three things make fulfilment safe, and each has a test: the signature is verified against the raw
+body; the event id is claimed in `stripe_events` **before** anything is fulfilled, so a retry loses
+on the primary key rather than granting twice; and a failed handler returns 500 so Stripe retries
+rather than a paid purchase silently vanishing. Nothing outside the webhook grants credits — a
+Checkout redirect is not proof of payment, and the success page can be reached by typing the URL.
+
+**Stripe Prices are immutable**, so a price change creates a new Price and deactivates the old one
+rather than deleting it: a receipt from last month must keep resolving to what was actually paid.
+
+**The free first class never touches Stripe**, because a £0 Checkout Session cannot be completed.
+Eligibility is claimed by _inserting_ the row rather than checking first, so two simultaneous
+requests cannot both pass a "have you claimed?" query — one loses on the unique index.
+
+Also: `/account/billing` with the full credit history and purchases, buy buttons on `/pricing`, and
+the expiry cron behind a shared secret.
+
+The ESLint guard on the service-role client earned its keep — it caught the new Stripe and credits
+modules importing it. They are legitimate callers, so the allowlist now names them explicitly with
+the reason for each, rather than the rule being weakened.
+
+153 unit and component tests (was 136), 90 database checks (was 62).
+
 ### M2 — Public site (complete, bar what needs staging)
 
 **Components are now actually rendered in tests**, which closes the gap I had been flagging every

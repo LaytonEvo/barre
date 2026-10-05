@@ -20,7 +20,9 @@
     "db:reset": "supabase db reset",
     "verify": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run check:contrast",
     "lint:fix": "eslint . --fix",
-    "test:db": "tests/db/run.sh"
+    "test:db": "tests/db/run.sh",
+    "stripe:sync": "tsx scripts/stripe-sync.ts",
+    "stripe:listen": "stripe listen --forward-to localhost:3000/api/stripe/webhook"
   },
   "repository": {
     "type": "git",
@@ -41,6 +43,7 @@
     "next": "^16.3.8",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
+    "stripe": "^23.0.0",
     "tailwind-merge": "^3.7.0",
     "zod": "^4.6.5"
   },
@@ -54,6 +57,7 @@
     "prettier": "^3.9.9",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.3",
     "vitest": "^3.2.7"
   },

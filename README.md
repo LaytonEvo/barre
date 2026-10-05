@@ -117,13 +117,22 @@ never been a security control.
 
 ### The credit ledger
 
-`credit_ledger` is append-only, enforced by a trigger that rejects `UPDATE` and `DELETE`
-even for the service role. Balances are never stored; `credit_balance()` derives them.
-A mistake is corrected with a compensating `admin_adjustment` row, which must carry a reason
-and an admin id — a `CHECK` constraint enforces that.
+`credit_ledger` is append-only, enforced by a trigger that rejects `UPDATE` and `DELETE` even
+for the service role. Balances are never stored; `credit_balance()` derives them.
 
-Credits are consumed soonest-expiry-first, and a refund restores the credit **with its
-original expiry**, so cancelling cannot be used to extend a pack.
+It uses **per-lot accounting**: a positive row is a lot, every negative row names the lot it
+consumes (a `CHECK` enforces that), and the balance is what remains in lots that have not
+expired. The obvious definition — `sum(delta)` filtered by expiry — is wrong, and was: a grant
+carries an expiry while the debits that consume it do not, so once the grant expired its debits
+stayed in the sum and a member who bought a 5-pack, used two and let the rest lapse ended up
+with a balance of **minus two**.
+
+That also means expiry needs no cron to be correct. The nightly job writes the audit row that
+explains where credits went; a missed run can never let somebody book with dead credits.
+
+Credits are consumed soonest-expiry-first (a never-expiring credit goes last, being the one that
+cannot be lost by waiting), and a refund restores the credit **with its original expiry**, so
+cancelling cannot be used to extend a pack. Every path has a test in `tests/db/ledger.sql`.
 
 ---
 
@@ -136,15 +145,30 @@ required at the milestone that introduces them, so a fresh checkout runs.
 from a client component is a build error. `SUPABASE_SERVICE_ROLE_KEY` bypasses RLS entirely —
 ESLint blocks importing `lib/supabase/admin` outside webhook, cron and seed paths.
 
-## Testing Stripe webhooks (from M4)
+## Payments
 
 ```bash
-stripe listen --forward-to localhost:3000/api/stripe/webhook
+npm run stripe:sync      # push products and prices to Stripe
+npm run stripe:listen    # forward webhooks to the dev server
 ```
 
-Put the printed `whsec_…` in `STRIPE_WEBHOOK_SECRET`. Fulfilment happens only in webhook
-handlers, never on the Checkout redirect — users close tabs, and a redirect is not proof of
-payment. Handlers are idempotent via the `stripe_events` table, because Stripe retries.
+`stripe listen` prints a `whsec_…` on startup — put it in `STRIPE_WEBHOOK_SECRET`. It changes
+every time you restart the listener.
+
+**Fulfilment happens only in the webhook.** Not on the Checkout redirect: members close tabs,
+and a redirect URL can be typed by hand, so neither is proof of payment. The webhook verifies
+Stripe's signature against the raw body, claims the event id in `stripe_events` _before_
+fulfilling (so a retry loses on the primary key rather than granting twice), and returns 500 on
+a failed handler so Stripe retries rather than silently dropping a paid purchase.
+
+**The free first class never touches Stripe.** A £0 Checkout Session cannot be completed, so
+`grantIntroOffer` grants the credit directly after an eligibility check. The consequence is that
+there is no card fingerprint to deduplicate against — eligibility rests on account, email and
+phone. See `docs/03-OPEN-QUESTIONS.md` question B4a.
+
+**Stripe Prices are immutable.** Changing a price creates a new Price and repoints the product,
+deactivating the old one rather than deleting it, so historical receipts keep resolving to what
+was actually charged.
 
 ## Deployment
 
