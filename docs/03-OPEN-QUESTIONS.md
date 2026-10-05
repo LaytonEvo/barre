@@ -140,10 +140,22 @@ implemented. The rest still stand.
 
 ## E. Things Kelly must provide (not technical)
 
-1. **Waiver text.** I'll draft something sensible, clearly marked **"DRAFT — to be reviewed
-   against Kelly's insurance policy and by a legal professional"**. It must not go live
-   unreviewed. Her insurer very likely has required wording.
-2. **PAR-Q wording** — same caveat. The standard PAR-Q+ is a reasonable base.
+1. **⚠️ Waiver text — now the single biggest launch blocker.** Drafted and working end to end,
+   marked DRAFT on its face where a member would see it. **It must not go live unreviewed.**
+   `npm run waiver:publish-draft` refuses to run against a non-local database for exactly this
+   reason.
+
+   Questions for the insurer are in `lib/onboarding/waiver-text.ts` (`WAIVER_REVIEW_NOTES`):
+   does the insurer require specific wording or their own form; is parental consent needed for
+   under-18s; is there a minimum age the sign-up flow should enforce; should the photography
+   clause be separate consent rather than bundled (bundling is weaker under UK GDPR); is the
+   first aid claim accurate; and how long must signed waivers be retained, since that drives
+   the deletion policy.
+
+2. **PAR-Q wording** — same caveat, also drafted and working. Nine questions following the
+   PAR-Q+ shape. A "yes" flags for Kelly and never blocks booking, which is both what the brief
+   asks for and the safer design: a door that closes on a health answer is a door people lie to
+   get through.
 3. **Privacy policy facts** — the data controller name and address, and retention periods she's
    comfortable with. I'll draft the structure and processor list.
 4. **ICO registration.** ⚠️ Kelly is processing health data (special category) and will almost

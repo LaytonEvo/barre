@@ -31,14 +31,139 @@ select * from public.generate_class_sessions();
 insert into public.waiver_versions
   (version_label, body_markdown, body_sha256, is_current, published_at)
 select
-  'DRAFT-0.1',
-  E'# Participation waiver (DRAFT)\n\n'
-  '**DRAFT — to be reviewed against Kelly''s insurance policy and by a legal '
-  'professional before anybody signs it.**\n\n'
-  'Placeholder text. The waiver wording, the health declaration and the '
-  'limitation of liability all need review. See docs/03-OPEN-QUESTIONS.md '
-  'section E.\n',
-  encode(digest('DRAFT-0.1-placeholder', 'sha256'), 'hex'),
+  'DRAFT-0.2',
+  $waiver$# Participation agreement
+
+**DRAFT — not yet reviewed. Do not publish.**
+
+## What barre involves
+
+Barre is a physical exercise class. It combines ballet-inspired movement, Pilates,
+yoga and resistance work, usually holding a barre or a sturdy chair for balance.
+It is low impact, but it is still exercise, and like any exercise it carries a
+risk of injury.
+
+## Your health
+
+You confirm that:
+
+- You are not aware of any medical reason why you should not take part in
+  physical exercise.
+- You have told us about any injury, illness, surgery, pregnancy or condition
+  that might affect your participation, by completing the health questions.
+- You will tell Kelly if any of that changes.
+- You have spoken to your GP first if you had any doubt.
+
+If you are pregnant or recently postnatal, please speak to Kelly before your
+first class and check with your midwife or GP.
+
+## During class
+
+You agree to:
+
+- Work at a level that is right for you, and stop if something hurts.
+- Follow Kelly's instructions, including when she suggests an easier option.
+- Tell Kelly straight away if you feel unwell or are in pain.
+
+You take part voluntarily and at your own pace. Nobody will push you to continue
+if you want to stop.
+
+## Our responsibility
+
+Kelly holds public liability insurance and a current first aid qualification.
+We take reasonable care to run classes safely and to keep the venue in a safe
+condition.
+
+Nothing in this agreement limits our liability for death or personal injury
+caused by our negligence, or for anything else that cannot be limited by law.
+
+## Your belongings
+
+Please do not bring valuables. We cannot accept responsibility for personal
+property brought to a class.
+
+## Photographs
+
+We sometimes take photographs or video in class for social media. You can say no,
+at any time, and it will make no difference to anything. Tell Kelly and she will
+make sure you are not in them.
+
+## Your information
+
+How we handle your personal information, including the health questions, is set
+out in our privacy policy. The health answers are only visible to Kelly.
+
+## Agreement
+
+By signing you confirm that you have read and understood this agreement, that
+the information you have given is accurate, and that you take part voluntarily.
+$waiver$,
+  encode(digest($waiver$# Participation agreement
+
+**DRAFT — not yet reviewed. Do not publish.**
+
+## What barre involves
+
+Barre is a physical exercise class. It combines ballet-inspired movement, Pilates,
+yoga and resistance work, usually holding a barre or a sturdy chair for balance.
+It is low impact, but it is still exercise, and like any exercise it carries a
+risk of injury.
+
+## Your health
+
+You confirm that:
+
+- You are not aware of any medical reason why you should not take part in
+  physical exercise.
+- You have told us about any injury, illness, surgery, pregnancy or condition
+  that might affect your participation, by completing the health questions.
+- You will tell Kelly if any of that changes.
+- You have spoken to your GP first if you had any doubt.
+
+If you are pregnant or recently postnatal, please speak to Kelly before your
+first class and check with your midwife or GP.
+
+## During class
+
+You agree to:
+
+- Work at a level that is right for you, and stop if something hurts.
+- Follow Kelly's instructions, including when she suggests an easier option.
+- Tell Kelly straight away if you feel unwell or are in pain.
+
+You take part voluntarily and at your own pace. Nobody will push you to continue
+if you want to stop.
+
+## Our responsibility
+
+Kelly holds public liability insurance and a current first aid qualification.
+We take reasonable care to run classes safely and to keep the venue in a safe
+condition.
+
+Nothing in this agreement limits our liability for death or personal injury
+caused by our negligence, or for anything else that cannot be limited by law.
+
+## Your belongings
+
+Please do not bring valuables. We cannot accept responsibility for personal
+property brought to a class.
+
+## Photographs
+
+We sometimes take photographs or video in class for social media. You can say no,
+at any time, and it will make no difference to anything. Tell Kelly and she will
+make sure you are not in them.
+
+## Your information
+
+How we handle your personal information, including the health questions, is set
+out in our privacy policy. The health answers are only visible to Kelly.
+
+## Agreement
+
+By signing you confirm that you have read and understood this agreement, that
+the information you have given is accurate, and that you take part voluntarily.
+$waiver$, 'sha256'), 'hex'),
   true,
   now()
 where not exists (select 1 from public.waiver_versions);

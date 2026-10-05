@@ -58,22 +58,29 @@ export default async function AccountPage() {
               <span className="text-sm">Health questions</span>
               <Badge tone={parqValid ? 'open' : 'nearly'}>{parqValid ? 'Done' : 'Needed'}</Badge>
             </div>
-            {!readyToBook ? (
+
+            {readyToBook ? (
               <p className="text-muted mt-2 text-xs">
-                Both arrive at M3 — the waiver signing flow and PAR-Q are not built yet.
+                All set — you can book any class on the timetable.
               </p>
-            ) : null}
+            ) : (
+              <div className="mt-3">
+                <Link href={waiverSigned ? '/account/health' : '/account/waiver'}>
+                  <Button variant="accent" block>
+                    {waiverSigned ? 'Answer the health questions' : 'Read and sign the waiver'}
+                  </Button>
+                </Link>
+                <p className="text-muted mt-2 text-xs">
+                  Takes a couple of minutes, and only needs doing once.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
 
       <section className="border-subtle mt-12 border-t pt-6">
-        <h2 className="text-[length:var(--text-xl)]">Coming next</h2>
-        <p className="text-muted mt-2 max-w-[64ch] text-sm">
-          This dashboard is the M1 skeleton: it proves auth, roles, RLS and the derived credit
-          balance all work end to end. Bookings, purchases, the waiver and the video library land at
-          M3 to M7.
-        </p>
+        <h2 className="text-[length:var(--text-xl)]">Your account</h2>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link href="/account/bookings">
             <Button variant="secondary">My bookings</Button>
@@ -82,7 +89,10 @@ export default async function AccountPage() {
             <Button variant="secondary">Billing</Button>
           </Link>
           <Link href="/timetable">
-            <Button variant="accent">Book a class</Button>
+            <Button variant={readyToBook ? 'accent' : 'ghost'}>Book a class</Button>
+          </Link>
+          <Link href="/account/privacy">
+            <Button variant="ghost">Your data</Button>
           </Link>
         </div>
 

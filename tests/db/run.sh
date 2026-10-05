@@ -55,6 +55,11 @@ psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB" -v ON_ERROR_STOP=1 -q \
   -f "$ROOT/tests/db/booking.sql" 2>&1 | sed 's/^NOTICE:  //' | grep -E 'PASS|FAIL'
 
 echo
+echo "== onboarding =="
+psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB" -v ON_ERROR_STOP=1 -q \
+  -f "$ROOT/tests/db/onboarding.sql" 2>&1 | sed 's/^NOTICE:  //' | grep -E 'PASS|FAIL'
+
+echo
 echo "== rls =="
 psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB" -v ON_ERROR_STOP=1 -q \
   -f "$ROOT/tests/db/rls.sql" 2>&1 | sed 's/^NOTICE:  //' | grep -E 'PASS|FAIL'

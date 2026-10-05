@@ -47,3 +47,52 @@ grant usage on schema public to anon, authenticated, service_role;
 alter default privileges in schema public
   grant select, insert, update, delete on tables to authenticated;
 alter default privileges in schema public grant select on tables to anon;
+
+-- -----------------------------------------------------------------------------
+-- Storage.
+--
+-- Supabase provides storage.buckets, storage.objects and the helper functions
+-- its policies use. Recreating the shape here means the real migration — bucket
+-- definitions and all — runs unmodified against a bare Postgres, so a mistake in
+-- a storage policy is caught by the same suite as everything else.
+-- -----------------------------------------------------------------------------
+create schema if not exists storage;
+
+create table if not exists storage.buckets (
+  id                 text primary key,
+  name               text not null unique,
+  public             boolean not null default false,
+  file_size_limit    bigint,
+  allowed_mime_types text[],
+  created_at         timestamptz not null default now()
+);
+
+create table if not exists storage.objects (
+  id          uuid primary key default gen_random_uuid(),
+  bucket_id   text not null references storage.buckets (id),
+  name        text not null,
+  owner       uuid,
+  metadata    jsonb,
+  created_at  timestamptz not null default now(),
+  unique (bucket_id, name)
+);
+
+alter table storage.objects enable row level security;
+
+-- Splits an object path into its segments. Supabase's own definition; the
+-- policies rely on the first segment being the owning user's id.
+create or replace function storage.foldername(name text)
+returns text[]
+language plpgsql
+immutable
+as $$
+declare parts text[];
+begin
+  parts := string_to_array(name, '/');
+  return parts[1 : array_length(parts, 1) - 1];
+end;
+$$;
+
+grant usage on schema storage to anon, authenticated, service_role;
+grant select, insert on storage.objects to authenticated;
+grant select on storage.buckets to anon, authenticated;

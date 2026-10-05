@@ -369,6 +369,61 @@ export type Database = {
         Relationships: [];
       };
 
+      waiver_signatures: {
+        Row: {
+          id: string;
+          user_id: string;
+          waiver_version_id: string;
+          typed_name: string;
+          signature_image_path: string;
+          pdf_path: string | null;
+          signed_at: string;
+          ip_address: string | null;
+          user_agent: string | null;
+        };
+        Insert: {
+          user_id: string;
+          waiver_version_id: string;
+          typed_name: string;
+          signature_image_path: string;
+        } & Partial<Record<string, unknown>>;
+        Update: never;
+        Relationships: [];
+      };
+
+      health_questionnaires: {
+        Row: {
+          id: string;
+          user_id: string;
+          questionnaire_version: string;
+          answers: Json;
+          flagged: boolean;
+          flag_summary: string | null;
+          injuries_text: string | null;
+          conditions_text: string | null;
+          pregnancy_status: string | null;
+          pregnancy_weeks: number | null;
+          recent_surgery: boolean;
+          explicit_consent_at: string;
+          review_state: 'not_required' | 'awaiting_review' | 'reviewed';
+          reviewed_by: string | null;
+          reviewed_at: string | null;
+          review_note: string | null;
+          completed_at: string;
+          valid_until: string;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          questionnaire_version: string;
+          answers: Json;
+          explicit_consent_at: string;
+          valid_until: string;
+        } & Partial<Record<string, unknown>>;
+        Update: Partial<Record<string, unknown>>;
+        Relationships: [];
+      };
+
       waiver_versions: {
         Row: {
           id: string;
@@ -600,6 +655,12 @@ export type Database = {
       cancel_session: { Args: { p_session_id: string; p_reason: string }; Returns: number };
       mark_attendance: { Args: { p_booking_id: string; p_status: string }; Returns: undefined };
       auto_mark_no_shows: { Args: Record<string, never>; Returns: number };
+      publish_waiver_version: {
+        Args: { p_version_label: string; p_body_markdown: string; p_body_sha256: string };
+        Returns: string;
+      };
+      export_member_data: { Args: { p_user_id?: string }; Returns: Json };
+      anonymise_member: { Args: { p_user_id: string; p_reason?: string }; Returns: undefined };
       promote_from_waitlist: { Args: { p_session_id: string }; Returns: string | null };
     };
 

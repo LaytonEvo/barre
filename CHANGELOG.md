@@ -2,6 +2,57 @@
 
 ## [Unreleased]
 
+### M3 — Onboarding
+
+Booking now works end to end: the gate M5 enforces has a flow behind it.
+
+**Waiver signing**, with the evidence an insurer would actually ask for. The signature row is
+written **before** the PDF, deliberately: the row is the legal record and the PDF is a rendering
+of it, so a formatting error cannot lose a signature somebody genuinely made.
+
+The record stores a SHA-256 of the exact text agreed, and the text is re-verified against that
+hash at sign time — if a published version has been altered since, signing is refused rather than
+recording an attestation to something nobody agreed to. A version label alone proves nothing.
+
+**ACCEPTANCE TEST 13 passes**: publishing a new waiver version invalidates every existing
+signature for the booking gate while keeping the historical signatures, because those are the
+record of what each member agreed to at the time.
+
+**The signature image is treated as untrusted input.** It arrives from the browser as a data URL,
+so the prefix is checked, the base64 decoded server-side, the PNG magic number verified, and the
+size bounded at both ends — an untouched canvas compresses to almost nothing, and a 500KB
+"signature" is not one.
+
+**Health questionnaire**, nine questions following the PAR-Q+ shape. Radio buttons rather than
+checkboxes, because an unticked box is ambiguous — it could mean "no" or "I did not read this" —
+and a missing answer is treated as missing, never as a no. Free text counts as a flag too:
+somebody who answers no to everything but writes "knee replacement in March" has told us
+something that matters.
+
+A "yes" **flags and never blocks**, which is both what the brief asks for and the safer design: a
+door that closes on a health answer is a door people lie to get through. A test asserts the
+response never contains "cannot book".
+
+**Private storage**, verified. Both buckets are non-public, so there is no guessable URL; reads go
+through 60-second signed URLs. The storage policies are tested as a real authenticated role — a
+member sees only their own signature, and writing into another member's folder is refused.
+
+**Privacy controls**: export everything as JSON, and erasure that deletes health data outright
+while anonymising bookings and purchases (accounting records HMRC expects to exist) and keeping
+the signed waiver for its retention period. Each of those three outcomes has its own test, and a
+member cannot export or erase anybody else's record.
+
+**The PDF is verified by reading it back** — inflating the Flate-compressed content streams and
+decoding the hex-encoded text — so the assertions check what a person opening the file would see
+rather than passing vacuously. Writing that extractor surfaced a bug in it: `indexOf('stream')`
+also matches inside `endstream`, so it had been silently skipping every other stream.
+
+⚠️ **The waiver and PAR-Q text are DRAFT and must be reviewed against Kelly's insurance policy
+before launch.** `npm run waiver:publish-draft` refuses to run against a non-local database.
+Questions for the insurer are carried alongside the draft in `WAIVER_REVIEW_NOTES`.
+
+217 unit and component tests (was 176), 177 database checks (was 146).
+
 ### M5 — Booking engine
 
 **ACCEPTANCE TEST 5 passes: 20 simultaneous bookings at a 10-space class produce exactly 10
