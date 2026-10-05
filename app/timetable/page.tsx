@@ -113,16 +113,19 @@ export default async function TimetablePage({ searchParams }: { searchParams: Pr
         )}
       </div>
 
+      {/* Replaces a build-progress note that was still telling visitors booking
+          "arrives with the booking engine" three milestones after it arrived.
+          What a visitor actually needs here is the free first class and the
+          cancellation rule, both read from settings rather than written down. */}
       <aside className="bg-accent-soft mt-12 rounded-lg p-5">
-        <Badge tone="nearly">Booking opens at M5</Badge>
+        <Badge tone="open">Your first class is free</Badge>
         <p className="text-primary mt-3 max-w-[60ch] text-sm">
-          The timetable above is live from the database — real venues, real times, correct across
-          the clock change. The Book button creates an account for now; taking a place, the waitlist
-          and the 24-hour cancellation window arrive with the booking engine.
+          Book any class above and the first one costs nothing — no card needed. Just turn up in
+          something you can move in, and bring water.
         </p>
         <p className="text-secondary mt-3 max-w-[60ch] text-sm">
-          Class sizes show {venues[0]?.defaultCapacity ?? 16} spaces, which is a placeholder — Kelly
-          has not confirmed how many people fit in each hall.
+          Changed your plans? Cancel more than {policy.cancellation_window_hours} hours before and
+          your place goes straight back to your account.
         </p>
       </aside>
     </div>

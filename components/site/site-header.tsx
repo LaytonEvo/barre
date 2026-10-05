@@ -49,7 +49,59 @@ export async function SiteHeader() {
           ))}
         </nav>
 
-        <div className="ml-auto flex items-center gap-2 md:ml-0">
+        {/* Mobile menu.
+            A <details> disclosure rather than a client component with state: it
+            needs no JavaScript, no hydration, and keeps this header a server
+            component — and <summary> is keyboard-operable for free.
+
+            Without it a phone visitor saw only the logo and "Book a class", with
+            no route to the timetable, pricing or class descriptions except by
+            scrolling to the footer. On a site where most traffic is a phone, that
+            is most of the navigation missing. */}
+        <details className="group relative ml-auto md:hidden">
+          <summary
+            className="focus-visible:outline-focus text-secondary hover:bg-surface-sunk flex size-9 cursor-pointer list-none items-center justify-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 [&::-webkit-details-marker]:hidden"
+            aria-label="Menu"
+          >
+            <svg
+              aria-hidden
+              viewBox="0 0 24 24"
+              className="size-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            >
+              <path d="M4 7h16M4 12h16M4 17h16" className="group-open:hidden" />
+              <path d="M6 6l12 12M18 6L6 18" className="hidden group-open:block" />
+            </svg>
+          </summary>
+
+          <nav
+            aria-label="Main"
+            className="border-subtle bg-surface absolute right-0 z-50 mt-2 w-56 rounded-lg border p-2 shadow-lg"
+          >
+            {NAV.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="text-secondary hover:bg-surface-sunk hover:text-link focus-visible:outline-focus block rounded-md px-3 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                {item.label}
+              </Link>
+            ))}
+            {!user ? (
+              <Link
+                href="/login"
+                className="text-secondary hover:bg-surface-sunk hover:text-link focus-visible:outline-focus border-subtle mt-1 block rounded-md border-t px-3 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                Log in
+              </Link>
+            ) : null}
+          </nav>
+        </details>
+
+        <div className="flex items-center gap-2 md:ml-0">
           {user ? (
             <>
               {isStaff(user) && (

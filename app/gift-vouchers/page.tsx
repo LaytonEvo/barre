@@ -1,15 +1,14 @@
-import type { Metadata } from 'next';
-import { ComingAtMilestone } from '@/components/site/coming-at-milestone';
+import { permanentRedirect } from 'next/navigation';
 
-export const metadata: Metadata = { title: 'Gift vouchers' };
-
+/**
+ * The gift-voucher page used to live here as a "coming at M8" placeholder, and the
+ * footer still linked to it after M8 shipped the real thing at /gift — so the one
+ * link most likely to be followed by somebody ready to spend money led to a page
+ * saying the feature did not exist yet.
+ *
+ * A permanent redirect rather than a deletion: the placeholder was live long enough
+ * to be indexed, and anything already linking here should land on the real page.
+ */
 export default function GiftVouchersPage() {
-  return (
-    <ComingAtMilestone
-      title="Gift vouchers"
-      milestone="M8"
-      summary="Buy a voucher for a fixed amount or a class pack, with the recipient's email, a message and a send date. The recipient gets it on the day you choose."
-      needs={['Voucher amounts Kelly wants to offer, and how long they stay valid']}
-    />
-  );
+  permanentRedirect('/gift');
 }

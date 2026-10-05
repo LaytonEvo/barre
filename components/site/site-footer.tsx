@@ -15,7 +15,7 @@ const COLUMNS = [
     heading: 'Book',
     links: [
       { href: '/pricing', label: 'Pricing' },
-      { href: '/gift-vouchers', label: 'Gift vouchers' },
+      { href: '/gift', label: 'Gift vouchers' },
       { href: '/private-and-events', label: 'Private & events' },
       { href: '/faq', label: 'FAQs' },
     ],

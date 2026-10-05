@@ -11,9 +11,10 @@ import { path } from '@/lib/routes';
 /**
  * One class on the timetable.
  *
- * Booking lands at M5, so the action is a sign-up link for now rather than a
- * dead button. Status always carries text as well as colour: this is the most
- * colour-coded screen in the product, so colour alone is never the signal.
+ * A logged-out visitor gets a sign-up link rather than a dead button, because
+ * booking needs an account; a signed-in member gets the real thing. Status always
+ * carries text as well as colour: this is the most colour-coded screen in the
+ * product, so colour alone is never the signal.
  */
 export function SessionCard({
   session,

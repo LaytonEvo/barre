@@ -181,13 +181,20 @@ export default async function HomePage() {
             width={PHOTOS.portrait.width}
             height={PHOTOS.portrait.height}
             sizes="(min-width: 640px) 36vw, 100vw"
-            className="w-full rounded-xl object-cover shadow-sm"
+            // A fixed aspect, because the source is a tall portrait: unconstrained
+            // it ran about 600px beside a two-line paragraph and left a column of
+            // white space next to its lower half.
+            className="aspect-[4/5] w-full rounded-xl object-cover shadow-sm"
           />
 
           <div className="grid gap-4">
             <p className="text-secondary max-w-[56ch] text-lg">
               Kelly teaches every class herself. Whether you are a former dancer or have never set
               foot near a barre, you will be welcomed, encouraged and pushed just the right amount.
+            </p>
+            {/* Kelly's own words. Also balances the column against the portrait. */}
+            <p className="text-secondary max-w-[56ch]">
+              Classes run on Monday and Thursday evenings, with occasional pop-up sessions.
             </p>
             <div>
               <Link href="/about">
