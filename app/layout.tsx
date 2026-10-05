@@ -3,6 +3,7 @@ import { Fraunces, Inter } from 'next/font/google';
 import './globals.css';
 import { SiteHeader } from '@/components/site/site-header';
 import { SiteFooter } from '@/components/site/site-footer';
+import { CookieConsent } from '@/components/site/cookie-consent';
 
 const fraunces = Fraunces({
   subsets: ['latin'],
@@ -50,6 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </main>
         <SiteFooter />
+        <CookieConsent plausibleDomain={process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN} />
       </body>
     </html>
   );

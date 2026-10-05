@@ -2,12 +2,16 @@
 
 Website and members' platform for Barre By Kelly, a UK barre fitness business.
 
-> **Status: M1 complete — foundations.** Schema, RLS, auth, roles, design system and CI are
-> in place. The public site is M2; booking is M5.
+> **Status: M2 in progress — public site.** Real venues, timetable and town are in; the pages,
+> SEO and structured data are built. Booking is M5, payments M4.
 >
-> **No business fact in this repo is real.** Section 0 of the brief was unfilled and `/brand`
-> was empty, so every venue, price, class time and qualification is either a clearly-marked
-> placeholder or absent. See [`docs/03-OPEN-QUESTIONS.md`](docs/03-OPEN-QUESTIONS.md).
+> **What is real:** the two venues and their verified postcodes, the three weekly class times,
+> Ringwood as the search town, the free first class, and the 24-hour cancellation window.
+>
+> **What is still a marked placeholder:** every price except the free first class, both venues'
+> capacity (16, a guess), Kelly's surname, bio and qualifications, contact details, and all
+> photography. See [`docs/03-OPEN-QUESTIONS.md`](docs/03-OPEN-QUESTIONS.md) and
+> [`docs/INPUTS-TO-COMPLETE.yaml`](docs/INPUTS-TO-COMPLETE.yaml).
 
 ---
 

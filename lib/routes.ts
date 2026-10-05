@@ -23,3 +23,17 @@ export function internalPath(candidate: string | null | undefined, fallback: Rou
   if (candidate.includes('\\')) return fallback;
   return candidate as Route;
 }
+
+/**
+ * Build an internal link whose shape is known at the call site but whose value
+ * comes from data — a venue slug, a class slug, a querystring assembled from
+ * filters.
+ *
+ * Typed routes cannot verify these at compile time, so this is the one place the
+ * cast lives. It is a plain narrowing, not a validation: the inputs come from our
+ * own database rows, not from the request, so there is nothing to sanitise. For
+ * anything that does come from the request, use `internalPath` above.
+ */
+export function path(value: string): Route {
+  return value as Route;
+}

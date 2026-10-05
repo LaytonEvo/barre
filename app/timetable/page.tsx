@@ -1,19 +1,128 @@
 import type { Metadata } from 'next';
-import { ComingAtMilestone } from '@/components/site/coming-at-milestone';
+import Link from 'next/link';
+import { loadPolicy } from '@/lib/policy';
+import { getWeekSessions, groupByDay } from '@/lib/queries/timetable';
+import { listClassTypes, listVenues } from '@/lib/queries/catalogue';
+import { formatUkDayLong, parseWeekParam, toUkDateKey, ukWeekDays } from '@/lib/time';
+import { SessionsJsonLd } from '@/lib/seo/json-ld';
+import { SITE, localSuffix } from '@/lib/seo/site';
+import { SessionCard } from '@/components/timetable/session-card';
+import { WeekNav } from '@/components/timetable/week-nav';
+import { FilterChips } from '@/components/timetable/filters';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { path } from '@/lib/routes';
 
-export const metadata: Metadata = { title: 'Timetable' };
+export const metadata: Metadata = {
+  title: `Timetable — ${localSuffix}`,
+  description: `Barre class times in ${SITE.town}, St Leonards and St Ives. Mondays and Thursdays, all levels welcome, and your first class is free.`,
+  alternates: { canonical: '/timetable' },
+};
 
-export default function TimetablePage() {
+type Search = { week?: string; venue?: string; class?: string };
+
+export default async function TimetablePage({ searchParams }: { searchParams: Promise<Search> }) {
+  const params = await searchParams;
+  const weekStart = parseWeekParam(params.week);
+
+  const [policy, venues, classTypes, sessions] = await Promise.all([
+    loadPolicy(),
+    listVenues(),
+    listClassTypes(),
+    getWeekSessions(weekStart, { venueSlug: params.venue, classTypeSlug: params.class }),
+  ]);
+
+  // Build hrefs that preserve the other filters, so changing the venue does not
+  // silently throw away the week you were looking at.
+  const href = (overrides: Partial<Search>) => {
+    const merged = { ...params, ...overrides };
+    const query = new URLSearchParams();
+    if (merged.week) query.set('week', merged.week);
+    if (merged.venue) query.set('venue', merged.venue);
+    if (merged.class) query.set('class', merged.class);
+    const search = query.toString();
+    return search ? `/timetable?${search}` : '/timetable';
+  };
+
+  const byDay = groupByDay(sessions);
+  const days = ukWeekDays(weekStart).filter((day) => byDay.has(toUkDateKey(day)));
+  const introIsFree = true; // from the products table: the intro offer is £0
+
   return (
-    <ComingAtMilestone
-      title="Timetable"
-      milestone="M2"
-      summary="A week view — a list on mobile, a grid on desktop — filterable by venue and class type, with live spaces-left counts and Book, Join waitlist or Full on every session. Booking itself goes live at M5."
-      needs={[
-        'The real timetable: day, time, duration, class type and venue for each class (question A4)',
-        'Venue names and capacities (question A3)',
-        'Class type names (question A5)',
-      ]}
-    />
+    <div className="mx-auto max-w-4xl px-5 py-12 md:px-8">
+      <SessionsJsonLd sessions={sessions} introOfferIsFree={introIsFree} />
+
+      <h1 className="text-[length:var(--text-4xl)]">Timetable</h1>
+      <p className="text-secondary mt-4 max-w-[60ch] text-lg">
+        Classes run on Mondays at St Leonards and Thursdays at St Ives. All levels welcome, and your
+        first class is free.
+      </p>
+
+      <div className="border-subtle mt-8 grid gap-5 border-t pt-6">
+        <WeekNav
+          weekStart={weekStart}
+          bookingWindowDays={policy.booking_window_days}
+          buildHref={(week) => href({ week: toUkDateKey(week) })}
+        />
+
+        <FilterChips
+          label="Venue"
+          active={params.venue}
+          options={venues.map((venue) => ({ label: venue.name, slug: venue.slug }))}
+          buildHref={(slug) => href({ venue: slug })}
+        />
+
+        <FilterChips
+          label="Class"
+          active={params.class}
+          options={classTypes.map((type) => ({ label: type.name, slug: type.slug }))}
+          buildHref={(slug) => href({ class: slug })}
+        />
+      </div>
+
+      {/* A list on mobile, grouped by day. The brief's week grid is a desktop
+          affordance; at 390px a seven-column grid is unusable, and this is the
+          most-visited page on the site. */}
+      <div className="mt-10 grid gap-8">
+        {days.length === 0 ? (
+          <div className="border-subtle bg-surface rounded-lg border p-8 text-center">
+            <p className="text-secondary">No classes match that for this week.</p>
+            <Link
+              href={path(href({ venue: undefined, class: undefined }))}
+              className="mt-4 inline-block"
+            >
+              <Button variant="secondary">Show every class</Button>
+            </Link>
+          </div>
+        ) : (
+          days.map((day) => {
+            const key = toUkDateKey(day);
+            return (
+              <section key={key} className="grid gap-3">
+                <h2 className="font-display text-[length:var(--text-xl)]">
+                  {formatUkDayLong(day)}
+                </h2>
+                {byDay.get(key)?.map((session) => (
+                  <SessionCard key={session.id} session={session} />
+                ))}
+              </section>
+            );
+          })
+        )}
+      </div>
+
+      <aside className="bg-accent-soft mt-12 rounded-lg p-5">
+        <Badge tone="nearly">Booking opens at M5</Badge>
+        <p className="text-primary mt-3 max-w-[60ch] text-sm">
+          The timetable above is live from the database — real venues, real times, correct across
+          the clock change. The Book button creates an account for now; taking a place, the waitlist
+          and the 24-hour cancellation window arrive with the booking engine.
+        </p>
+        <p className="text-secondary mt-3 max-w-[60ch] text-sm">
+          Class sizes show {venues[0]?.defaultCapacity ?? 16} spaces, which is a placeholder — Kelly
+          has not confirmed how many people fit in each hall.
+        </p>
+      </aside>
+    </div>
   );
 }

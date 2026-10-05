@@ -191,6 +191,129 @@ export type Database = {
         Relationships: [];
       };
 
+      products: {
+        Row: Timestamped & {
+          id: string;
+          kind: 'drop_in' | 'intro_offer' | 'pack' | 'membership' | 'on_demand' | 'voucher';
+          name: string;
+          slug: string;
+          description: string | null;
+          price_pence: number;
+          currency: string;
+          credits: number | null;
+          validity_days: number | null;
+          billing_interval: 'month' | 'year' | null;
+          credits_per_period: number | null;
+          rollover_cap: number | null;
+          is_unlimited: boolean;
+          max_bookings_per_day: number | null;
+          includes_on_demand: boolean;
+          intro_days_unlimited: number | null;
+          stripe_product_id: string | null;
+          stripe_price_id: string | null;
+          active: boolean;
+          sort_order: number;
+        };
+        Insert: { kind: string; name: string; slug: string; price_pence: number } & Partial<
+          Record<string, unknown>
+        >;
+        Update: Partial<Record<string, unknown>>;
+        Relationships: [];
+      };
+
+      faqs: {
+        Row: Timestamped & {
+          id: string;
+          question: string;
+          answer: string;
+          category: string | null;
+          sort_order: number;
+          published: boolean;
+        };
+        Insert: { question: string; answer: string } & Partial<Record<string, unknown>>;
+        Update: Partial<Record<string, unknown>>;
+        Relationships: [];
+      };
+
+      reviews: {
+        Row: {
+          id: string;
+          author_name: string;
+          rating: number;
+          body: string | null;
+          reviewed_at: string | null;
+          source: string;
+          source_review_id: string | null;
+          published: boolean;
+          created_at: string;
+        };
+        Insert: { author_name: string; rating: number } & Partial<Record<string, unknown>>;
+        Update: Partial<Record<string, unknown>>;
+        Relationships: [];
+      };
+
+      waiver_versions: {
+        Row: {
+          id: string;
+          version_label: string;
+          body_markdown: string;
+          body_sha256: string;
+          is_current: boolean;
+          published_at: string | null;
+          published_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          version_label: string;
+          body_markdown: string;
+          body_sha256: string;
+        } & Partial<Record<string, unknown>>;
+        Update: Partial<Record<string, unknown>>;
+        Relationships: [];
+      };
+
+      enquiries: {
+        Row: Timestamped & {
+          id: string;
+          kind: 'contact' | 'private_session' | 'event' | 'corporate';
+          name: string;
+          email: string;
+          phone: string | null;
+          message: string;
+          status: 'new' | 'in_progress' | 'closed';
+          assigned_to: string | null;
+          admin_note: string | null;
+          source_ip: string | null;
+        };
+        Insert: {
+          name: string;
+          email: string;
+          message: string;
+          kind?: 'contact' | 'private_session' | 'event' | 'corporate';
+          phone?: string | null;
+          source_ip?: string | null;
+        };
+        Update: Partial<Record<string, unknown>>;
+        Relationships: [];
+      };
+
+      newsletter_subscribers: {
+        Row: {
+          id: string;
+          email: string;
+          user_id: string | null;
+          consent_at: string;
+          source: string | null;
+          unsubscribed_at: string | null;
+          provider_id: string | null;
+          synced_at: string | null;
+          created_at: string;
+        };
+        Insert: { email: string; source?: string | null };
+        Update: Partial<Record<string, unknown>>;
+        Relationships: [];
+      };
+
       announcements: {
         Row: {
           id: string;
@@ -234,6 +357,10 @@ export type Database = {
       credit_balance: {
         Args: { p_user_id: string };
         Returns: number;
+      };
+      generate_class_sessions: {
+        Args: { p_weeks_ahead?: number; p_from?: string };
+        Returns: { created: number; skipped: number }[];
       };
     };
 

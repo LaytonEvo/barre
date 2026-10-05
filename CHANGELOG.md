@@ -2,6 +2,61 @@
 
 ## [Unreleased]
 
+### M2 — Public site (in progress)
+
+**Real business data.** Layton supplied the venues, timetable, town and the free first class on
+2026-10-05, so `20260105000200_business_data.sql` replaces the DEMO fixtures with production
+configuration. Both postcodes were verified against each venue's own public record rather than
+assumed: St Leonards & St Ives Village Hall, Braeside Road, BH24 2PH, and St Ives Primary School,
+Sandy Lane, BH24 2LE. Unconfirmed settings dropped from 19 to 8.
+
+**Session generation**, pulled forward from M5 because the timetable needs real sessions. One
+function used by both the seed script and the future cron job, so dev and production cannot
+generate differently. Verified that a weekly 18:30 class stays 18:30 either side of the
+25 October clock change — it moves from 17:30 UTC to 18:30 UTC, which is the whole point of
+converting wall-clock times in the venue's timezone instead of adding 168 hours.
+
+**Pages**: homepage with live next classes, the timetable (list on mobile, filterable by venue,
+week navigation as real shareable URLs with no client state), `/locations` and a page per venue,
+`/classes` and a page per class type, `/pricing`, `/new-here`, `/faq`, `/about`, `/contact` and
+`/private-and-events`. 27 routes build, with the venue and class pages prerendered.
+
+**SEO**: per-page titles and descriptions carrying local intent, `sitemap.xml` and `robots.txt`
+generated from the database, and structured data for the business, each venue, every upcoming
+session, the FAQs, each class and Kelly.
+
+The JSON-LD builders are pure functions in `lib/seo/structured-data.ts` with 19 tests, because
+malformed structured data and false prices are both visible to customers in search results. Two
+properties the tests pin: `geo` is omitted entirely while coordinates are unknown, since a wrong
+pin is worse than none when somebody drives to it; and `hasCredential` is omitted while Kelly's
+qualifications are unsupplied, so the markup can never claim a certification she has not stated.
+
+**A free first class cannot be card-fingerprinted.** Making the intro offer free means no Stripe
+payment, so no card fingerprint is ever captured and the strongest intro-offer check in the brief
+has nothing to match on. `intro_offer_block_on_card_fingerprint` is set to false rather than left
+true implying a protection that does not exist. Options are written up in docs/03 question B4a.
+
+**Packs are deliberately inactive.** The structure is confirmed (buy 5 get 1 free, buy 10 get 2
+free) but both derive from the single-class price, which is not. An unpriced product must never be
+purchasable, so `/pricing` shows the structure and says the price is to be confirmed.
+
+**Venue capacity is a placeholder of 16** for both halls and marked unconfirmed. It is the one
+number where guessing has physical consequences, so the timetable says so on the page.
+
+**Cookie consent** before any analytics request, as UK PECR expects. Consent is read through
+`useSyncExternalStore` rather than mirrored into state in an effect, which removes a cascading
+render and means a choice made in another tab is reflected without a reload.
+
+**A request-free Supabase client** (`lib/supabase/public.ts`) for code that runs with no HTTP
+request — `generateStaticParams` and `sitemap.ts`, where `cookies()` is unavailable. It uses the
+anon key, so RLS still applies in full; it is emphatically not the service-role client.
+
+Also fixed: unit tests depended on a developer's `.env.local` and would have failed in CI. The
+test environment is now pinned in `vitest.config.ts`, which also makes canonical-URL assertions
+meaningful.
+
+66 unit tests (up from 28), 58 database checks, 27 routes building.
+
 ### M1 — Foundations
 
 **Database.** Ten migrations covering the whole data model: people and roles, waiver

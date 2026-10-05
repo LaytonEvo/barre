@@ -9,21 +9,65 @@ and the rest later.
 
 ---
 
-## A. Blocks M2 (public site) — I need these before any page has real content
+## A. Blocks M2 (public site) — mostly answered 2026-10-05
 
-| #   | Decision / question                                                                                                 | Status                                                                                                                                                                                                                  |
-| --- | ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A1  | **Which town / area?**                                                                                              | Every local-SEO decision depends on it: page titles, `LocalBusiness` JSON-LD, "barre classes [town]" targeting, the map embeds. This is the single highest-value missing input — without it M2's SEO work is guesswork. |
-| A2  | **Kelly's surname**, and how she wants to be credited                                                               | `/about`, `Person` JSON-LD, email signatures                                                                                                                                                                            |
-| A3  | **Venues** — name, full address + postcode, parking, access notes (entrance, changing, toilets), capacity, for each | `/locations/[slug]` pages are one per venue and are a main local-SEO asset. Capacity also drives the booking engine.                                                                                                    |
-| A4  | **Timetable** — day, time, duration, class type, venue for each of the 3 classes                                    | Becomes `schedule_templates`; the live timetable can't render without it                                                                                                                                                |
-| A5  | **Class types** — how many distinct ones, and names                                                                 | `/classes/[slug]` pages                                                                                                                                                                                                 |
-| A6  | **Contact email, phone, Instagram handle, domain**                                                                  | Footer, contact page, email `from:` address, DNS setup                                                                                                                                                                  |
-| A7  | **Kelly's qualifications** (exact wording)                                                                          | `/about`. I won't paraphrase or guess a certification — stating a qualification someone doesn't hold is a real problem, not a copy nit.                                                                                 |
-| A8  | **Brand assets** into `/brand` — see `brand/README.md` for the shopping list                                        | Palette is currently a fallback, not Kelly's. Photos replace placeholder blocks.                                                                                                                                        |
-| A9  | **Google Business Profile** — does it exist, and are there reviews?                                                 | `/` renders an empty reviews state until real ones exist. I will not write testimonials.                                                                                                                                |
+| #      | Input                                       | Status                                                                                                                                                                                                       |
+| ------ | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ~~A1~~ | Town                                        | **Ringwood**, with St Leonards and St Ives as the villages the venues sit in. Stored in `settings.primary_town`.                                                                                             |
+| A2     | Kelly's surname and how she wants crediting | Still needed — `/about` and the `Person` structured data are short without it.                                                                                                                               |
+| ~~A3~~ | Venues                                      | **St Leonards & St Ives Village Hall**, Braeside Road, St Leonards, Ringwood BH24 2PH. **St Ives Primary School**, Sandy Lane, Ringwood BH24 2LE. Postcodes verified against each venue's own public record. |
+| ~~A4~~ | Timetable                                   | Mon 18:30 and 19:30 at the village hall; Thu 19:15 at the school. All 55 minutes.                                                                                                                            |
+| ~~A5~~ | Class types                                 | One 55-minute class, stored as "Barre". If Kelly runs distinct formats, each becomes a row and its own page.                                                                                                 |
+| A6     | Contact email, phone, Instagram, domain     | Still needed. The footer and `/contact` hide these rows rather than printing placeholders.                                                                                                                   |
+| A7     | Kelly's qualifications, exact wording       | Still needed. Never inferred — `buildInstructor` omits `hasCredential` entirely while the list is empty, and a test pins that.                                                                               |
+| A8     | Brand assets into `/brand`                  | Still needed. Photo slots render honest empty states; no stock photography.                                                                                                                                  |
+| A9     | Google Business Profile and reviews         | Still needed. The homepage renders an empty reviews state.                                                                                                                                                   |
+
+### New, and worth a decision: venue capacity
+
+Neither hall's capacity is known, so both are set to **16 as a placeholder**. This is the one
+number where guessing has physical consequences — too high and Kelly is turning people away at
+the door; too low and classes read as full when they are not. It must be confirmed before
+booking opens at M5.
+
+### New: county
+
+Both venues share a BH24 postcode with Ringwood as the post town, but the civil parish of
+St Leonards and St Ives is in Dorset. `county` is set to Dorset for the village hall and
+Hampshire for the school, which is geographically right but may not be how Kelly describes the
+area to locals. It affects the `addressRegion` in the structured data, so worth a glance.
 
 ## B. Blocks M4 (payments)
+
+### B1 is now the single biggest blocker
+
+The pack _structure_ is confirmed — buy 5 get 1 free, buy 10 get 2 free — but both derive from
+the **single-class price**, which is not. Until that arrives the packs exist in the database as
+`active = false` and `/pricing` shows the structure with "price to be confirmed". An unpriced
+product must never be purchasable, and £0 is not a safe placeholder to let someone check out
+with.
+
+### B4a (new): a free first class cannot be card-fingerprinted
+
+Making the first class free has a consequence worth knowing. With nothing to pay there is no
+Stripe payment, so **no card fingerprint is ever captured** — the strongest intro-offer check in
+the brief simply has nothing to match on. Enforcement falls back to account, email and phone,
+all of which are cheap to fake with a second address.
+
+`intro_offer_block_on_card_fingerprint` is therefore set to false, because leaving it true would
+imply a protection that does not exist.
+
+Three ways to close it, in increasing order of friction:
+
+1. **Accept the leakage.** Kelly teaches a 16-person class and will recognise a repeat face. For
+   a business this size, the honour system plus her own memory may genuinely be enough.
+2. **Capture a card without charging it.** Stripe can save a card for £0 via a setup intent. This
+   gives a fingerprint to deduplicate against and makes later booking one tap, at the cost of
+   asking for card details for a free class — which will put some people off.
+3. **Verify the phone number.** Costs a few pence per SMS and adds a step, but makes a duplicate
+   account meaningfully harder than a second email address.
+
+My recommendation is (1) for now and revisit if it is ever actually abused. Worth your call.
 
 | #   | Decision / question                                                                                                                                                                             | Status |
 | --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
