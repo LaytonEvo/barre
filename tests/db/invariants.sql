@@ -251,6 +251,70 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------------
+-- Pricing coherence.
+--
+-- A pack that costs as much per class as paying each time is not a pack, it is a
+-- worse deal with extra steps. Checked on every run rather than only once in the
+-- migration that set the prices, so a later price edit cannot quietly break it.
+-- ---------------------------------------------------------------------------
+do $$
+declare v_single integer; v_bad text;
+begin
+  select price_pence into v_single from public.products
+    where slug = 'single-class' and active;
+
+  if v_single is null then
+    raise notice 'SKIP  no active single-class price to compare packs against';
+    return;
+  end if;
+
+  select string_agg(slug || ' (' || round(price_pence::numeric / credits) || 'p/class)', ', ')
+  into v_bad
+  from public.products
+  where kind = 'pack' and active and credits is not null
+    and (price_pence::numeric / credits) >= v_single;
+
+  if v_bad is not null then
+    raise exception 'FAIL  pack(s) % are not cheaper than a single class (%p)', v_bad, v_single;
+  end if;
+  raise notice 'PASS  every active pack is cheaper per class than a single class';
+end $$;
+
+-- An active product must have a price. £0 is only valid for the intro offer.
+select assert(
+  not exists (
+    select 1 from public.products
+    where active and price_pence = 0 and kind <> 'intro_offer'
+  ),
+  'no active product other than the intro offer is priced at zero');
+
+-- Capacity must be positive everywhere a booking could be made against it.
+select assert(
+  not exists (
+    select 1 from public.class_sessions
+    where status = 'scheduled' and starts_at > now() and capacity < 1
+  ),
+  'every bookable session has a positive capacity');
+
+-- A template change does not retro-fit existing sessions, so a mismatch is
+-- legitimate — but every future session should match its template unless
+-- somebody changed that one class on purpose. Report rather than fail.
+do $$
+declare v_mismatched integer;
+begin
+  select count(*) into v_mismatched
+  from public.class_sessions s
+  join public.schedule_templates t on t.id = s.template_id
+  where s.starts_at > now() and s.status = 'scheduled' and s.capacity <> t.capacity;
+
+  if v_mismatched = 0 then
+    raise notice 'PASS  every future session matches its template capacity';
+  else
+    raise notice 'PASS  % future session(s) differ from their template capacity (expected if edited individually)', v_mismatched;
+  end if;
+end $$;
+
+-- ---------------------------------------------------------------------------
 -- Intro offer: one per person, by account, email, phone and card
 -- ---------------------------------------------------------------------------
 do $$

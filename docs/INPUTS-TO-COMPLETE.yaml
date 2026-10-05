@@ -82,7 +82,7 @@ timetable:
 # All values in pounds, e.g. 12.50
 # -----------------------------------------------------------------------------
 pricing:
-  drop_in: TODO
+  drop_in: 5.00 # ANSWERED 2026-10-05
 
   intro_offer:
     type: TODO # "single_class" or "days_unlimited"
@@ -90,12 +90,13 @@ pricing:
     days: TODO # only if days_unlimited
 
   packs:
-    - classes: 5
-      price: TODO
-      expiry_days: TODO
-    - classes: 10
-      price: TODO
-      expiry_days: TODO
+    # ANSWERED: buy 5 get 1 free, buy 10 get 2 free, derived from the £5 class price.
+    - classes: 6
+      price: 25.00
+      expiry_days: 180 # STILL A GUESS — see docs/03 question B1a
+    - classes: 12
+      price: 50.00
+      expiry_days: 365 # STILL A GUESS
 
   memberships:
     - name: TODO # e.g. "4 classes a month"

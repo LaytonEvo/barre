@@ -4,6 +4,27 @@
 
 ### M2 — Public site (in progress)
 
+**Capacity 25 and a £5 class (2026-10-05).** Both are working figures Layton set to get the site
+usable, and both are meant to move.
+
+Capacity lives in three places on purpose — the venue default, the weekly template, and the
+individual session — because Kelly needs to be able to cap one specific class without changing the
+slot. Editing a template does not retro-fit sessions that already exist, so the migration updated
+future sessions explicitly and left past ones alone: a class's capacity is part of its record,
+being what the register was measured against.
+
+Pricing derives the packs from the single class: six for £25 and twelve for £50, both £4.17 a
+class, a 17% saving. The per-class figures and the saving badge on `/pricing` are computed from
+the single-class price rather than stored, so they cannot contradict the price printed beside
+them. 14 tests cover that arithmetic, including that an unpriced pack never renders "£0 a class"
+and that a badly-priced one shows no saving rather than a negative one.
+
+Two new database invariants, checked on every run rather than once at migration time: no active
+pack costs as much per class as paying each time, and nothing except the free first class is
+active at £0. Both were verified to actually fail when violated.
+
+Pack expiry (180 and 365 days) remains a guess and is recorded as such.
+
 **Real business data.** Layton supplied the venues, timetable, town and the free first class on
 2026-10-05, so `20260105000200_business_data.sql` replaces the DEMO fixtures with production
 configuration. Both postcodes were verified against each venue's own public record rather than

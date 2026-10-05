@@ -23,12 +23,23 @@ and the rest later.
 | A8     | Brand assets into `/brand`                  | Still needed. Photo slots render honest empty states; no stock photography.                                                                                                                                  |
 | A9     | Google Business Profile and reviews         | Still needed. The homepage renders an empty reviews state.                                                                                                                                                   |
 
-### New, and worth a decision: venue capacity
+### ~~Venue capacity~~ — set to 25 (2026-10-05)
 
-Neither hall's capacity is known, so both are set to **16 as a placeholder**. This is the one
-number where guessing has physical consequences — too high and Kelly is turning people away at
-the door; too low and classes read as full when they are not. It must be confirmed before
-booking opens at M5.
+Layton set both halls to **25 for now**. Changeable in three places, by design:
+
+| Where                         | Effect                                            |
+| ----------------------------- | ------------------------------------------------- |
+| `venues.default_capacity`     | The suggestion when adding a new weekly slot      |
+| `schedule_templates.capacity` | Applies to sessions generated from now on         |
+| `class_sessions.capacity`     | One specific class, e.g. a smaller room that week |
+
+Editing a template does **not** retro-fit sessions that already exist. The migration updated
+future sessions explicitly, and the admin schedule screen at M6 will ask whether a change should
+apply to already-generated classes. Past sessions are never touched — a class's capacity is part
+of its record, being what the register was measured against.
+
+Still worth Kelly confirming what each hall actually holds, since 25 in a village hall doing
+barre (which needs floor space per person) may be optimistic.
 
 ### New: county
 
