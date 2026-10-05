@@ -88,6 +88,16 @@ psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB" -v ON_ERROR_STOP=1 -q \
   -f "$ROOT/tests/db/videos.sql" 2>&1 | sed 's/^NOTICE:  //' | grep -E 'PASS|FAIL|ERROR|DETAIL|CONTEXT'
 
 echo
+echo "== gift vouchers (acceptance test 14) =="
+psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB" -v ON_ERROR_STOP=1 -q \
+  -f "$ROOT/tests/db/vouchers.sql" 2>&1 | sed 's/^NOTICE:  //' | grep -E 'PASS|FAIL|ERROR|DETAIL|CONTEXT'
+
+echo
+echo "== automations and the notification queue =="
+psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB" -v ON_ERROR_STOP=1 -q \
+  -f "$ROOT/tests/db/automations.sql" 2>&1 | sed 's/^NOTICE:  //' | grep -E 'PASS|FAIL|ERROR|DETAIL|CONTEXT'
+
+echo
 echo "== rls =="
 psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB" -v ON_ERROR_STOP=1 -q \
   -f "$ROOT/tests/db/rls.sql" 2>&1 | sed 's/^NOTICE:  //' | grep -E 'PASS|FAIL|ERROR|DETAIL|CONTEXT'

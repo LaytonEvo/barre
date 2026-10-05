@@ -60,6 +60,12 @@ export async function handleCheckoutCompleted(session: Stripe.Checkout.Session):
     return `checkout ${session.id} is a subscription; waiting for invoice.paid`;
   }
 
+  // A gift goes to somebody else, so the credits must NOT land on the buyer's
+  // account. Handled on its own path, before the credit grant below.
+  if (session.metadata?.barre_gift === '1') {
+    return fulfilGift(db, session, userId, productId);
+  }
+
   // Idempotency beyond the event table: the unique index on
   // stripe_checkout_session_id means a replayed event cannot create a second
   // purchase even if the events table were somehow cleared.
@@ -120,6 +126,112 @@ export async function handleCheckoutCompleted(session: Stripe.Checkout.Session):
   }
 
   return `granted ${product.credits} credits for purchase ${purchase.id}`;
+}
+
+/**
+ * Fulfil a gift purchase: record it, mint the voucher, tell the buyer.
+ *
+ * The recipient is NOT emailed here. Their email is driven by `send_at` from the
+ * voucher cron, because the whole point of a scheduled gift is that it arrives on
+ * the right day — and a voucher bought on the 3rd for the 25th must not appear in
+ * their inbox on the 3rd.
+ *
+ * The one exception is a gift with no date, which `create_voucher` clamps to now;
+ * the cron then picks it up on its next pass, within minutes.
+ */
+async function fulfilGift(
+  db: ReturnType<typeof createAdminClient>,
+  session: Stripe.Checkout.Session,
+  purchaserId: string,
+  productId: string,
+): Promise<string> {
+  const { data: existing } = await db
+    .from('purchases')
+    .select('id')
+    .eq('stripe_checkout_session_id', session.id)
+    .maybeSingle();
+
+  if (existing) return `gift checkout ${session.id} already fulfilled`;
+
+  const { data: product } = await db
+    .from('products')
+    .select('id, name, kind, credits')
+    .eq('id', productId)
+    .maybeSingle();
+
+  if (!product) throw new Error(`gift checkout ${session.id} references unknown product`);
+
+  const { data: purchase, error: purchaseError } = await db
+    .from('purchases')
+    .insert({
+      user_id: purchaserId,
+      product_id: product.id,
+      stripe_checkout_session_id: session.id,
+      stripe_payment_intent_id: asId(session.payment_intent),
+      amount_pence: session.amount_total ?? 0,
+      discount_pence: session.total_details?.amount_discount ?? 0,
+      status: 'paid',
+      purchased_at: new Date().toISOString(),
+    })
+    .select('id')
+    .single();
+
+  if (purchaseError || !purchase) {
+    throw new Error(`could not record gift purchase for ${session.id}: ${purchaseError?.message}`);
+  }
+
+  const recipientEmail = session.metadata?.barre_gift_email;
+  if (!recipientEmail) {
+    throw new Error(`gift checkout ${session.id} has no recipient email in metadata`);
+  }
+
+  const sendAt = session.metadata?.barre_gift_send_at ?? new Date().toISOString();
+
+  // A pack gift carries the pack's credits; anything else is treated as monetary
+  // and converted at the current class price inside create_voucher.
+  const isPack = product.kind === 'pack' && (product.credits ?? 0) > 0;
+
+  const { data: voucher, error: voucherError } = await db.rpc('create_voucher', {
+    p_kind: isPack ? 'pack' : 'monetary',
+    p_recipient_email: recipientEmail,
+    p_recipient_name: session.metadata?.barre_gift_name ?? null,
+    p_message: session.metadata?.barre_gift_message ?? null,
+    p_send_at: sendAt,
+    p_purchaser_id: purchaserId,
+    p_purchase_id: purchase.id,
+    p_value_pence: isPack ? null : (session.amount_total ?? 0),
+    p_product_id: isPack ? product.id : null,
+  });
+
+  const created = voucher?.[0];
+  if (voucherError || !created) {
+    // The money is taken and no voucher exists, so this must fail loudly: the
+    // webhook returns 500 and Stripe retries, and the purchase row above is
+    // deduped by its session id so a retry does not double-charge anything.
+    throw new Error(
+      `gift purchase ${purchase.id} recorded but voucher failed: ${voucherError?.message}`,
+    );
+  }
+
+  // Confirmation to the buyer, so they know it is in hand and when it will land.
+  await db.rpc('enqueue_notification', {
+    p_user_id: purchaserId,
+    p_template: 'voucher_purchased',
+    p_subject_type: 'voucher',
+    p_subject_id: created.voucher_id,
+    p_payload: {
+      recipientEmail,
+      description: `${created.credits} ${created.credits === 1 ? 'class' : 'classes'}`,
+      sendAt: new Date(sendAt).toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      }),
+      alreadySent: new Date(sendAt).getTime() <= Date.now(),
+    },
+  });
+
+  return `gift voucher ${created.code} created for purchase ${purchase.id}`;
 }
 
 /**

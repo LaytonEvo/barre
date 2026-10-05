@@ -197,6 +197,59 @@ export type Database = {
         Relationships: [];
       };
 
+      vouchers: {
+        Row: {
+          id: string;
+          code: string;
+          kind: string;
+          value_pence: number | null;
+          product_id: string | null;
+          purchaser_user_id: string | null;
+          purchase_id: string | null;
+          recipient_name: string | null;
+          recipient_email: string;
+          message: string | null;
+          send_at: string;
+          sent_at: string | null;
+          redeemed_by: string | null;
+          redeemed_at: string | null;
+          expires_at: string;
+          credits: number | null;
+          credit_expiry_days: number | null;
+          created_at: string;
+        };
+        Insert: {
+          code: string;
+          kind: string;
+          recipient_email: string;
+          send_at: string;
+          expires_at: string;
+        } & Partial<Record<string, unknown>>;
+        Update: Partial<Record<string, unknown>>;
+        Relationships: [];
+      };
+
+      promo_codes: {
+        Row: {
+          id: string;
+          code: string;
+          stripe_promotion_code_id: string | null;
+          stripe_coupon_id: string | null;
+          description: string | null;
+          percent_off: number | null;
+          amount_off_pence: number | null;
+          max_redemptions: number | null;
+          times_redeemed: number;
+          restricted_product_ids: string[];
+          expires_at: string | null;
+          active: boolean;
+          created_at: string;
+        };
+        Insert: { code: string } & Partial<Record<string, unknown>>;
+        Update: Partial<Record<string, unknown>>;
+        Relationships: [];
+      };
+
       video_categories: {
         Row: {
           id: string;
@@ -992,6 +1045,138 @@ export type Database = {
           created_at: string;
         }[];
       };
+      // --- Automations (M8) ---
+      due_first_class_follow_ups: {
+        Args: Record<string, never>;
+        Returns: {
+          user_id: string;
+          booking_id: string;
+          first_name: string | null;
+          class_name: string;
+          credits_left: number;
+        }[];
+      };
+      due_win_backs: {
+        Args: Record<string, never>;
+        Returns: {
+          user_id: string;
+          first_name: string | null;
+          weeks_away: number;
+          credits_left: number;
+          last_class: string;
+        }[];
+      };
+      due_review_requests: {
+        Args: Record<string, never>;
+        Returns: { user_id: string; first_name: string | null; attended: number }[];
+      };
+      due_credit_expiry_warnings: {
+        Args: Record<string, never>;
+        Returns: {
+          user_id: string;
+          lot_id: string;
+          credits: number;
+          expires_at: string;
+          days_left: number;
+        }[];
+      };
+
+      // --- Gift vouchers (M8) ---
+      create_voucher: {
+        Args: {
+          p_kind: string;
+          p_recipient_email: string;
+          p_recipient_name?: string | null;
+          p_message?: string | null;
+          p_send_at: string;
+          p_purchaser_id: string | null;
+          p_purchase_id?: string | null;
+          p_value_pence?: number | null;
+          p_product_id?: string | null;
+        };
+        Returns: {
+          voucher_id: string;
+          code: string;
+          credits: number;
+          expires_at: string;
+        }[];
+      };
+      redeem_voucher: {
+        Args: { p_code: string };
+        Returns: { credits: number; description: string }[];
+      };
+      vouchers_due_to_send: {
+        Args: Record<string, never>;
+        Returns: {
+          id: string;
+          code: string;
+          recipient_email: string;
+          recipient_name: string | null;
+          purchaser_name: string | null;
+          message: string | null;
+          credits: number;
+          expires_at: string;
+        }[];
+      };
+      mark_voucher_sent: { Args: { p_id: string }; Returns: undefined };
+      generate_voucher_code: { Args: Record<string, never>; Returns: string };
+      admin_vouchers: {
+        Args: Record<string, never>;
+        Returns: {
+          id: string;
+          code: string;
+          kind: string;
+          credits: number | null;
+          value_pence: number | null;
+          recipient_email: string;
+          purchaser_email: string | null;
+          send_at: string;
+          sent_at: string | null;
+          redeemed_at: string | null;
+          expires_at: string;
+        }[];
+      };
+
+      // --- Notification dispatch (M8) ---
+      claim_notifications: {
+        Args: { p_limit?: number; p_channel?: string };
+        Returns: {
+          id: string;
+          user_id: string | null;
+          to_email: string | null;
+          to_phone: string | null;
+          template: string;
+          payload: Record<string, unknown>;
+          subject_type: string | null;
+          subject_id: string | null;
+          attempts: number;
+        }[];
+      };
+      settle_notification: {
+        Args: {
+          p_id: string;
+          p_sent: boolean;
+          p_message_id?: string | null;
+          p_error?: string | null;
+        };
+        Returns: undefined;
+      };
+      skip_notification: { Args: { p_id: string; p_reason: string }; Returns: undefined };
+      release_stranded_notifications: { Args: Record<string, never>; Returns: number };
+      enqueue_notification: {
+        Args: {
+          p_user_id: string | null;
+          p_template: string;
+          p_payload?: Record<string, unknown>;
+          p_subject_type?: string | null;
+          p_subject_id?: string | null;
+          p_scheduled_for?: string;
+          p_to_email?: string | null;
+          p_channel?: string;
+        };
+        Returns: string | null;
+      };
+
       report_popular_videos: {
         Args: { p_months?: number };
         Returns: {

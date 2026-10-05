@@ -200,6 +200,38 @@ whether a `past_due` card still counts.
 Uploads go from the browser straight to Mux and never through this server; the webhook is the only
 thing that learns the result, and it stores a playback id **only** if its policy is `signed`.
 
+### Email
+
+Everything is queued, and one job sends. Nothing in the app calls Resend directly,
+which has three consequences worth the indirection:
+
+- **Who gets an email is decided once, in SQL**, and can be inspected before
+  anything leaves the building. `tests/db/automations.sql` asserts the selection
+  rules — including that somebody without marketing consent is never in a
+  win-back, however long they have been away.
+- **Booking emails are triggers, not calls.** A booking can be created from the
+  member UI, the admin register, or a waitlist promotion inside another
+  transaction. Enqueuing at each call site means three places to remember, and a
+  missing email looks exactly like one the member deleted. A trigger cannot be
+  forgotten.
+- **Nothing sends inside `book_session`.** An outbound HTTP call there would hold
+  the session row lock open for the length of a third-party request, and
+  acceptance test 5 exists because that lock is load-bearing.
+
+The queue has a `sending` state between `queued` and `sent`, claimed with
+`for update skip locked`. That is what stops two overlapping cron runs sending the
+same email twice, and what makes a crashed run recoverable rather than a silent
+loss — a row stuck in `sending` for 15 minutes goes back on the queue.
+
+**Marketing email obeys consent in two places.** The selection query excludes
+anyone without `marketing_consent`, and the dispatcher checks again before
+rendering. It also refuses to send marketing at all when `EMAIL_LINK_SECRET` is
+missing, because a marketing email legally needs a working unsubscribe link and
+"no secret" has to mean "no marketing", not "marketing with a dead link".
+
+Unsubscribe links are an HMAC over the member id — nothing stored, nothing to
+expire, and not forgeable, so a crawler following links cannot unsubscribe anybody.
+
 ---
 
 ## Environment variables
@@ -251,17 +283,26 @@ Every push gets a preview deployment once the repository is connected.
 
 ### Scheduled jobs
 
-Two endpoints need a nightly trigger, both authenticated with `CRON_SECRET`:
+Six endpoints need a trigger, all authenticated with `CRON_SECRET`:
 
-| Endpoint                   | When  | What it does                                                     |
-| -------------------------- | ----- | ---------------------------------------------------------------- |
-| `/api/cron/attendance`     | 02:00 | Auto-marks unchecked-in bookings, then confirms pending no-shows |
-| `/api/cron/expire-credits` | 02:30 | Writes the audit rows explaining expired credits                 |
+| Endpoint                    | When         | What it does                                                     |
+| --------------------------- | ------------ | ---------------------------------------------------------------- |
+| `/api/cron/send-email`      | every 5 min  | Drains the notification queue — the only thing that sends email  |
+| `/api/cron/queue-reminders` | every 30 min | Queues 24h and 2h class reminders                                |
+| `/api/cron/send-vouchers`   | hourly       | Emails gift vouchers on their chosen date                        |
+| `/api/cron/attendance`      | 02:00        | Auto-marks unchecked-in bookings, then confirms pending no-shows |
+| `/api/cron/expire-credits`  | 02:30        | Writes the audit rows explaining expired credits                 |
+| `/api/cron/automations`     | 09:00        | Queues follow-ups, win-backs, review requests, expiry warnings   |
 
 They are scheduled with Supabase **pg_cron**, not Vercel Cron, for one concrete
-reason: Vercel Cron issues a `GET`, and both of these mutate data. Keeping them
+reason: Vercel Cron issues a `GET`, and all of these mutate data. Keeping them
 `POST`-only means a crawler, a prefetch or an accidental browser visit cannot
-mark a hall full of members absent.
+mark a hall full of members absent or fire a round of marketing email.
+
+`send-email` is the only one that is time-sensitive. A booking confirmation that
+arrives an hour later is worse than useless — the member has already wondered
+whether it worked and emailed Kelly to ask. The rest are deliberately unhurried:
+`automations` runs once in the morning so nothing lands at 3am.
 
 ```sql
 select cron.schedule('attendance', '0 2 * * *', $$

@@ -2,6 +2,105 @@
 
 ## [Unreleased]
 
+### M8 — Growth and polish
+
+The emails, the gift vouchers, the promo codes and the automations. Also the point at
+which the system stops being silent: `notifications` has been a queue since M1 and
+nothing has ever drained it, so until now a member who booked a class got no
+confirmation.
+
+**ACCEPTANCE TEST 14 passes**: a voucher bought, emailed to its recipient on the
+scheduled date and not before, and redeemed for credit.
+
+**Sixteen email templates**, each with a plain-text part — not a nicety: a multipart
+email without one scores worse with spam filters, and some recipients read it
+instead of the HTML. Every template renders in a test with a real payload, and the
+test fails if a new one is added without one.
+
+**Everything is queued; one job sends.** Nothing in the app calls Resend directly.
+That indirection buys three things: who gets an email is decided once in SQL and can
+be inspected before anything leaves the building; a booking confirmation cannot be
+forgotten by a caller, because it is a trigger; and nothing sends inside
+`book_session`, where an outbound HTTP call would hold the session row lock open for
+the length of a third-party request — and acceptance test 5 exists because that lock
+is load-bearing.
+
+**Booking emails are triggers rather than calls**, deliberately. A booking can be
+created from the member UI, the admin register, or a waitlist promotion inside
+another transaction. Three call sites means one that gets forgotten, and a missing
+email looks exactly like one the member deleted. The tests insert bookings directly —
+the crudest possible caller — and still expect the email.
+
+A walk-in gets no confirmation (they are standing in the room), a waitlist promotion
+gets "a space opened up" rather than "you're booked", and nobody gets both a
+class-cancelled and a booking-cancelled email for the same event.
+
+**The queue cannot double-send.** A `sending` state sits between `queued` and `sent`,
+claimed with `for update skip locked`, so two overlapping cron runs take different
+rows. A row stranded in `sending` by a crashed dispatcher goes back on the queue after
+15 minutes — comfortably longer than any send, so recovery cannot race a slow
+dispatcher and cause the thing it exists to prevent. Three attempts five minutes
+apart, then it fails visibly with the provider's reason kept.
+
+**Marketing consent is enforced twice and is the one thing that cannot be got wrong.**
+The selection query excludes anyone without consent and the dispatcher checks again.
+Each template declares whether it is marketing, so the rule is data rather than
+something each caller remembers — and the classification is argued, not assumed:
+asking somebody whether a class they paid for hurt them is service email, a win-back
+to somebody who has stopped coming is marketing.
+
+**No unsubscribe secret means no marketing email.** Under PECR a marketing email needs
+a working opt-out, so a missing `EMAIL_LINK_SECRET` makes the dispatcher skip those
+rows rather than send them with a dead link. Links are an HMAC over the member id:
+nothing stored, nothing to expire, and not forgeable, so a crawler following links
+cannot unsubscribe anybody. Unsubscribing turns off marketing only — reminders for
+classes somebody has booked keep working, because switching those off would mean
+turning up to a class that was not happening.
+
+**Gift vouchers fix a fairness problem in the original schema.** The ledger counts
+classes, not money, so a £50 voucher has to become some number of classes. Converting
+at redemption would mean a price rise between Christmas and February silently shrinks
+the gift — paid for ten, gets eight. The count is now fixed when the voucher is
+**bought**, at the price in force then, and a test doubles the class price afterwards
+to prove the gift does not shrink.
+
+Codes are read aloud and typed off a card, so the alphabet omits every lookalike pair
+(no O/0, I/1, S/5, Z/2, B/8) and redemption accepts lower case, missing hyphens and
+stray spaces. Redemption is row-locked, because two taps on a slow connection are two
+concurrent attempts at the same code.
+
+**Four automations**, each keyed so "once" is true without a flag column: the
+first-class follow-up on the booking, the win-back and review request on the member,
+the expiry warning on the **credit lot** — because somebody holding two packs with
+different expiry dates has two different things to be told about, and one warning
+naming the nearer date would mislead them about the other.
+
+**Promo codes are Stripe's.** The discount is applied by Checkout, not recalculated
+here: two implementations of "£5 off a £25 pack" would eventually disagree, and the
+one the customer's card believes is Stripe's.
+
+**SMS is behind two switches**, both of which must be on — the `feature_sms_enabled`
+setting and Twilio credentials — because they answer different questions. UK mobiles
+are normalised to E.164 and a landline is refused rather than texted, since a text to
+a landline fails silently and is still billed.
+
+Four bugs the tests caught, all mine:
+
+- `credit_expiry_warning_days` is an **array** (`[7, 1]`), not a number. Reading it
+  with `setting_int` fails outright, which is how it surfaced; the whole warning
+  window had to be rederived from the array.
+- `grant_credits` takes `purchase_id`, `membership_id`, `voucher_id` and `admin_id` in
+  a row, and I passed a reason string positionally into `membership_id` — a text value
+  into a uuid parameter. Every call in that file is now by name.
+- An **empty** `EMAIL_LINK_SECRET` reported itself as configured, so a deployment with
+  the variable present but blank would have signed every unsubscribe link with an
+  empty key. Empty now counts as absent.
+- An em dash in the waitlist SMS forced the whole message into UCS-2, cutting the
+  per-segment limit from 160 characters to 70 and doubling what every one of those
+  texts costs. A test now rejects any non-ASCII character in an SMS body.
+
+332 unit and component tests (was 272), 344 database checks (was 263), 66 routes.
+
 ### M7 — Video library
 
 Barre in the front room, for the weeks somebody cannot get to a Monday class. This is the retention

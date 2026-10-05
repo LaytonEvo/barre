@@ -353,3 +353,113 @@ launched.
 
 Harmless today because there are no programmes. I have left it rather than widen M7's diff, but it
 should be narrowed to published programmes when the programme UI is built (I4).
+
+---
+
+## J. New at M8 (growth, email, vouchers)
+
+### J1. ⚠️ Nothing is emailed until Resend is set up, and that includes booking confirmations
+
+This is the most consequential gap of the whole build so far. The queue works, the
+templates are written, the dispatcher is tested — but with no `RESEND_API_KEY` and
+`EMAIL_FROM`, **a member who books a class gets no confirmation**. They will assume it
+did not work and email Kelly, which is precisely the manual admin the brief exists to
+remove.
+
+Resend's free tier is 3,000 emails a month and 100 a day, which is comfortably more
+than this business will send. It needs a verified sending domain — which is the same
+DNS work (SPF, DKIM, DMARC) already on the M9 list, so it is worth doing once.
+
+`/admin/growth` says plainly when email is unconfigured, and the queue counts show
+what is backing up, so this cannot be missed in staging.
+
+### J2. `EMAIL_LINK_SECRET` — one variable, generated in ten seconds
+
+`openssl rand -hex 32`. Without it, win-backs and review requests are **skipped**, not
+sent badly: a marketing email needs a working unsubscribe link under PECR, so a
+missing secret has to mean no marketing. Transactional email is unaffected.
+
+Worth knowing because the symptom is silent by design — `/admin/growth` reports it, and
+the skipped rows carry the reason.
+
+### J3. The Google review URL is empty, so review requests send nothing
+
+`google_review_url` is an unconfirmed setting with no value, and the automation queues
+nothing at all while it is empty (the cron reports that it skipped, so an empty run is
+distinguishable from a broken one).
+
+**What Kelly needs to do:** from her Google Business Profile, get the "write a review"
+short link and paste it into `/admin/settings`.
+
+One thing to pass on: Google's policies prohibit **incentivised** review requests. The
+email deliberately offers nothing in return, and a test asserts it does not mention a
+free class, a discount or a reward. If Kelly would like to offer something, that has to
+be a separate thank-you not tied to leaving a review.
+
+### J4. The automation thresholds are mine, and two of them are judgement calls
+
+All settings, all changeable without a deploy:
+
+| Setting                             | Mine | What it decides                                  |
+| ----------------------------------- | ---- | ------------------------------------------------ |
+| `follow_up_after_first_class_hours` | 20   | Morning-after check-in on a first class          |
+| `win_back_after_days`               | 35   | When somebody counts as having drifted away      |
+| `review_request_after_classes`      | 3    | Classes attended before being asked for a review |
+
+`win_back_after_days` is deliberately longer than the at-risk report's 21 days: that
+report is for Kelly to look at, this one actually emails somebody. 35 days also clears a
+summer holiday, which 21 does not.
+
+The win-back is sent **once per member, ever**, keyed on the member id. That is
+deliberate — a monthly "we miss you" is how a small business trains people to filter
+its email. If Kelly later wants a seasonal campaign that should be a deliberate act,
+not a side effect of this job still running.
+
+### J5. Gift vouchers work, and the 18-month validity is my number
+
+Both kinds are live, because the prices Layton confirmed at M4 are in place (£5 single
+class, £25 and £50 packs, all active):
+
+- **Pack vouchers** carry the pack's own credit count.
+- **Monetary vouchers** convert at the single-class price in force when bought — and
+  that count is then frozen, so a later price rise cannot shrink a gift somebody has
+  already paid for. A test doubles the class price afterwards to prove it.
+
+`create_voucher` **refuses** rather than inventing a conversion rate if no single-class
+price is set, so this breaks loudly rather than quietly if the drop-in product is ever
+deactivated.
+
+The one number that is purely mine: vouchers are valid for **18 months**, chosen because
+a Christmas present should survive a new year somebody does not actually start until
+March. Easy to change, and worth a glance from Kelly — it is the kind of thing a
+recipient notices only when it has run out.
+
+### J6. Memberships cannot be gifted, and I think that is right
+
+A gifted subscription would keep billing the buyer's card indefinitely, which is not
+what anyone means by a present. `/gift` offers packs and single classes only, and the
+checkout path refuses a membership explicitly rather than silently.
+
+If Kelly wants "three months of membership as a gift", that is a genuinely different
+product — a prepaid pack sized to three months is the honest version, and costs
+nothing to add.
+
+### J7. SMS is off, and I would leave it off for launch
+
+Built and tested, behind two switches that both have to be on. I would not turn it on
+at launch: every message costs money, a Twilio number needs provisioning, and UK
+marketing SMS needs its own consent — the `marketing_consent` flag was collected
+against email wording and does not obviously cover texts.
+
+Reminders by text would be genuinely useful for a 6:30pm class. Worth doing properly
+later, with its own consent question, rather than quietly reusing the email one.
+
+### J8. A legal point worth putting to the insurer alongside the waiver
+
+The first-class follow-up email asks "anything hurt that should not have?" and invites a
+reply. That is good practice and good retention — but it means Kelly may receive health
+information by email, outside the PAR-Q, and those replies will sit in her inbox.
+
+Not a reason to change the email. It is worth asking the insurer and whoever reviews the
+waiver: does she need to record those replies anywhere, and does her retention policy
+need to cover her inbox? Adding it to the existing review (E1) costs nothing.

@@ -160,6 +160,30 @@ decisions:
   studio_membership_includes_on_demand: TODO # true / false
   pack_holders_get_video_access: TODO # true / false (currently false, my recommendation)
 
+  # --- M8: email and growth -------------------------------------------------
+  # BLOCKS LAUNCH. Without these nothing is emailed AT ALL, including booking
+  # confirmations — a member who books gets silence and emails Kelly to ask.
+  # Free tier is 3,000/month. Needs a verified sending domain (same DNS work as M9).
+  resend_keys_supplied: TODO # true / false — RESEND_API_KEY and EMAIL_FROM
+
+  # One variable: `openssl rand -hex 32`. Without it, win-backs and review requests
+  # are SKIPPED (a marketing email needs a working unsubscribe link). Transactional
+  # email is unaffected.
+  email_link_secret_supplied: TODO # true / false
+
+  # The "write a review" link from Kelly's Google Business Profile. Review requests
+  # queue NOTHING until this is set. See docs/03 J3.
+  google_review_url: TODO # the URL, or false to not ask for reviews
+
+  # My thresholds, all settings. See docs/03 J4.
+  win_back_after_days: TODO # 35 (mine) / a number Kelly prefers
+  review_request_after_classes: TODO # 3 (mine) / a number
+  voucher_validity_months: TODO # 18 (mine) / a number
+
+  # I would leave SMS off for launch: it costs per message and UK marketing SMS
+  # needs its own consent, which the email wording does not obviously cover.
+  enable_sms_at_launch: TODO # false (my recommendation) / true
+
 # -----------------------------------------------------------------------------
 # 8. THINGS ONLY KELLY CAN SUPPLY
 # -----------------------------------------------------------------------------

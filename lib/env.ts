@@ -30,6 +30,9 @@ const serverSchema = z.object({
   MUX_SIGNING_KEY_ID: z.string().optional(),
   MUX_SIGNING_KEY_PRIVATE: z.string().optional(),
   MUX_WEBHOOK_SECRET: z.string().optional(),
+  // Signs one-click unsubscribe links. Without it, marketing email is not sent at
+  // all — see lib/email/links.ts.
+  EMAIL_LINK_SECRET: z.string().optional(),
   TWILIO_ACCOUNT_SID: z.string().optional(),
   TWILIO_AUTH_TOKEN: z.string().optional(),
   TWILIO_FROM_NUMBER: z.string().optional(),

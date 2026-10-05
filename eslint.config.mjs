@@ -58,6 +58,10 @@ const config = [
       // The Mux webhook, like Stripe's, runs with no signed-in user: Mux is the
       // caller. Its own authority is the verified signature, not a session.
       'app/api/mux/**',
+      // One-click unsubscribe from an email. The person clicking is in their
+      // inbox, not logged in, so there is no session to act under — the signed
+      // token in the link is the authority. It writes one boolean on one row.
+      'app/unsubscribe/**',
       'lib/stripe/**',
       'lib/credits/**',
       'scripts/**',
