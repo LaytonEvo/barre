@@ -195,3 +195,25 @@ describe('cancellationPolicyText', () => {
     expect(cancellationPolicyText(base).join(' ')).toContain('returned automatically');
   });
 });
+
+describe('availabilityState with unknown availability', () => {
+  it('reports unknown rather than guessing when spaces could not be read', () => {
+    // The state that did not exist, and whose absence hid a real bug: the
+    // timetable fell back to capacity and advertised every class as empty.
+    expect(availabilityState(null, 25)).toBe('unknown');
+  });
+
+  it('never collapses unknown into open or full', () => {
+    // Guessing open offers a Book button for a class that may be sold out;
+    // guessing full turns people away from one with room.
+    const state = availabilityState(null, 1);
+    expect(state).not.toBe('open');
+    expect(state).not.toBe('full');
+  });
+
+  it('still reports the real states when the number is known', () => {
+    expect(availabilityState(0, 25)).toBe('full');
+    expect(availabilityState(1, 25)).toBe('nearly_full');
+    expect(availabilityState(25, 25)).toBe('open');
+  });
+});

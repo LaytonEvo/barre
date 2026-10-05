@@ -104,10 +104,15 @@ export function buildSessions(
               price: 0,
               priceCurrency: 'GBP',
               description: 'First class free for new members',
+              // Omitted when unknown: telling Google a class is in stock when we
+              // do not know is worse than saying nothing, and a wrong SoldOut
+              // would have it dropped from results altogether.
               availability:
-                session.spacesLeft > 0
-                  ? 'https://schema.org/InStock'
-                  : 'https://schema.org/SoldOut',
+                session.spacesLeft === null
+                  ? undefined
+                  : session.spacesLeft > 0
+                    ? 'https://schema.org/InStock'
+                    : 'https://schema.org/SoldOut',
               url: siteUrl('/timetable'),
             },
           }

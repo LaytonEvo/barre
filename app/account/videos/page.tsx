@@ -120,7 +120,9 @@ function UpsellBanner() {
   return (
     <Card className="border-strong bg-accent-soft mt-8">
       <CardTitle>Your plan does not include the video library yet</CardTitle>
-      <CardDescription>
+      {/* text-secondary, not the default text-muted: muted is 4.08:1 on the mint
+          and fails AA. axe caught this one live. */}
+      <CardDescription className="text-secondary">
         Have a look round — then add on-demand access to watch any of them.
       </CardDescription>
       <CardContent className="mt-4">

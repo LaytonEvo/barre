@@ -127,7 +127,11 @@ export default async function HomePage() {
                 </p>
                 <p className="text-muted tabular text-sm">
                   {durationMins(session.startsAt, session.endsAt)} mins
-                  {session.spacesLeft > 0 ? ` · ${session.spacesLeft} spaces` : ' · Full'}
+                  {session.spacesLeft === null
+                    ? ''
+                    : session.spacesLeft > 0
+                      ? ` · ${session.spacesLeft} spaces`
+                      : ' · Full'}
                 </p>
               </li>
             ))}

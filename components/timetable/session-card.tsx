@@ -74,11 +74,16 @@ export function SessionCard({
           <Badge tone="cancelled">Cancelled</Badge>
         ) : (
           <>
-            <Badge tone={state === 'full' ? 'full' : state === 'nearly_full' ? 'nearly' : 'open'}>
-              {session.spacesLeft === 0
-                ? 'Full'
-                : `${session.spacesLeft} space${session.spacesLeft === 1 ? '' : 's'} left`}
-            </Badge>
+            {/* No badge at all when availability is unknown. Saying "25 spaces
+                left" because we failed to read the real number is how a sold-out
+                class ends up advertised as empty. */}
+            {state === 'unknown' ? null : (
+              <Badge tone={state === 'full' ? 'full' : state === 'nearly_full' ? 'nearly' : 'open'}>
+                {session.spacesLeft === 0
+                  ? 'Full'
+                  : `${session.spacesLeft} space${session.spacesLeft === 1 ? '' : 's'} left`}
+              </Badge>
+            )}
 
             {!signedIn ? (
               <Link href="/signup">

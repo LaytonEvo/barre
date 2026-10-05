@@ -116,11 +116,19 @@ export function waitlistMode(
   return hoursUntil(startsAt, now) > policy.waitlist_cutoff_hours ? 'auto_promote' : 'notify_only';
 }
 
-/** Spaces-left display state. Drives which badge the timetable shows. */
+/**
+ * Spaces-left display state. Drives which badge the timetable shows.
+ *
+ * `unknown` exists because "we could not read availability" is a real state and
+ * must not be collapsed into either 'open' or 'full'. Guessing 'open' offers a
+ * Book button for a class that may be sold out; guessing 'full' turns people away
+ * from a class with room. Saying nothing is the only honest option.
+ */
 export function availabilityState(
-  spacesLeft: number,
+  spacesLeft: number | null,
   capacity: number,
-): 'open' | 'nearly_full' | 'full' {
+): 'open' | 'nearly_full' | 'full' | 'unknown' {
+  if (spacesLeft === null) return 'unknown';
   if (spacesLeft <= 0) return 'full';
   // "Nearly full" at two or fewer, or the last fifth of a larger class.
   if (spacesLeft <= Math.max(2, Math.floor(capacity * 0.2))) return 'nearly_full';

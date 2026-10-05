@@ -196,4 +196,74 @@ select assert(
 
 commit;
 
+-- ---------------------------------------------------------------------------
+-- Spaces-left must be TRUE for an anonymous visitor.
+--
+-- This is the regression test for a real bug. `session_availability` was created
+-- `with (security_invoker = true)`, so it counted bookings under the caller's own
+-- RLS — and nobody may read other members' bookings. booked_count was therefore
+-- always 0 for a visitor, and the public timetable showed every class as
+-- completely empty however full it was: a sold-out class offered a Book button,
+-- the "only 2 spaces left" urgency could never appear, and the waitlist was never
+-- offered.
+--
+-- It caused no overbooking, because book_session takes the row lock and refuses.
+-- It was purely a lie told to visitors, which is why no existing test caught it:
+-- the database suites queried as superuser, where the view looked correct.
+-- ---------------------------------------------------------------------------
+do $$
+declare
+  v_member  uuid;
+  v_session uuid;
+  v_waiver  uuid;
+begin
+  select id into v_waiver from public.waiver_versions where is_current limit 1;
+
+  v_member := gen_random_uuid();
+  insert into auth.users (id, email) values (v_member, 'availability-rls@test');
+  insert into public.waiver_signatures (user_id, waiver_version_id, typed_name, signature_image_path)
+  values (v_member, v_waiver, 'A', v_member || '/sig.png');
+  insert into public.health_questionnaires
+    (user_id, questionnaire_version, answers, explicit_consent_at, valid_until)
+  values (v_member, 'v1', '{}', now(), now() + interval '1 year');
+
+  insert into public.class_sessions
+    (class_type_id, venue_id, instructor_id, starts_at, ends_at, capacity, is_one_off)
+  select ct.id, v.id, i.id, now() + interval '2 days', now() + interval '2 days 55 minutes', 1, true
+  from public.class_types ct, public.venues v, public.instructors i
+  where i.slug = 'kelly-brooks' limit 1
+  returning id into v_session;
+
+  insert into public.bookings (session_id, user_id, entitlement_kind, status, source)
+  values (v_session, v_member, 'payment', 'booked', 'member');
+
+  -- Stash the id where the anon block below can find it.
+  create temporary table availability_fixture as select v_session as session_id;
+  grant select on availability_fixture to anon, authenticated;
+end $$;
+
+begin;
+  set local role anon;
+  do $$
+  declare f record; v_spaces integer; v_booked integer;
+  begin
+    select * into f from availability_fixture;
+
+    perform assert(current_user = 'anon', 'role switch to anon took effect');
+
+    select spaces_left, booked_count into v_spaces, v_booked
+    from public.session_availability where session_id = f.session_id;
+
+    perform assert(v_booked = 1,
+      'ACCEPTANCE: an anonymous visitor sees the REAL booked count, not zero');
+    perform assert(v_spaces = 0,
+      'ACCEPTANCE: a full class reports zero spaces to an anonymous visitor');
+
+    -- And the thing the view exists to prevent is still prevented.
+    perform assert(
+      (select count(*) from public.bookings) = 0,
+      'while still being unable to read a single booking row');
+  end $$;
+commit;
+
 drop function assert(boolean, text);

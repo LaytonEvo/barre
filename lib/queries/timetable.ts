@@ -11,9 +11,10 @@ export type TimetableSession = {
   classType: { name: string; slug: string; level: string };
   venue: { name: string; slug: string; city: string | null };
   instructor: { displayName: string };
-  spacesLeft: number;
-  bookedCount: number;
-  waitlistCount: number;
+  /** `null` when availability could not be read — never guessed. */
+  spacesLeft: number | null;
+  bookedCount: number | null;
+  waitlistCount: number | null;
 };
 
 type SessionRow = {
@@ -72,9 +73,19 @@ async function withAvailability(rows: SessionRow[]): Promise<TimetableSession[]>
         classType: row.class_types,
         venue: row.venues,
         instructor: { displayName: row.instructors.display_name },
-        spacesLeft: a?.spaces_left ?? row.capacity,
-        bookedCount: a?.booked_count ?? 0,
-        waitlistCount: a?.waitlist_count ?? 0,
+        // `null` when availability could not be read, NOT `row.capacity`.
+        //
+        // The old fallback silently rendered an unknown class as completely
+        // empty, which is the most dangerous direction to fail in: it offers a
+        // Book button for a class that may be full, and it masked a real bug for
+        // three milestones (the view counted bookings under the caller's RLS, so
+        // every class always looked empty — see migration 20260105001600).
+        //
+        // A card that does not know how many spaces are left now says nothing
+        // about spaces, rather than saying something false.
+        spacesLeft: a?.spaces_left ?? null,
+        bookedCount: a?.booked_count ?? null,
+        waitlistCount: a?.waitlist_count ?? null,
       },
     ];
   });

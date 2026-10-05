@@ -20,6 +20,11 @@ const AAA_TEXT = 7;
  */
 const ALLOWED_BELOW_AA = new Map([
   ['ink.400 on cream.100', 'disabled controls only — barred from prose by convention and review'],
+  // Listed so the number is visible and cannot be rediscovered the hard way.
+  // axe found this live on /account/videos: muted body text on the mint is
+  // 4.08:1. The rule is now simply that text-muted is never used on
+  // bg-accent-soft — text-secondary (7.59:1) is, and reads just as quietly.
+  ['ink.500 on green.200', 'muted text is barred from the mint — use ink.700 (7.59:1) there'],
 ]);
 
 const PAIRS = [
@@ -39,6 +44,12 @@ const PAIRS = [
   // The logo mint. Light by nature, so it is a surface and never a text colour.
   ['ink.900 on green.200 (logo mint)', '#1A1F1B', '#BBE7C4', 'brand surface text'],
   ['green.800 on green.200', '#174A22', '#BBE7C4', 'heading on brand surface'],
+  // Added after axe caught a real failure on /account/videos: the muted text
+  // colour is fine on cream but only reaches 4.07:1 on the mint, and this list
+  // tested only ink.900 against it. A surface is not safe until every text colour
+  // used on it has been checked, not just the darkest one.
+  ['ink.700 on green.200', '#3A423B', '#BBE7C4', 'secondary text on brand surface'],
+  ['ink.500 on green.200', '#626A63', '#BBE7C4', 'muted text on brand surface'],
   ['ink.900 on green.100', '#1A1F1B', '#D9F2DE', 'calm surface text'],
 
   // Warm clay accent, reserved for the booking CTA
