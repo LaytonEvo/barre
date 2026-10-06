@@ -244,16 +244,22 @@ end $$;
 -- ---------------------------------------------------------------------------
 do $$
 declare
-  v_member uuid;
-  v_id     uuid;
-  v_again  uuid;
-  v_rows   integer;
-  v_status text;
+  v_member  uuid;
+  v_id      uuid;
+  v_again   uuid;
+  v_subject uuid;
+  v_rows    integer;
+  v_status  text;
 begin
   v_member := a_member('queue@test');
 
+  -- A subject of this test's own. 'welcome' on ('member', <id>) is now taken by
+  -- the signup trigger, and these assertions are about the queue, not about which
+  -- template happens to be in it.
+  v_subject := gen_random_uuid();
+
   v_id := public.enqueue_notification(
-    v_member, 'welcome', '{}'::jsonb, 'member', v_member);
+    v_member, 'welcome', '{}'::jsonb, 'queue_test', v_subject);
   perform assert(v_id is not null, 'a notification can be enqueued');
 
   perform assert(
@@ -262,7 +268,7 @@ begin
 
   -- The dedupe index is what stops a daily job emailing the same thing daily.
   v_again := public.enqueue_notification(
-    v_member, 'welcome', '{}'::jsonb, 'member', v_member);
+    v_member, 'welcome', '{}'::jsonb, 'queue_test', v_subject);
   perform assert(v_again is null,
     'enqueuing the same thing twice returns null rather than duplicating it');
 
@@ -293,9 +299,10 @@ end $$;
 -- Retries, then a permanent failure
 do $$
 declare v_member uuid; v_id uuid; v_status text; v_attempts integer;
+  v_subject uuid := gen_random_uuid();
 begin
   v_member := a_member('retry@test');
-  v_id := public.enqueue_notification(v_member, 'welcome', '{}'::jsonb, 'member', v_member);
+  v_id := public.enqueue_notification(v_member, 'welcome', '{}'::jsonb, 'retry_test', v_subject);
 
   -- Attempt 1 and 2 go back on the queue.
   perform public.claim_notifications(200, 'email');
@@ -328,9 +335,10 @@ end $$;
 -- Skipping, and recovering a stranded row
 do $$
 declare v_member uuid; v_id uuid; v_status text;
+  v_subject uuid := gen_random_uuid();
 begin
   v_member := a_member('skip@test', false);
-  v_id := public.enqueue_notification(v_member, 'win_back', '{}'::jsonb, 'member', v_member);
+  v_id := public.enqueue_notification(v_member, 'win_back', '{}'::jsonb, 'skip_test', v_subject);
 
   perform public.skip_notification(v_id, 'no marketing consent');
   select status into v_status from public.notifications where id = v_id;
@@ -342,7 +350,7 @@ begin
 
   -- A dispatcher killed mid-run.
   v_member := a_member('stranded@test');
-  v_id := public.enqueue_notification(v_member, 'welcome', '{}'::jsonb, 'member', v_member);
+  v_id := public.enqueue_notification(v_member, 'welcome', '{}'::jsonb, 'skip_test', gen_random_uuid());
   perform public.claim_notifications(200, 'email');
 
   perform assert(public.release_stranded_notifications() = 0,
@@ -600,6 +608,45 @@ begin
   -- a job that runs every half hour safe.
   perform assert(public.queue_class_reminders() = 0,
     'running the job again queues nothing, so overlapping runs cannot double-send');
+end $$;
+
+-- -----------------------------------------------------------------------------
+-- The welcome email.
+--
+-- The template existed for several milestones with nothing enqueuing it, so
+-- every member who signed up got silence. Invisible from the application: the
+-- queue just stayed empty, which looks identical to "nothing to send".
+-- -----------------------------------------------------------------------------
+do $$
+declare
+  v_new uuid := gen_random_uuid();
+  v_payload jsonb;
+begin
+  insert into auth.users (id, email) values (v_new, 'newjoiner@example.test');
+
+  perform assert(
+    exists (select 1 from public.notifications
+             where user_id = v_new and template = 'welcome'),
+    'signing up queues a welcome email'
+  );
+
+  select payload into v_payload
+    from public.notifications where user_id = v_new and template = 'welcome';
+
+  -- The template has firstName optional, and optional means absent: a null
+  -- would fail validation and the row would retry forever.
+  perform assert(not (v_payload ? 'firstName'),
+    'a member who gave no name gets a payload without the key, not a null');
+
+  -- The dedupe index, not the trigger, is what guarantees this.
+  insert into public.profiles (id, email) values (v_new, 'dupe@example.test')
+    on conflict (id) do nothing;
+
+  perform assert(
+    (select count(*) from public.notifications
+      where user_id = v_new and template = 'welcome') = 1,
+    'and only ever one welcome, however many times the row is touched'
+  );
 end $$;
 
 drop function assert(boolean, text);
