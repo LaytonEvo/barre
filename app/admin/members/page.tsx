@@ -51,9 +51,13 @@ export default async function MembersPage({
               href={path(`/admin/members/${member.user_id}`)}
               className="border-subtle bg-surface hover:border-strong focus-visible:outline-focus block rounded-lg border p-4 focus-visible:outline-2 focus-visible:outline-offset-2"
             >
-              <div className="flex flex-wrap items-start justify-between gap-3">
+              {/* Not flex-wrap: with it, a long name or email pushed the badges
+                  onto their own line, so some rows showed credits top-right and
+                  others underneath. The name block shrinks and truncates
+                  instead, which keeps the badges in one readable column. */}
+              <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-primary font-medium">
+                  <p className="text-primary truncate font-medium">
                     {member.full_name ?? member.email}
                     {member.anonymised ? ' (deleted)' : ''}
                   </p>
@@ -67,7 +71,7 @@ export default async function MembersPage({
                   )}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
                   {member.health_flagged ? <Badge tone="nearly">Health note</Badge> : null}
                   {!member.waiver_signed ? <Badge tone="full">No waiver</Badge> : null}
                   <Badge tone={member.credits > 0 ? 'open' : 'neutral'}>

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import type { Route } from 'next';
 import { cn } from '@/lib/utils';
@@ -12,6 +13,14 @@ import { cn } from '@/lib/utils';
  * a hamburger — one tap to reach anything, and the current section stays
  * visible. An instructor sees only the two sections they have access to, which
  * matches what the database will actually allow them.
+ *
+ * Two things make the sideways scroll usable rather than merely present. The
+ * current tab is scrolled into view on load, because arriving at Settings and
+ * seeing a nav that starts at Today reads as "Settings is not in here". And the
+ * right edge fades, because a row of tabs clipped flush against the screen
+ * edge looks like the end of the list: on a phone there is no scrollbar to say
+ * otherwise, and Reports, Growth, Content and Settings were all off-screen with
+ * nothing to suggest they existed.
  */
 const ALL = [
   { href: '/admin', label: 'Today', adminOnly: false },
@@ -28,10 +37,24 @@ const ALL = [
 export function AdminNav({ isAdmin }: { isAdmin: boolean }) {
   const pathname = usePathname();
   const items = ALL.filter((item) => isAdmin || !item.adminOnly);
+  const activeRef = useRef<HTMLAnchorElement>(null);
+
+  useEffect(() => {
+    // `nearest` so a tab already visible does not jump; `instant` because this
+    // is where the page starts, not a movement the user asked for.
+    activeRef.current?.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'instant' });
+  }, [pathname]);
 
   return (
-    <nav aria-label="Admin sections" className="overflow-x-auto">
-      <ul className="mx-auto flex max-w-5xl gap-1 px-5 pb-2 md:px-8">
+    <nav
+      aria-label="Admin sections"
+      className="relative after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-8 after:bg-gradient-to-l after:from-[var(--bg-surface)] after:to-transparent md:after:hidden"
+    >
+      {/* scroll-pr-12 is wider than the fade: scrollIntoView honours scroll
+          padding, so without it the tab it scrolls to lands flush against the
+          right edge and sits underneath the gradient — the one tab you need to
+          see being the one obscured. */}
+      <ul className="mx-auto flex max-w-5xl scroll-pr-12 gap-1 overflow-x-auto px-5 pb-2 md:scroll-pr-0 md:px-8">
         {items.map((item) => {
           const active =
             item.href === '/admin' ? pathname === '/admin' : pathname.startsWith(item.href);
@@ -39,6 +62,7 @@ export function AdminNav({ isAdmin }: { isAdmin: boolean }) {
           return (
             <li key={item.href}>
               <Link
+                ref={active ? activeRef : undefined}
                 href={item.href as Route}
                 aria-current={active ? 'page' : undefined}
                 className={cn(

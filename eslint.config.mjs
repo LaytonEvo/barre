@@ -61,7 +61,9 @@ const config = [
       // One-click unsubscribe from an email. The person clicking is in their
       // inbox, not logged in, so there is no session to act under — the signed
       // token in the link is the authority. It writes one boolean on one row.
-      'app/unsubscribe/**',
+      // The (site) group is a route group: it changes no URL, but it is part of
+      // the path this allowlist matches on, so the glob has to carry it.
+      'app/(site)/unsubscribe/**',
       // Rate limiting for public forms. The counters live in a table with RLS and
       // no policy, and the function is revoked from anon — deliberately, because a
       // limit the caller can read or reset is not a limit. That means the service

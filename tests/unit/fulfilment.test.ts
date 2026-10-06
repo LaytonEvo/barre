@@ -29,8 +29,8 @@ describe('fulfilment happens only in the webhook', () => {
     for (const file of [
       'app/actions/purchase.ts',
       'app/actions/enquiry.ts',
-      'app/account/billing/page.tsx',
-      'app/pricing/page.tsx',
+      'app/(site)/account/billing/page.tsx',
+      'app/(site)/pricing/page.tsx',
       'components/site/buy-button.tsx',
     ]) {
       if (read(file).includes('grant_credits')) offenders.push(file);
@@ -42,7 +42,7 @@ describe('fulfilment happens only in the webhook', () => {
   it('the checkout success page does not fulfil anything', () => {
     // A member can reach this URL by typing it. If it granted credits, that
     // would be free classes for anyone who guessed the query string.
-    const billing = read('app/account/billing/page.tsx');
+    const billing = read('app/(site)/account/billing/page.tsx');
     expect(billing).not.toContain('grant_credits');
     expect(billing).not.toContain('createAdminClient');
   });

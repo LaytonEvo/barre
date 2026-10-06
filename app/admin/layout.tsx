@@ -15,7 +15,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const isAdmin = user.roles.includes('admin');
 
   return (
-    <div className="bg-page min-h-dvh">
+    <div className="bg-page flex min-h-dvh flex-col">
+      {/* The admin portal carries its own landmark and skip link: it no longer
+          sits inside the public site's, and a page without a main landmark is a
+          page a screen-reader user has to walk from the top every time. */}
+      <a href="#main" className="skip-link">
+        Skip to content
+      </a>
       <div className="border-subtle bg-surface border-b">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3 md:px-8">
           <Link href="/admin" className="font-display text-heading font-semibold">
@@ -29,7 +35,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <AdminNav isAdmin={isAdmin} />
       </div>
 
-      {children}
+      <main id="main" className="flex-1">
+        {children}
+      </main>
     </div>
   );
 }

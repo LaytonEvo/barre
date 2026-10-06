@@ -4,7 +4,7 @@ import { useActionState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { updatePassword, type ActionResult } from '@/app/login/actions';
+import { updatePassword, type ActionResult } from '@/app/(site)/login/actions';
 
 async function run(_previous: ActionResult, formData: FormData): Promise<ActionResult> {
   return updatePassword(formData);

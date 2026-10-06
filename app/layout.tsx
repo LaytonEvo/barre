@@ -1,9 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Fraunces, Inter } from 'next/font/google';
 import './globals.css';
-import { SiteHeader } from '@/components/site/site-header';
-import { AnnouncementBanner } from '@/components/site/announcement-banner';
-import { SiteFooter } from '@/components/site/site-footer';
 import { CookieConsent } from '@/components/site/cookie-consent';
 import { IS_PRODUCTION_SITE } from '@/lib/seo/site';
 
@@ -55,15 +52,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en-GB" className={`${fraunces.variable} ${inter.variable}`}>
       <body className="flex min-h-dvh flex-col">
-        <a href="#main" className="skip-link">
-          Skip to content
-        </a>
-        <AnnouncementBanner />
-        <SiteHeader />
-        <main id="main" className="flex-1">
-          {children}
-        </main>
-        <SiteFooter />
+        {/* The chrome lives in the route groups, not here. The public header and
+            footer belong to the marketing site; the admin portal has its own
+            shell and was previously wrapped in both, so Kelly scrolled past a
+            register in a village hall into fifteen links to the public site. */}
+        {children}
         <CookieConsent plausibleDomain={process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN} />
       </body>
     </html>

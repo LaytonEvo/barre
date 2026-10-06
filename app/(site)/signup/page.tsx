@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/supabase/auth';
 import { internalPath } from '@/lib/routes';
-import { AuthForm } from '@/app/login/auth-form';
+import { AuthForm } from '@/app/(site)/login/auth-form';
 
 export const metadata: Metadata = { title: 'Create an account' };
 
