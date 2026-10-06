@@ -27,7 +27,10 @@ export async function login(page: Page, email: string): Promise<void> {
   await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 20_000 });
   // A redirect away from /login is necessary but not sufficient — assert the
   // session actually took, or later failures blame the wrong thing.
-  await expect(page.getByRole('link', { name: /my account/i }).first()).toBeVisible({
+  // Either control proves a session: a member sees "My account", and staff on a
+  // phone see "Admin" instead, because the header shows one primary control at
+  // that width and Kelly's is the register, not her own bookings.
+  await expect(page.getByRole('link', { name: /my account|admin/i }).first()).toBeVisible({
     timeout: 10_000,
   });
 }

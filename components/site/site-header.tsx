@@ -25,14 +25,16 @@ export async function SiteHeader() {
           <Image
             src={LOGO.src}
             alt=""
-            width={40}
-            height={40}
+            width={96}
+            height={96}
             priority
-            className="size-9 shrink-0"
+            className="size-12 shrink-0"
           />
-          {/* The mark alone is not legible enough at this size to stand in for
-              the name, so the wordmark stays as text. */}
-          <span className="font-display text-heading text-lg font-semibold tracking-tight">
+          {/* The mark carries the name, but only at a size nobody reads it at:
+              the ring of letters turns to texture below about 48px. The wordmark
+              therefore stays as live text — smaller now that the mark is doing
+              more of the work, but still the thing that is actually legible. */}
+          <span className="font-display text-heading text-base font-semibold tracking-tight">
             Barre By Kelly
           </span>
         </Link>
@@ -90,6 +92,14 @@ export async function SiteHeader() {
                 {item.label}
               </Link>
             ))}
+            {isStaff(user) ? (
+              <Link
+                href="/account"
+                className="text-secondary hover:bg-surface-sunk hover:text-link focus-visible:outline-focus border-subtle mt-1 block rounded-md border-t px-3 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                My account
+              </Link>
+            ) : null}
             {!user ? (
               <Link
                 href="/login"
@@ -104,16 +114,28 @@ export async function SiteHeader() {
         <div className="flex items-center gap-2 md:ml-0">
           {user ? (
             <>
+              {/* One primary control on a phone, both from md up.
+                  Signed in as staff the bar held a 48px mark, the wordmark, a
+                  menu button and two labelled buttons, which is wider than a
+                  390px screen. Admin is the one that stays: Kelly runs classes
+                  from a phone in a hall, and the register is what she is
+                  reaching for. A member has no Admin button, so they keep
+                  theirs. Whichever gives way is in the menu below. */}
               {isStaff(user) && (
                 <Link href="/admin">
-                  <Button variant="ghost" size="sm">
+                  <Button variant="secondary" size="sm">
                     Admin
                   </Button>
                 </Link>
               )}
-              <Link href="/account">
+              <Link
+                href="/account"
+                aria-label="My account"
+                className={isStaff(user) ? 'hidden md:inline-flex' : undefined}
+              >
                 <Button variant="secondary" size="sm">
-                  My account
+                  <span className="md:hidden">Account</span>
+                  <span className="hidden md:inline">My account</span>
                 </Button>
               </Link>
             </>

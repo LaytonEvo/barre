@@ -1,5 +1,13 @@
 import { TZDate } from '@date-fns/tz';
-import { addDays, format, startOfWeek } from 'date-fns';
+import {
+  addDays,
+  addMonths,
+  eachDayOfInterval,
+  endOfMonth,
+  format,
+  startOfMonth,
+  startOfWeek,
+} from 'date-fns';
 
 /**
  * Everything the public site shows happens in UK local time, while the database
@@ -28,6 +36,21 @@ export function ukWeekDays(date: Date): Date[] {
   return Array.from({ length: 7 }, (_, i) => addUkDays(monday, i));
 }
 
+/** First moment of the UK month containing `date`. */
+export function startOfUkMonth(date: Date): Date {
+  return startOfMonth(new TZDate(date, UK_TZ));
+}
+
+export function addUkMonths(date: Date, months: number): Date {
+  return addMonths(new TZDate(date, UK_TZ), months);
+}
+
+/** Every date in the UK month containing `date`. */
+export function ukMonthDays(date: Date): Date[] {
+  const start = startOfUkMonth(date);
+  return eachDayOfInterval({ start, end: endOfMonth(start) });
+}
+
 function inUk(value: Date | string): TZDate {
   return new TZDate(typeof value === 'string' ? new Date(value) : value, UK_TZ);
 }
@@ -48,18 +71,24 @@ export const formatUkDate = (value: Date | string) => format(inUk(value), 'd MMM
 export const toUkDateKey = (value: Date | string) => format(inUk(value), 'yyyy-MM-dd');
 
 /**
- * Parse a `?week=yyyy-MM-dd` parameter, falling back to this week.
+ * The month to show, from `?month=YYYY-MM`.
  *
- * Anything unparseable falls back silently rather than erroring: a mangled URL
- * from a shared link should still show someone a timetable.
+ * Anything unparseable falls back to the current month rather than erroring: a
+ * mistyped or stale link should show this month's classes, not a 500.
  */
-export function parseWeekParam(value: string | undefined): Date {
-  if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    const parsed = new TZDate(`${value}T12:00:00`, UK_TZ);
-    if (!Number.isNaN(parsed.getTime())) return startOfUkWeek(parsed);
+export function parseMonthParam(value: string | undefined): Date {
+  if (value && /^\d{4}-\d{2}$/.test(value)) {
+    const parsed = new TZDate(`${value}-01T12:00:00`, UK_TZ);
+    if (!Number.isNaN(parsed.getTime())) return startOfUkMonth(parsed);
   }
-  return startOfUkWeek(new Date());
+  return startOfUkMonth(new Date());
 }
+
+/** `2026-10`, the shape parseMonthParam reads back. */
+export const toUkMonthKey = (value: Date) => format(inUk(value), 'yyyy-MM');
+
+/** "October 2026". */
+export const formatUkMonthLong = (value: Date | string) => format(inUk(value), 'MMMM yyyy');
 
 /** Duration in whole minutes, for "55 mins". */
 export function durationMins(startsAt: string, endsAt: string): number {

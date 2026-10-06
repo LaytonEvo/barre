@@ -1,13 +1,19 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { loadPolicy } from '@/lib/policy';
-import { getWeekSessions, groupByDay } from '@/lib/queries/timetable';
+import { getMonthSessions, getScheduledRange, groupByDay } from '@/lib/queries/timetable';
 import { listClassTypes, listVenues } from '@/lib/queries/catalogue';
-import { formatUkDayLong, parseWeekParam, toUkDateKey, ukWeekDays } from '@/lib/time';
+import {
+  formatUkDayLong,
+  parseMonthParam,
+  toUkDateKey,
+  toUkMonthKey,
+  ukMonthDays,
+} from '@/lib/time';
 import { SessionsJsonLd } from '@/lib/seo/json-ld';
 import { SITE, localSuffix } from '@/lib/seo/site';
 import { SessionCard } from '@/components/timetable/session-card';
-import { WeekNav } from '@/components/timetable/week-nav';
+import { MonthNav } from '@/components/timetable/month-nav';
 import { FilterChips } from '@/components/timetable/filters';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -20,26 +26,27 @@ export const metadata: Metadata = {
   alternates: { canonical: '/timetable' },
 };
 
-type Search = { week?: string; venue?: string; class?: string };
+type Search = { month?: string; venue?: string; class?: string };
 
 export default async function TimetablePage({ searchParams }: { searchParams: Promise<Search> }) {
   const params = await searchParams;
-  const weekStart = parseWeekParam(params.week);
+  const month = parseMonthParam(params.month);
 
-  const [policy, venues, classTypes, sessions, user] = await Promise.all([
+  const [policy, venues, classTypes, sessions, range, user] = await Promise.all([
     loadPolicy(),
     listVenues(),
     listClassTypes(),
-    getWeekSessions(weekStart, { venueSlug: params.venue, classTypeSlug: params.class }),
+    getMonthSessions(month, { venueSlug: params.venue, classTypeSlug: params.class }),
+    getScheduledRange(),
     getSessionUser(),
   ]);
 
   // Build hrefs that preserve the other filters, so changing the venue does not
-  // silently throw away the week you were looking at.
+  // silently throw away the month you were looking at.
   const href = (overrides: Partial<Search>) => {
     const merged = { ...params, ...overrides };
     const query = new URLSearchParams();
-    if (merged.week) query.set('week', merged.week);
+    if (merged.month) query.set('month', merged.month);
     if (merged.venue) query.set('venue', merged.venue);
     if (merged.class) query.set('class', merged.class);
     const search = query.toString();
@@ -47,7 +54,7 @@ export default async function TimetablePage({ searchParams }: { searchParams: Pr
   };
 
   const byDay = groupByDay(sessions);
-  const days = ukWeekDays(weekStart).filter((day) => byDay.has(toUkDateKey(day)));
+  const days = ukMonthDays(month).filter((day) => byDay.has(toUkDateKey(day)));
   const introIsFree = true; // from the products table: the intro offer is £0
 
   return (
@@ -61,10 +68,11 @@ export default async function TimetablePage({ searchParams }: { searchParams: Pr
       </p>
 
       <div className="border-subtle mt-8 grid gap-5 border-t pt-6">
-        <WeekNav
-          weekStart={weekStart}
-          bookingWindowDays={policy.booking_window_days}
-          buildHref={(week) => href({ week: toUkDateKey(week) })}
+        <MonthNav
+          month={month}
+          earliest={range?.first ?? null}
+          latest={range?.last ?? null}
+          buildHref={(next) => href({ month: toUkMonthKey(next) })}
         />
 
         <FilterChips
@@ -82,13 +90,16 @@ export default async function TimetablePage({ searchParams }: { searchParams: Pr
         />
       </div>
 
-      {/* A list on mobile, grouped by day. The brief's week grid is a desktop
-          affordance; at 390px a seven-column grid is unusable, and this is the
-          most-visited page on the site. */}
+      {/* A month of classes, grouped by day.
+          Not a seven-column grid: at 390px one is unreadable, and this is the
+          most-visited page on the site. A month of Kelly's timetable is eight or
+          nine classes, which reads better as a list than as a grid four fifths
+          empty — and unlike a week, it answers "when could I come?" without
+          paging. */}
       <div className="mt-10 grid gap-8">
         {days.length === 0 ? (
           <div className="border-subtle bg-surface rounded-lg border p-8 text-center">
-            <p className="text-secondary">No classes match that for this week.</p>
+            <p className="text-secondary">No classes match that this month.</p>
             <Link
               href={path(href({ venue: undefined, class: undefined }))}
               className="mt-4 inline-block"

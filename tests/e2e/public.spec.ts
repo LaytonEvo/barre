@@ -33,7 +33,7 @@ test.describe('public site', () => {
     await expect(first).toContainText(/spaces left|Full|Waitlist/);
   });
 
-  test('the timetable can be filtered by venue and the week navigated', async ({ page }) => {
+  test('the timetable can be filtered by venue and the month navigated', async ({ page }) => {
     await page.goto('/timetable');
 
     await page
@@ -43,8 +43,8 @@ test.describe('public site', () => {
     await expect(page).toHaveURL(/venue=/);
 
     await page.getByRole('link', { name: /later/i }).click();
-    await expect(page).toHaveURL(/week=/);
-    // The venue filter must survive changing week, or the member silently loses it.
+    await expect(page).toHaveURL(/month=/);
+    // The venue filter must survive changing month, or the member silently loses it.
     await expect(page).toHaveURL(/venue=/);
   });
 

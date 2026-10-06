@@ -81,32 +81,49 @@ export default async function AccountPage() {
 
       <section className="border-subtle mt-12 border-t pt-6">
         <h2 className="text-[length:var(--text-xl)]">Your account</h2>
+        {/* Two tiers, not six buttons of three different weights.
+            Everything a member comes here to DO is a button, all the same
+            weight except booking, which is the one thing the business wants
+            them to do next. Settings and sign-out are housekeeping: they are
+            still one tap away, but they no longer compete with "Book a class"
+            for attention, which is what the mixed boxed and unboxed row did. */}
         <div className="mt-6 flex flex-wrap gap-3">
+          <Link href="/timetable">
+            <Button variant={readyToBook ? 'accent' : 'secondary'}>Book a class</Button>
+          </Link>
           <Link href="/account/bookings">
             <Button variant="secondary">My bookings</Button>
-          </Link>
-          <Link href="/account/billing">
-            <Button variant="secondary">Billing</Button>
           </Link>
           <Link href="/account/videos">
             <Button variant="secondary">At-home videos</Button>
           </Link>
-          <Link href="/timetable">
-            <Button variant={readyToBook ? 'accent' : 'ghost'}>Book a class</Button>
-          </Link>
-          <Link href="/account/password">
-            <Button variant="ghost">Password</Button>
-          </Link>
-          <Link href="/account/privacy">
-            <Button variant="ghost">Your data</Button>
+          <Link href="/account/billing">
+            <Button variant="secondary">Billing</Button>
           </Link>
         </div>
 
-        <form action="/auth/signout" method="post" className="mt-6">
-          <Button type="submit" variant="secondary">
-            Log out
-          </Button>
-        </form>
+        <div className="text-muted mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+          <Link
+            href="/account/password"
+            className="hover:text-link underline-offset-4 hover:underline"
+          >
+            Password
+          </Link>
+          <Link
+            href="/account/privacy"
+            className="hover:text-link underline-offset-4 hover:underline"
+          >
+            Your data
+          </Link>
+          <form action="/auth/signout" method="post">
+            <button
+              type="submit"
+              className="focus-visible:outline-focus hover:text-link rounded-sm underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              Log out
+            </button>
+          </form>
+        </div>
       </section>
     </div>
   );

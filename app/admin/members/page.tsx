@@ -44,9 +44,13 @@ export default async function MembersPage({
         {q ? ` matching “${q}”` : ''}
       </p>
 
-      <ul className="mt-4 grid gap-2">
+      {/* minmax(0,1fr), not the default auto column: an auto grid track sizes to
+          max-content and will not shrink, so one long email made the whole list
+          wider than the screen however hard the row inside it tried to
+          truncate. */}
+      <ul className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-2">
         {(members ?? []).map((member) => (
-          <li key={member.user_id}>
+          <li key={member.user_id} className="min-w-0">
             <Link
               href={path(`/admin/members/${member.user_id}`)}
               className="border-subtle bg-surface hover:border-strong focus-visible:outline-focus block rounded-lg border p-4 focus-visible:outline-2 focus-visible:outline-offset-2"
@@ -56,7 +60,10 @@ export default async function MembersPage({
                   others underneath. The name block shrinks and truncates
                   instead, which keeps the badges in one readable column. */}
               <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
+                {/* flex-1 as well as min-w-0: without a basis the block sizes to
+                    its content, so a long email pushed the row past the screen
+                    instead of truncating inside it. */}
+                <div className="min-w-0 flex-1">
                   <p className="text-primary truncate font-medium">
                     {member.full_name ?? member.email}
                     {member.anonymised ? ' (deleted)' : ''}

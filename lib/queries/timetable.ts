@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import { addUkDays, startOfUkWeek } from '@/lib/time';
+import { addUkMonths, startOfUkMonth } from '@/lib/time';
 
 export type TimetableSession = {
   id: string;
@@ -107,20 +107,26 @@ export type TimetableFilters = {
   classTypeSlug?: string | undefined;
 };
 
-/** Every session in the Monday-start week containing `anchor`. */
-export async function getWeekSessions(
+/**
+ * Every class in a UK calendar month.
+ *
+ * A week was too short a window to plan around: Kelly runs a handful of classes
+ * a week across two venues, so a week shows four or five rows and answering
+ * "when could I come?" meant paging. A month is one query and one glance.
+ */
+export async function getMonthSessions(
   anchor: Date,
   filters: TimetableFilters = {},
 ): Promise<TimetableSession[]> {
   const supabase = await createClient();
-  const monday = startOfUkWeek(anchor);
-  const nextMonday = addUkDays(monday, 7);
+  const from = startOfUkMonth(anchor);
+  const to = addUkMonths(from, 1);
 
   let query = supabase
     .from('class_sessions')
     .select(SELECT)
-    .gte('starts_at', monday.toISOString())
-    .lt('starts_at', nextMonday.toISOString())
+    .gte('starts_at', from.toISOString())
+    .lt('starts_at', to.toISOString())
     .order('starts_at', { ascending: true });
 
   if (filters.venueSlug) query = query.eq('venues.slug', filters.venueSlug);
@@ -166,4 +172,37 @@ export function groupByDay(sessions: TimetableSession[]): Map<string, TimetableS
     else grouped.set(key, [session]);
   }
   return grouped;
+}
+
+/**
+ * The first and last scheduled class, or null when there are none.
+ *
+ * The month navigation uses this instead of the booking window. The window is
+ * about what can be BOOKED; the timetable is also read to answer "when do
+ * classes run?", and stopping navigation at two weeks hid a month that was
+ * already generated. Capping on real sessions means Later is offered exactly
+ * when there is something to see, and never lands on an empty month.
+ */
+export async function getScheduledRange(): Promise<{ first: Date; last: Date } | null> {
+  const supabase = await createClient();
+
+  const [{ data: firstRow }, { data: lastRow }] = await Promise.all([
+    supabase
+      .from('class_sessions')
+      .select('starts_at')
+      .eq('status', 'scheduled')
+      .order('starts_at', { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('class_sessions')
+      .select('starts_at')
+      .eq('status', 'scheduled')
+      .order('starts_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+
+  if (!firstRow?.starts_at || !lastRow?.starts_at) return null;
+  return { first: new Date(firstRow.starts_at), last: new Date(lastRow.starts_at) };
 }

@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import Image from 'next/image';
+import { LOGO } from '@/lib/images';
 import { loadPolicy } from '@/lib/policy';
 
 const COLUMNS = [
@@ -41,7 +43,15 @@ export async function SiteFooter() {
       <div className="mx-auto max-w-7xl px-5 py-12 md:px-8">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div className="grid gap-3">
-            <p className="font-display text-heading text-lg font-semibold">Barre By Kelly</p>
+            {/* The mark rather than the name. alt carries the name, so nothing
+                is lost to a screen reader or to a search engine. */}
+            <Image
+              src={LOGO.src}
+              alt="Barre By Kelly"
+              width={160}
+              height={160}
+              className="size-20"
+            />
             <p className="text-muted max-w-[28ch] text-sm">
               Barre classes for all levels and all bodies.
             </p>
@@ -82,7 +92,22 @@ export async function SiteFooter() {
         <div className="border-subtle text-muted mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 border-t pt-6 text-xs">
           <p>&copy; {new Date().getFullYear()} Barre By Kelly</p>
           {policy?.facebook_url ? (
-            <a href={policy.facebook_url} className="hover:text-link" rel="noreferrer noopener">
+            <a
+              href={policy.facebook_url}
+              className="hover:text-link focus-visible:outline-focus inline-flex items-center gap-1.5 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2"
+              rel="noreferrer noopener"
+            >
+              {/* Inline rather than from the icon set: lucide removed its brand
+                  marks, and a brand glyph is not something to approximate with a
+                  generic one. */}
+              <svg
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+                className="size-4 shrink-0"
+              >
+                <path d="M9.198 21.5h4v-8.01h3.604l.396-3.98h-4V7.5a1 1 0 0 1 1-1h3v-4h-3a5 5 0 0 0-5 5v2.01h-2l-.396 3.98h2.396v8.01Z" />
+              </svg>
               Facebook
             </a>
           ) : null}

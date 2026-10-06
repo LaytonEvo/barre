@@ -4,7 +4,10 @@ import {
   durationMins,
   formatUkDayLong,
   formatUkTime,
-  parseWeekParam,
+  parseMonthParam,
+  startOfUkMonth,
+  toUkMonthKey,
+  ukMonthDays,
   startOfUkWeek,
   toUkDateKey,
   ukWeekDays,
@@ -102,30 +105,51 @@ describe('addUkDays', () => {
   });
 });
 
-describe('parseWeekParam', () => {
-  it('accepts a valid date and snaps it to that Monday', () => {
-    expect(toUkDateKey(parseWeekParam('2026-10-07'))).toBe('2026-10-05');
+describe('parseMonthParam', () => {
+  it('accepts a valid month and snaps to its first day', () => {
+    expect(toUkMonthKey(parseMonthParam('2026-10'))).toBe('2026-10');
+    expect(toUkDateKey(parseMonthParam('2026-10'))).toBe('2026-10-01');
   });
 
-  it('falls back to this week on junk rather than throwing', () => {
+  it('falls back to this month on junk rather than throwing', () => {
     // A mangled URL from a shared link should still show someone a timetable.
-    const thisWeek = toUkDateKey(startOfUkWeek(new Date()));
-    for (const junk of ['', 'next-week', '2026-13-99', '../../etc/passwd', '2026-10-7']) {
-      expect(toUkDateKey(parseWeekParam(junk))).toBe(thisWeek);
+    const now = toUkMonthKey(startOfUkMonth(new Date()));
+    for (const junk of ['', 'next-month', '2026-13', '../../etc/passwd', '2026-1', '2026-10-05']) {
+      expect(toUkMonthKey(parseMonthParam(junk))).toBe(now);
     }
   });
 
   it('falls back when the parameter is absent', () => {
-    expect(toUkDateKey(parseWeekParam(undefined))).toBe(toUkDateKey(startOfUkWeek(new Date())));
+    expect(toUkMonthKey(parseMonthParam(undefined))).toBe(toUkMonthKey(startOfUkMonth(new Date())));
   });
 
-  it('rejects a well-shaped but impossible date', () => {
-    const thisWeek = toUkDateKey(startOfUkWeek(new Date()));
-    expect(toUkDateKey(parseWeekParam('2026-02-30'))).not.toBe('2026-02-30');
-    expect(toUkDateKey(parseWeekParam('9999-99-99'))).toBe(thisWeek);
+  it('rejects a well-shaped but impossible month', () => {
+    const now = toUkMonthKey(startOfUkMonth(new Date()));
+    expect(toUkMonthKey(parseMonthParam('2026-00'))).toBe(now);
+    expect(toUkMonthKey(parseMonthParam('9999-99'))).toBe(now);
+  });
+
+  it('keeps the month across a BST boundary, which naive date maths loses', () => {
+    // The clocks go back on 25 October 2026. A month parsed as UTC midnight and
+    // rendered in UK time can slip into the previous month.
+    expect(toUkMonthKey(parseMonthParam('2026-11'))).toBe('2026-11');
+    expect(toUkMonthKey(parseMonthParam('2026-04'))).toBe('2026-04');
   });
 });
 
+describe('ukMonthDays', () => {
+  it('returns every day of the month', () => {
+    expect(ukMonthDays(parseMonthParam('2026-10'))).toHaveLength(31);
+    expect(ukMonthDays(parseMonthParam('2026-11'))).toHaveLength(30);
+    expect(ukMonthDays(parseMonthParam('2026-02'))).toHaveLength(28);
+  });
+
+  it('starts on the first and ends on the last', () => {
+    const days = ukMonthDays(parseMonthParam('2026-10'));
+    expect(toUkDateKey(days[0]!)).toBe('2026-10-01');
+    expect(toUkDateKey(days.at(-1)!)).toBe('2026-10-31');
+  });
+});
 describe('durationMins', () => {
   it('measures the real 55-minute class', () => {
     expect(durationMins('2026-10-05T17:30:00Z', '2026-10-05T18:25:00Z')).toBe(55);
