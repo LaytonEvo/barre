@@ -26,6 +26,21 @@ export type DispatchOutcome = {
  */
 
 /**
+ * Domains that can never receive mail.
+ *
+ * RFC 2606 and RFC 6761 reserve these so they can be used in tests and examples
+ * without ever resolving. Sending to one is not a slow failure — it is a hard
+ * bounce, and hard bounces are the single most damaging thing for a young
+ * sending domain's reputation. Twenty-one of them went out from here before this
+ * existed, because seeding demo accounts queued a welcome for each and the
+ * dispatcher reached them first.
+ */
+// RFC 2606 reserves both forms: the four TLDs, and example.com/net/org at the
+// second level. Matching only the TLDs lets example.com through, which is the
+// address people actually reach for when inventing one.
+const UNDELIVERABLE_DOMAIN = /\.(test|invalid|example|localhost)$|(^|\.)example\.(com|net|org)$/i;
+
+/**
  * Where a reply should go.
  *
  * The From address is the sending domain, and a sending domain does not
@@ -129,6 +144,13 @@ export async function dispatchEmails(db: Db, batchSize = 25): Promise<DispatchOu
     const to = row.to_email;
     if (!to) {
       await fail('no email address');
+      continue;
+    }
+
+    // Skipped rather than failed: there is nothing wrong with the row, and a
+    // failure would retry it, which is three bounces instead of one.
+    if (UNDELIVERABLE_DOMAIN.test(to.split('@')[1] ?? '')) {
+      await skip('reserved domain that can never receive mail');
       continue;
     }
 

@@ -119,7 +119,7 @@ function row(overrides: Partial<Row> = {}): Row {
   return {
     id: `n-${Math.random().toString(36).slice(2, 8)}`,
     user_id: MEMBER,
-    to_email: 'jo@example.com',
+    to_email: 'jo@members.barrebykelly.co.uk',
     template: 'welcome',
     payload: {},
     ...overrides,
@@ -127,7 +127,7 @@ function row(overrides: Partial<Row> = {}): Row {
 }
 
 const consenting: Profile = {
-  email: 'jo@example.com',
+  email: 'jo@members.barrebykelly.co.uk',
   first_name: 'Jo',
   marketing_consent: true,
   anonymised_at: null,
@@ -158,7 +158,7 @@ describe('transactional email', () => {
     const outcome = await dispatchEmails(fakeDb([r], { [MEMBER]: consenting }));
 
     expect(outcome.sent).toBe(1);
-    expect(sent[0]?.to).toBe('jo@example.com');
+    expect(sent[0]?.to).toBe('jo@members.barrebykelly.co.uk');
     expect(settled[r.id]?.kind).toBe('sent');
   });
 
@@ -251,7 +251,7 @@ describe('marketing email and consent', () => {
     // Not marketing: the purchaser gave us this address for this one delivery.
     const r = row({
       user_id: null,
-      to_email: 'sam@example.com',
+      to_email: 'sam@friend.barrebykelly.co.uk',
       template: 'voucher_gift',
       payload: {
         code: 'BARRE-ACDE-FGHJ',
@@ -262,7 +262,7 @@ describe('marketing email and consent', () => {
     const outcome = await dispatchEmails(fakeDb([r], {}));
 
     expect(outcome.sent).toBe(1);
-    expect(sent[0]?.to).toBe('sam@example.com');
+    expect(sent[0]?.to).toBe('sam@friend.barrebykelly.co.uk');
   });
 });
 
@@ -392,5 +392,39 @@ describe('reply-to', () => {
 
     expect(sent).toHaveLength(1);
     expect(sent[0]!.replyTo).toBeUndefined();
+  });
+});
+
+describe('addresses that can never receive', () => {
+  /**
+   * RFC 2606 and 6761 reserve these so they never resolve. Sending to one is a
+   * hard bounce, and hard bounces are what damages a young sending domain.
+   * Twenty-one went out from staging before this guard existed.
+   */
+  for (const domain of ['barrebykelly.test', 'example.com', 'nowhere.invalid', 'box.localhost']) {
+    it(`never sends to ${domain}`, async () => {
+      const db = fakeDb([row({ to_email: `someone@${domain}` })], { [MEMBER]: consenting });
+
+      const outcome = await dispatchEmails(db);
+
+      expect(sent).toHaveLength(0);
+      expect(outcome.skipped).toBe(1);
+      expect(outcome.failed).toBe(0);
+    });
+  }
+
+  it('skips rather than fails, so it is not retried into three bounces', async () => {
+    const r = row({ to_email: 'someone@barrebykelly.test' });
+    await dispatchEmails(fakeDb([r], { [MEMBER]: consenting }));
+
+    expect(settled[r.id]?.kind).toBe('skipped');
+  });
+
+  it('still sends to a real address', async () => {
+    const db = fakeDb([row({ to_email: 'jo@gmail.com' })], { [MEMBER]: consenting });
+
+    await dispatchEmails(db);
+
+    expect(sent).toHaveLength(1);
   });
 });
