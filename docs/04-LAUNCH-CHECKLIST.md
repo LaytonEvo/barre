@@ -97,10 +97,20 @@ Do this once, with Resend, and it covers both deliverability and §1.1.
 
 - [ ] Point the domain at Railway (add it as a custom domain on the `web`
       service, then create the CNAME Railway gives you).
-- [ ] **SPF** — a TXT record on the sending domain authorising Resend. Resend
-      gives the exact value; do not hand-write it.
-- [ ] **DKIM** — the CNAME records Resend provides. This is what actually signs
-      the mail; SPF alone is weak.
+- [ ] **Pick the region when adding the domain.** Resend asks, and it is baked
+      into the records it then gives you. Choose Ireland for a UK business —
+      changing it afterwards means redoing every record.
+- [ ] **SPF and DKIM** — exactly the records the Resend dashboard shows for this
+      domain, copied from it. Do not hand-write them and do not copy them from
+      here: the DKIM value is a public key unique to the domain, and Resend has
+      changed whether DKIM is a CNAME or a TXT more than once. The dashboard is
+      the source of truth; this checklist is not.
+- [ ] Enter host names **relative** to the domain. Most registrars append the
+      domain themselves, so typing `send.barrebykelly.co.uk` produces
+      `send.barrebykelly.co.uk.barrebykelly.co.uk` and verification fails with
+      no useful error.
+- [ ] If the domain already has an SPF record, **merge** rather than add. Two
+      SPF records on one name is a permanent fail — the spec allows exactly one.
 - [ ] **DMARC** — a TXT record at `_dmarc.<domain>`. Start at
       `v=DMARC1; p=none; rua=mailto:<an address Kelly reads>;` for the first
       couple of weeks, read the reports, then move to `p=quarantine` and
