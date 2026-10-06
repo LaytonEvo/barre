@@ -3,11 +3,18 @@ import { requireRole } from '@/lib/supabase/auth';
 import { createClient } from '@/lib/supabase/server';
 import { formatUkDate } from '@/lib/time';
 import { formatPence } from '@/lib/utils';
-import { path } from '@/lib/routes';
-import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
+/**
+ * The CSV links are plain anchors, not <Link>.
+ *
+ * Next prefetches a <Link> as soon as it is rendered, and each of these routes
+ * runs a full report — attendance over 52 weeks, revenue, at-risk, videos — so
+ * every visit to this page silently ran four complete exports nobody had asked
+ * for, and the prefetches never settled because the response is a CSV rather
+ * than a navigation payload. They are downloads, not routes.
+ */
 export const metadata: Metadata = { title: 'Reports', robots: { index: false, follow: false } };
 
 export default async function ReportsPage() {
@@ -32,11 +39,11 @@ export default async function ReportsPage() {
       <section className="mt-8">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-[length:var(--text-xl)]">Attendance</h2>
-          <Link href={path('/api/admin/reports/attendance.csv')}>
+          <a href="/api/admin/reports/attendance.csv" download>
             <Button variant="ghost" size="sm">
               Download CSV
             </Button>
-          </Link>
+          </a>
         </div>
 
         {!attendance || attendance.length === 0 ? (
@@ -85,11 +92,11 @@ export default async function ReportsPage() {
       <section className="border-subtle mt-10 border-t pt-6">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-[length:var(--text-xl)]">Revenue</h2>
-          <Link href={path('/api/admin/reports/revenue.csv')}>
+          <a href="/api/admin/reports/revenue.csv" download>
             <Button variant="ghost" size="sm">
               Download CSV
             </Button>
-          </Link>
+          </a>
         </div>
 
         {!revenue || revenue.length === 0 ? (
@@ -140,11 +147,11 @@ export default async function ReportsPage() {
       <section className="border-subtle mt-10 border-t pt-6">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-[length:var(--text-xl)]">Not been for a while</h2>
-          <Link href={path('/api/admin/reports/at-risk.csv')}>
+          <a href="/api/admin/reports/at-risk.csv" download>
             <Button variant="ghost" size="sm">
               Download CSV
             </Button>
-          </Link>
+          </a>
         </div>
 
         <p className="text-muted mt-2 max-w-[60ch] text-sm">
@@ -188,11 +195,11 @@ export default async function ReportsPage() {
       <section className="border-subtle mt-10 border-t pt-6">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-[length:var(--text-xl)]">Most watched videos</h2>
-          <Link href={path('/api/admin/reports/videos.csv')}>
+          <a href="/api/admin/reports/videos.csv" download>
             <Button variant="ghost" size="sm">
               Download CSV
             </Button>
-          </Link>
+          </a>
         </div>
 
         <p className="text-muted mt-2 max-w-[60ch] text-sm">
