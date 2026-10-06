@@ -54,6 +54,7 @@ and sign-up flows are testable without sending anything.
 | `npm run test:e2e`        | Playwright against real Supabase and a production build                           |
 | `npm run test:a11y`       | The accessibility suite alone (WCAG 2.2 AA, axe on the real DOM)                  |
 | `npm run audit:security`  | RLS, grants, `search_path` and view security modes, against a live database       |
+| `npm run db:migrate`      | Applies any unapplied migrations to `DATABASE_URL`; `-- --seed` also seeds        |
 | `npm run check:contrast`  | Verifies every colour pair against WCAG 2.2; **exits non-zero on a regression**   |
 | `npm run db:reset`        | Re-apply migrations and seed locally                                              |
 | `npm run db:types`        | Regenerate Supabase types                                                         |
@@ -92,6 +93,28 @@ Two things that cost time here and are not obvious:
 The suite runs against a **production build**, not `next dev` — dev-only overlays
 and on-demand compiles produce tests that pass or fail on timing rather than
 behaviour.
+
+### Applying migrations to a hosted project
+
+`supabase db push` wants a linked project and a direct Postgres connection. Where
+neither is available — a hosted staging box, a restricted network — use:
+
+```bash
+DATABASE_URL='postgresql://…' npm run db:migrate          # schema only
+DATABASE_URL='postgresql://…' npm run db:migrate -- --seed
+```
+
+It records applied filenames in `supabase_migrations.schema_migrations`, the same
+table the Supabase CLI uses, so the two agree and moving between them later costs
+nothing. Running it twice applies nothing the second time, which is what makes it
+safe as a deploy step. Each migration runs in its own transaction, so a failure
+leaves the database at the last good one rather than half-way through a broken
+one.
+
+Take the connection string from the Supabase dashboard (Project Settings →
+Database → Connection string → URI) rather than assembling it: the pooler
+hostname encodes the project's region, which cannot be derived from the project
+ref.
 
 ### Running the database tests without Supabase CLI
 

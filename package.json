@@ -27,7 +27,8 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:a11y": "playwright test tests/e2e/a11y.spec.ts",
-    "audit:security": "tsx scripts/security-audit.ts"
+    "audit:security": "tsx scripts/security-audit.ts",
+    "db:migrate": "tsx scripts/apply-migrations.ts"
   },
   "repository": {
     "type": "git",
