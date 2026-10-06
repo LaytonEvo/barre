@@ -20,9 +20,10 @@ export type RateLimitOutcome = { allowed: true } | { allowed: false; reason: 'ip
 /**
  * The client IP, as far as it can be known.
  *
- * Behind Vercel the left-most `x-forwarded-for` entry is set by the proxy and is
- * trustworthy; off Vercel it is whatever the client sent. Treated as a hint for
- * bucketing, never as identity.
+ * Behind a proxy that sets it — Railway does — the left-most `x-forwarded-for`
+ * entry comes from the proxy and is trustworthy; anywhere else it is whatever
+ * the client sent. Treated as a hint for bucketing, never as identity, which is
+ * why there is a global backstop as well.
  */
 async function clientIp(): Promise<string> {
   const headerList = await headers();
@@ -42,7 +43,7 @@ async function setting(key: string, fallback: number): Promise<number> {
 }
 
 export async function checkRateLimit(
-  action: 'enquiries' | 'newsletter',
+  action: 'enquiries' | 'newsletter' | 'password_reset',
   fallbackPerHour: number,
 ): Promise<RateLimitOutcome> {
   const db = createAdminClient();

@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,7 +35,6 @@ export function AuthForm({ mode, next }: { mode: Mode; next?: string }) {
     run.bind(null, signInWithGoogle),
     undefined,
   );
-
   const error = state?.error ?? magicState?.error ?? googleState?.error;
 
   return (
@@ -70,7 +70,17 @@ export function AuthForm({ mode, next }: { mode: Mode; next?: string }) {
         </div>
 
         <div className="grid gap-1.5">
-          <Label htmlFor="password">Password</Label>
+          <div className="flex items-baseline justify-between gap-3">
+            <Label htmlFor="password">Password</Label>
+            {mode === 'login' ? (
+              <Link
+                href="/login/reset"
+                className="text-link focus-visible:outline-focus rounded-sm text-xs underline focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                Forgotten your password?
+              </Link>
+            ) : null}
+          </div>
           <Input
             id="password"
             name="password"

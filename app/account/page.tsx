@@ -94,6 +94,9 @@ export default async function AccountPage() {
           <Link href="/timetable">
             <Button variant={readyToBook ? 'accent' : 'ghost'}>Book a class</Button>
           </Link>
+          <Link href="/account/password">
+            <Button variant="ghost">Password</Button>
+          </Link>
           <Link href="/account/privacy">
             <Button variant="ghost">Your data</Button>
           </Link>

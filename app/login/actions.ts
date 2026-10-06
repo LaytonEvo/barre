@@ -6,6 +6,8 @@ import { headers } from 'next/headers';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { clientEnv } from '@/lib/env';
+import { checkRateLimit } from '@/lib/rate-limit';
+import { newPasswordSchema } from '@/lib/auth/password';
 import { internalPath } from '@/lib/routes';
 import type { Route } from 'next';
 
@@ -118,6 +120,74 @@ export async function signInWithGoogle(formData: FormData): Promise<ActionResult
   // deliberately not one of our own routes. It comes from the Supabase client
   // rather than from user input, so there is nothing to validate here.
   redirect(data.url as Route);
+}
+
+/**
+ * Send a password reset link.
+ *
+ * Always reports success, even for an address with no account. Saying "no such
+ * account" turns this form into a way to find out who is a member, which for a
+ * small local business is a list of women and where they are on a Tuesday
+ * evening. The cost is that someone who mistypes their address waits for an
+ * email that never comes; the check-email page says so.
+ *
+ * Rate limited because it is the one public form that makes the site send mail
+ * to an address the requester chose.
+ */
+export async function requestPasswordReset(formData: FormData): Promise<ActionResult> {
+  const parsed = emailOnly.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Check your email.' };
+
+  const limit = await checkRateLimit('password_reset', 3);
+  if (!limit.allowed) {
+    return { error: 'Too many reset requests. Please try again in an hour.' };
+  }
+
+  const supabase = await createClient();
+
+  // The recovery link lands on the normal callback, which exchanges the code for
+  // a session and then sends them on to set a new one.
+  await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+    redirectTo: `${await origin()}/auth/callback?next=${encodeURIComponent('/account/password')}`,
+  });
+
+  redirect('/login/check-email?reset=1');
+}
+
+/**
+ * Set a new password.
+ *
+ * Deliberately does NOT ask for the current one. Members arrive here two ways:
+ * from a reset link, where by definition they do not know it, and from their
+ * account, where they may never have had one — anybody who signed in with Google
+ * or only ever used a magic link has no password to confirm. Requiring it would
+ * lock out the people most likely to need this page.
+ *
+ * What makes that safe is that getting here at all needs a live session, and the
+ * reset link that grants one is single-use and short-lived.
+ */
+export async function updatePassword(formData: FormData): Promise<ActionResult> {
+  const parsed = newPasswordSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Check your details.' };
+
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect('/login?next=%2Faccount%2Fpassword');
+
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
+
+  if (error) {
+    // Supabase rejects a password it considers too weak, or one unchanged from
+    // the current one. Its wording is reasonable, so it is passed through rather
+    // than flattened into something vaguer.
+    return { error: error.message };
+  }
+
+  revalidatePath('/', 'layout');
+  redirect('/account?password=changed');
 }
 
 export async function signOut(): Promise<void> {
