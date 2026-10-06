@@ -28,7 +28,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:a11y": "playwright test tests/e2e/a11y.spec.ts",
     "audit:security": "tsx scripts/security-audit.ts",
-    "db:migrate": "tsx scripts/apply-migrations.ts"
+    "db:migrate": "node scripts/apply-migrations.mjs"
   },
   "repository": {
     "type": "git",
@@ -51,6 +51,7 @@
     "lucide-react": "^1.51.0",
     "next": "^16.3.8",
     "pdf-lib": "^1.17.1",
+    "pg": "^8.23.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "resend": "^6.32.0",
@@ -68,7 +69,6 @@
     "@types/react-dom": "^19.3.0",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.3.8",
-    "pg": "^8.23.1",
     "prettier": "^3.9.9",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^4.3.3",

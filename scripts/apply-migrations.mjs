@@ -11,12 +11,18 @@
  * nothing. Running it twice applies nothing the second time, which is what makes
  * it safe as a deploy step.
  *
+ * Plain JavaScript on purpose: this runs as Railway's pre-deploy command, in the
+ * runtime container, after dev dependencies have been pruned. Nothing here may
+ * depend on tsx or on anything outside `dependencies`.
+ *
  *   DATABASE_URL=postgresql://... npm run db:migrate
  *   DATABASE_URL=postgresql://... npm run db:migrate -- --seed
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { Client } from 'pg';
+import pg from 'pg';
+
+const { Client } = pg;
 
 const MIGRATIONS_DIR = join(process.cwd(), 'supabase', 'migrations');
 const SEED_FILE = join(process.cwd(), 'supabase', 'seed.sql');
@@ -24,7 +30,10 @@ const SEED_FILE = join(process.cwd(), 'supabase', 'seed.sql');
 async function main() {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
-    console.error('DATABASE_URL is not set.');
+    console.error(
+      'DATABASE_URL is not set. Set it to the Supabase connection string ' +
+        '(Connect → Session pooler) before deploying.',
+    );
     process.exit(2);
   }
 
@@ -51,9 +60,7 @@ async function main() {
     );
   `);
 
-  const { rows } = await client.query<{ version: string }>(
-    'select version from supabase_migrations.schema_migrations',
-  );
+  const { rows } = await client.query('select version from supabase_migrations.schema_migrations');
   const applied = new Set(rows.map((r) => r.version));
 
   const files = readdirSync(MIGRATIONS_DIR)
