@@ -31,7 +31,8 @@ business:
   contact_email: TODO
   contact_phone: TODO
   instagram_handle: TODO # with or without the @
-  domain: TODO # e.g. barrebykelly.co.uk — bought already, or to buy?
+  domain: barrebykelly.co.uk # bought 2026-10-06. Not yet pointed at the site: the
+  # staging deployment stays on its Railway URL until the reveal.
 
   # Exact wording please. I won't paraphrase or infer a certification: stating a
   # qualification someone doesn't hold is a real problem, not a copy nit.

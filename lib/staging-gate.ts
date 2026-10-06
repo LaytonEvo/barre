@@ -28,13 +28,19 @@ import { NextResponse, type NextRequest } from 'next/server';
 const OPEN_PREFIXES = ['/api/'];
 
 function unauthorised(): NextResponse {
-  return new NextResponse('Not available yet.', {
+  // Deliberately says nothing. The browser prints the realm verbatim in its
+  // password prompt and the body shows if the prompt is dismissed, so both are
+  // read by whoever typed the address — including, once this is served from the
+  // real domain, the person it is a surprise for. Naming the business here
+  // would give it away at exactly the wrong moment, and nobody who belongs here
+  // needs the reminder: they were sent the link and the password together.
+  return new NextResponse('Not available.', {
     status: 401,
     headers: {
       // ASCII only. HTTP header values are a ByteString, so an em dash here
       // throws when the response is constructed — which would turn every
       // challenge into a 500 instead of a password prompt.
-      'WWW-Authenticate': 'Basic realm="Barre By Kelly - not public yet", charset="UTF-8"',
+      'WWW-Authenticate': 'Basic realm="Restricted", charset="UTF-8"',
       // Belt and braces alongside the noindex metadata: a 401 is not indexed
       // anyway, but this says so explicitly for anything that looks.
       'X-Robots-Tag': 'noindex, nofollow',
