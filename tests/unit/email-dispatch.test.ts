@@ -8,22 +8,46 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
  *
  * Resend is mocked: the point is which rows it is asked to send, not the HTTP call.
  */
-const sent: { to: string; subject: string; headers?: Record<string, string> }[] = [];
+const sent: {
+  to: string;
+  subject: string;
+  headers?: Record<string, string>;
+  replyTo?: string | string[];
+}[] = [];
 let sendResult: { error: { message: string } | null } = { error: null };
 
-vi.mock('@/lib/email/client', () => ({
-  isEmailConfigured: () => true,
-  emailFrom: () => 'Barre By Kelly <hello@test>',
-  resend: () => ({
-    emails: {
-      send: async (args: { to: string; subject: string; headers?: Record<string, string> }) => {
-        if (sendResult.error) return { error: sendResult.error, data: null };
-        sent.push({ to: args.to, subject: args.subject, headers: args.headers });
-        return { error: null, data: { id: 'msg_test' } };
+/**
+ * The working email client. A function declaration so it is hoisted alongside
+ * vi.mock, and named so beforeEach can put it back: one test below replaces this
+ * with vi.doMock, which persists for the rest of the file.
+ */
+function clientMock() {
+  return {
+    isEmailConfigured: () => true,
+    emailFrom: () => 'Barre By Kelly <hello@test>',
+    resend: () => ({
+      emails: {
+        send: async (args: {
+          to: string;
+          subject: string;
+          headers?: Record<string, string>;
+          replyTo?: string | string[];
+        }) => {
+          if (sendResult.error) return { error: sendResult.error, data: null };
+          sent.push({
+            to: args.to,
+            subject: args.subject,
+            headers: args.headers,
+            replyTo: args.replyTo,
+          });
+          return { error: null, data: { id: 'msg_test' } };
+        },
       },
-    },
-  }),
-}));
+    }),
+  };
+}
+
+vi.mock('@/lib/email/client', clientMock);
 
 type Row = {
   id: string;
@@ -43,7 +67,11 @@ type Profile = {
 /** Settled outcomes, keyed by row id, so assertions read as intent. */
 const settled: Record<string, { kind: 'sent' | 'failed' | 'skipped'; reason?: string }> = {};
 
-function fakeDb(rows: Row[], profiles: Record<string, Profile>) {
+function fakeDb(
+  rows: Row[],
+  profiles: Record<string, Profile>,
+  settings: Record<string, unknown> = {},
+) {
   let claimed = false;
 
   return {
@@ -70,10 +98,13 @@ function fakeDb(rows: Row[], profiles: Record<string, Profile>) {
       }
       return { data: null, error: null };
     },
-    from: () => ({
+    from: (table: string) => ({
       select: () => ({
         eq: (_col: string, value: string) => ({
-          maybeSingle: async () => ({ data: profiles[value] ?? null, error: null }),
+          maybeSingle: async () =>
+            table === 'settings'
+              ? { data: value in settings ? { value: settings[value] } : null, error: null }
+              : { data: profiles[value] ?? null, error: null },
         }),
       }),
     }),
@@ -112,6 +143,11 @@ beforeEach(async () => {
   process.env.NEXT_PUBLIC_SITE_URL = SITE;
   process.env.EMAIL_LINK_SECRET = 'test-secret';
 
+  // Put the working client back before re-importing. A test below swaps it for
+  // an unconfigured one with vi.doMock, which persists for the rest of the file,
+  // so without this every test written after it silently inherits a client that
+  // refuses to send and fails for a reason nothing in it explains.
+  vi.doMock('@/lib/email/client', clientMock);
   vi.resetModules();
   ({ dispatchEmails } = await import('@/lib/email/dispatch'));
 });
@@ -310,5 +346,51 @@ describe('when email is not configured', () => {
 
     const outcome = await dispatch(fakeDb([row()], { [MEMBER]: consenting }));
     expect(outcome).toEqual({ claimed: 0, sent: 0, skipped: 0, failed: 0 });
+  });
+});
+
+describe('reply-to', () => {
+  /**
+   * The From address is the sending domain, which need not have a mailbox behind
+   * it. Without a Reply-To, a member answering a booking confirmation gets a
+   * bounce for doing the obvious thing.
+   */
+  it('replies go to the published contact address', async () => {
+    const db = fakeDb(
+      [row({ template: 'welcome' })],
+      { [MEMBER]: consenting },
+      {
+        contact_email: 'kelly@example.com',
+      },
+    );
+
+    await dispatchEmails(db);
+
+    expect(sent).toHaveLength(1);
+    expect(sent[0]!.replyTo).toBe('kelly@example.com');
+  });
+
+  it('omits reply-to rather than inventing one when the setting is unset', async () => {
+    const db = fakeDb([row({ template: 'welcome' })], { [MEMBER]: consenting });
+
+    await dispatchEmails(db);
+
+    expect(sent).toHaveLength(1);
+    expect(sent[0]!.replyTo).toBeUndefined();
+  });
+
+  it('ignores a setting that is not an address, so a typo cannot break every send', async () => {
+    const db = fakeDb(
+      [row({ template: 'welcome' })],
+      { [MEMBER]: consenting },
+      {
+        contact_email: 'TODO',
+      },
+    );
+
+    await dispatchEmails(db);
+
+    expect(sent).toHaveLength(1);
+    expect(sent[0]!.replyTo).toBeUndefined();
   });
 });

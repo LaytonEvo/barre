@@ -24,6 +24,34 @@ export type DispatchOutcome = {
  * sending, so the expensive and the irreversible steps only happen for rows that
  * are definitely going out.
  */
+
+/**
+ * Where a reply should go.
+ *
+ * The From address is the sending domain, and a sending domain does not
+ * necessarily have a mailbox behind it — ours did not for most of its life. A
+ * member answering a booking confirmation with "sorry, can I move to Thursday?"
+ * would then get a bounce, having done the most reasonable thing possible.
+ *
+ * `contact_email` is the address already published on the contact page, so it
+ * is the one Kelly is expecting to hear on, and she can change it in
+ * /admin/settings without a deploy.
+ *
+ * Read directly rather than through loadPolicy(): that uses the request-scoped
+ * client this has no access to, and throws when any setting is malformed, which
+ * would stop the entire queue over an unrelated key.
+ */
+async function replyToAddress(db: Db): Promise<string | null> {
+  const { data } = await db
+    .from('settings')
+    .select('value')
+    .eq('key', 'contact_email')
+    .maybeSingle();
+
+  const value = data?.value;
+  return typeof value === 'string' && value.includes('@') ? value : null;
+}
+
 export async function dispatchEmails(db: Db, batchSize = 25): Promise<DispatchOutcome> {
   const outcome: DispatchOutcome = { claimed: 0, sent: 0, skipped: 0, failed: 0 };
 
@@ -41,6 +69,7 @@ export async function dispatchEmails(db: Db, batchSize = 25): Promise<DispatchOu
   outcome.claimed = rows.length;
 
   const siteUrl = clientEnv.NEXT_PUBLIC_SITE_URL;
+  const replyTo = await replyToAddress(db);
 
   for (const row of rows) {
     const skip = async (reason: string) => {
@@ -124,6 +153,7 @@ export async function dispatchEmails(db: Db, batchSize = 25): Promise<DispatchOu
         subject: rendered.email.subject,
         html: rendered.email.html,
         text: rendered.email.text,
+        ...(replyTo ? { replyTo } : {}),
         ...(unsubscribe
           ? {
               // One-click unsubscribe. Gmail and Outlook surface this as a button
