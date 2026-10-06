@@ -150,6 +150,33 @@ async function main() {
     add(`view ${view.relname} runs with ${want} rights`, actual === want, `actual: ${actual}`);
   }
 
+  // --- The private schema stays private -------------------------------------
+  // Everything else here checks `public`, which is the schema PostgREST serves.
+  // `private` holds the cron shared secret and is therefore the one place where
+  // a stray grant would be worth the most to an attacker and the least likely to
+  // be noticed, precisely because the rest of the audit does not look at it.
+  const privateGrants = await client.query<{ grantee: string; privilege: string }>(`
+    select grantee, privilege_type as privilege
+    from information_schema.role_table_grants
+    where table_schema = 'private'
+      and grantee in ('anon', 'authenticated', 'PUBLIC')
+    union all
+    select r.rolname, 'USAGE'
+    from pg_namespace n
+    cross join pg_roles r
+    where n.nspname = 'private'
+      and r.rolname in ('anon', 'authenticated')
+      and has_schema_privilege(r.rolname, n.oid, 'USAGE')
+    order by 1, 2`);
+
+  add(
+    'private schema is unreachable by anon and authenticated',
+    privateGrants.rowCount === 0,
+    privateGrants.rowCount === 0
+      ? 'no usage or table grants'
+      : privateGrants.rows.map((g) => `${g.grantee}:${g.privilege}`).join(', '),
+  );
+
   // --- The secret that must never be public ---------------------------------
   add(
     'service role key is not exposed to the browser',

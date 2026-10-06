@@ -101,6 +101,8 @@ async function main() {
 
   console.log(count === 0 ? 'Nothing to apply — already up to date.' : `Applied ${count}.`);
 
+  await configureCron(client);
+
   if (process.argv.includes('--seed')) {
     process.stdout.write('seeding … ');
     try {
@@ -115,6 +117,53 @@ async function main() {
   }
 
   await client.end();
+}
+
+/**
+ * Schedule the cron jobs.
+ *
+ * The schedules live in a migration, but the URL and the shared secret are
+ * per-environment, so they are applied here from the environment rather than
+ * baked into a file that every deployment shares.
+ *
+ * Half-configured is treated as an error. Having one of the two set almost
+ * always means a variable was missed, and the failure mode otherwise is silent:
+ * the site comes up looking perfectly healthy and never sends an email.
+ */
+async function configureCron(client) {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  const secret = process.env.CRON_SECRET;
+
+  if (!baseUrl && !secret) {
+    console.log('Skipping cron setup — NEXT_PUBLIC_SITE_URL and CRON_SECRET are both unset.');
+    return;
+  }
+
+  if (!baseUrl || !secret) {
+    console.error(
+      `Cannot schedule the cron jobs: ${baseUrl ? 'CRON_SECRET' : 'NEXT_PUBLIC_SITE_URL'} is not set. ` +
+        'Set both, or neither.',
+    );
+    await client.end();
+    process.exit(1);
+  }
+
+  process.stdout.write('scheduling cron jobs … ');
+  try {
+    const { rows } = await client.query('select * from private.configure_cron($1, $2)', [
+      baseUrl,
+      secret,
+    ]);
+    console.log(`ok (${rows.length})`);
+    for (const row of rows) {
+      console.log(`  ${row.job_name.padEnd(24)} ${row.schedule}`);
+    }
+  } catch (error) {
+    console.log('FAILED');
+    console.error(error instanceof Error ? error.message : error);
+    await client.end();
+    process.exit(1);
+  }
 }
 
 main().catch((error) => {

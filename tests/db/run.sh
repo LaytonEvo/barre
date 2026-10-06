@@ -103,6 +103,11 @@ psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB" -v ON_ERROR_STOP=1 -q \
   -f "$ROOT/tests/db/rls.sql" 2>&1 | sed 's/^NOTICE:  //' | grep -E 'PASS|FAIL|ERROR|DETAIL|CONTEXT'
 
 echo
+echo "== scheduled jobs =="
+psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB" -v ON_ERROR_STOP=1 -q \
+  -f "$ROOT/tests/db/cron.sql" 2>&1 | sed 's/^NOTICE:  //' | grep -E 'PASS|FAIL|SKIP|ERROR|DETAIL|CONTEXT'
+
+echo
 echo "== concurrency (acceptance test 5) =="
 # Runs last: it spawns parallel connections and leaves a filled class behind.
 "$ROOT/tests/db/concurrency.sh"
