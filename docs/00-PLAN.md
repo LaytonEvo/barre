@@ -41,7 +41,7 @@ Taking the Section 2 stack as specified. No substitutions, no extra paid service
 | Email             | Resend + React Email                        | plain-text fallback on every template                     |
 | SMS               | Twilio, behind `FEATURE_SMS`                | off until Kelly asks for it                               |
 | Cron              | Supabase `pg_cron`                          | session generation, reminders, expiry, vouchers, win-back |
-| Hosting           | Vercel                                      | preview deploy per PR                                     |
+| Hosting           | Railway                                     | staging on `europe-west4`, beside the database            |
 | Analytics         | Plausible, after consent                    | Confirmed; simpler PECR consent story than GA4            |
 | Tests             | Vitest + Playwright                         |                                                           |
 | Validation        | Zod at every boundary                       |                                                           |

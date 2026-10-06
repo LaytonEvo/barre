@@ -95,7 +95,8 @@ the difference between being found and not.
 
 Do this once, with Resend, and it covers both deliverability and §1.1.
 
-- [ ] Point the domain at Vercel (A/CNAME as Vercel instructs).
+- [ ] Point the domain at Railway (add it as a custom domain on the `web`
+      service, then create the CNAME Railway gives you).
 - [ ] **SPF** — a TXT record on the sending domain authorising Resend. Resend
       gives the exact value; do not hand-write it.
 - [ ] **DKIM** — the CNAME records Resend provides. This is what actually signs
@@ -132,9 +133,9 @@ secrets, not promo codes.
 
 - [ ] Complete Stripe's account activation (business details, bank account).
 - [ ] Switch the dashboard to **live** and create a fresh restricted API key.
-- [ ] Set `STRIPE_SECRET_KEY` to the live key in Vercel **production only**.
-      Preview deployments should keep test keys, or a preview build will take real
-      money.
+- [ ] Set `STRIPE_SECRET_KEY` to the live key on the **production** Railway
+      environment only. Staging keeps test keys, or a staging build will take
+      real money.
 - [ ] Run `npm run stripe:sync` against production to create the live products and
       prices. Prices are immutable in Stripe: changing one means creating a new
       price, which the sync handles.
@@ -179,10 +180,36 @@ That last check exists because of a real bug: `session_availability` was
 `security_invoker = true`, so it counted bookings under the caller's own RLS and
 reported every class as empty however full it was.
 
+## 4a. Hosting (Railway)
+
+Migrations run automatically: the service's pre-deploy command is
+`npm run db:migrate -- --seed`, which is idempotent, so a deploy that changes
+nothing to the schema applies nothing.
+
+- [ ] **Check the domain's target port matches the port the app actually binds.**
+      Railway injects `PORT` (8080 at the time of writing) and `next start`
+      honours it. A domain created before the first deployment has no port to
+      detect, so it defaults to 3000 and every request returns `502` with
+      `connection refused` upstream — the container is healthy, nothing is
+      listening where the edge is dialling. This cost a deploy cycle on staging.
+- [ ] Deploy in a region near the database. Supabase is in `eu-west-2` (London);
+      the service belongs in Railway's `europe-west4`, not a US region, or every
+      query crosses the Atlantic twice.
+- [ ] Keep `engines.node` in step with the version used in development. Railway
+      picks the lowest version the field allows, which is not necessarily the one
+      the test suite ran on.
+- [ ] Confirm `NEXT_PUBLIC_SITE_ENV=production` on the production service. It
+      defaults to `staging`, which serves `Disallow: /` — safe to forget on
+      staging, costly to forget on launch day.
+- [ ] Remove `STAGING_PASSWORD` from production, and keep it set everywhere else.
+
+---
+
 Also by hand before launch:
 
-- [ ] Confirm `SUPABASE_SERVICE_ROLE_KEY` is set only in Vercel's server
-      environment, never as `NEXT_PUBLIC_*`.
+- [ ] Confirm `SUPABASE_SERVICE_ROLE_KEY` is set as a plain Railway service
+      variable, never as `NEXT_PUBLIC_*` — anything so prefixed is compiled
+      into the browser bundle.
 - [ ] Confirm the two public write paths (contact form, newsletter) are rate
       limited — `/admin/settings` shows the limits.
 - [ ] Rotate any key that has been pasted into a chat, a ticket or an email.
