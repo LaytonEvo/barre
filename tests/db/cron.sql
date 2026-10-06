@@ -96,3 +96,43 @@ begin
     'exactly one configuration row survives repeated deploys'
   );
 end $$;
+
+-- --- The demo seed must never touch a real business ---------------------------
+-- By the time this runs the suite has created real members and booked them into
+-- real classes, which is exactly the shape of database the seed must refuse.
+
+do $$
+declare
+  v_demo uuid := gen_random_uuid();
+  v_message text;
+begin
+  -- Without any demo accounts it should refuse for that reason alone.
+  begin
+    perform public.seed_demo_data();
+    perform assert(false, 'seeding with no demo accounts should have raised');
+  exception when others then
+    get stacked diagnostics v_message = message_text;
+    perform assert(v_message like '%demo accounts%',
+      'refuses when there are no demo accounts to seed');
+  end;
+
+  -- Now give it one, so the only thing standing in its way is the real data.
+  insert into auth.users (id, email) values (v_demo, 'someone@barrebykelly.test');
+
+  begin
+    perform public.seed_demo_data();
+    perform assert(false, 'seeding a database with real bookings should have raised');
+  exception when others then
+    get stacked diagnostics v_message = message_text;
+    perform assert(v_message like '%real members%',
+      'ACCEPTANCE: refuses to seed where a real member has a booking'
+    );
+  end;
+
+  perform assert(
+    not exists (select 1 from public.bookings b
+                join public.profiles p on p.id = b.user_id
+                where p.email = 'someone@barrebykelly.test'),
+    'and left no half-finished demo data behind when it refused'
+  );
+end $$;
