@@ -190,6 +190,30 @@ That last check exists because of a real bug: `session_availability` was
 `security_invoker = true`, so it counted bookings under the caller's own RLS and
 reported every class as empty however full it was.
 
+## 2a. Supabase Auth (dashboard, not code)
+
+Two settings live only in the hosted project. Neither is in this repository, and
+both fail quietly rather than loudly.
+
+- [ ] **Authentication → URL Configuration → Site URL.** Set it to the real
+      origin. The app already passes `emailRedirectTo` pointing at
+      `/auth/callback`, but Supabase validates that against the allow-list and,
+      when it does not match, **silently falls back to Site URL** instead of
+      erroring. Left at the default, every confirmation link in every signup
+      email points at `http://localhost:3000` and dies in the member's browser.
+- [ ] **Redirect URLs** on the same screen: add `<origin>/auth/callback` and
+      `<origin>/**`. This is what the fallback above is checking against.
+- [ ] **Custom SMTP** (Project Settings → Authentication → SMTP). Until this is
+      set, confirmation and password-reset mail comes from Supabase's shared
+      sender, branded "Supabase Auth", and is rate limited to a few messages an
+      hour — Supabase documents it as unsuitable for production. Point it at the
+      same Resend account the application uses so both halves of the member's
+      mail come from one domain.
+- [ ] Re-check all three after any environment URL change. They do not follow
+      `NEXT_PUBLIC_SITE_URL`.
+
+---
+
 ## 4a. Hosting (Railway)
 
 Migrations run automatically: the service's pre-deploy command is
